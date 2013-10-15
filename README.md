@@ -7,7 +7,7 @@ aips2sqlite - creates an SQLite DB from AIPS, Swissmedic, BAG and Refdata
 
 Java 1.7 (tested on Windows)
 
-## Options:
+## Options
 
 ```
 --alpha <arg> 	generate database with drugs whose titles start with <arg>
@@ -21,10 +21,12 @@ Java 1.7 (tested on Windows)
 --zip			generate a zipped version of the database 
 ```
 
-## Examples:
+## Examples
 
-Generate German SQLite database including report file
+Generate German SQLite database including report file:
+
 $ java -jar aips2sqlite.jar --lang=de --verbose --report
 
-Generate French SQLite database, do not download any files and be extra quiet
+Generate French SQLite database, do not download any files and be extra quiet:
+
 $ java -jar aips2sqlite.jar --lang=fr --quiet --nodown
