@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -54,7 +53,6 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -73,7 +71,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -91,15 +88,17 @@ import com.maxl.java.aips2sqlite.Preparations.Preparation;
 public class Aips2Sqlite {
 
 	// Set by command line options (default values)
+	private static String APP_VERSION = "1.0.0";
 	private static boolean SHOW_ERRORS = false;
 	private static boolean SHOW_LOGS = true;
 	private static boolean DOWNLOAD_ALL = true;
 	private static boolean ZIP_SQL = false;
-	private static boolean GENERATE_REPORT = true;
+	private static boolean GENERATE_REPORT = false;
+	
+	// Other global variables or constants
 	private static String DB_LANGUAGE = "";
 	private static String DB_VERSION = "1.2.7";
-	private static String VERSION = "1.0.0";
-	private static String MED_TITLE = "";
+	private static String OPT_MED_TITLE = "";
 	
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
 	private static final String FILE_MEDICAL_INFOS_XML = "./downloads/aips_xml.xml";
@@ -164,7 +163,7 @@ public class Aips2Sqlite {
 				System.exit(0);
 			}
 			if (cmd.hasOption("version")) {
-				System.out.println("Version of aips2slite: " + VERSION);
+				System.out.println("Version of aips2slite: " + APP_VERSION);
 			}
 			if (cmd.hasOption("lang")) {
 				if (cmd.getOptionValue("lang").equals("de"))
@@ -182,7 +181,7 @@ public class Aips2Sqlite {
 				ZIP_SQL = true;
 			}
 			if (cmd.hasOption("alpha")) {
-				MED_TITLE = cmd.getOptionValue("alpha");
+				OPT_MED_TITLE = cmd.getOptionValue("alpha");
 			}
 			if (cmd.hasOption("nodown")) {
 				DOWNLOAD_ALL = false;
@@ -221,7 +220,7 @@ public class Aips2Sqlite {
 		if (!DB_LANGUAGE.isEmpty()) {
 			if (SHOW_LOGS) {
 				System.out.println("");
-				System.out.println("- Generating sqlite database ... ");
+				System.out.println("- Generating sqlite database... ");
 			}
 			long startTime = System.currentTimeMillis();
 			int counter = 0;
@@ -264,50 +263,53 @@ public class Aips2Sqlite {
 			String style_v1_str = readCSSfromFile(FILE_STYLE_CSS_BASE + "v1.css");
 			
 			// Create report file
-			// TODO - get date automatically
-			DateFormat df = new SimpleDateFormat("ddMMyy");
-			String date_str = df.format(new Date());
-			File report_file = new File(FILE_REPORT_BASE + "_" + date_str + "_" + DB_LANGUAGE + ".html");
-			if (!report_file.exists())
-				report_file.createNewFile();
-			FileWriter fw = new FileWriter(report_file.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			// Change dateformat
-			df = new SimpleDateFormat("dd.MM.yy");
-			date_str = df.format(new Date());
-			
-			if (DB_LANGUAGE.equals("de")) {
-				bw.write("<h3>Arzneimittel-Kompendium für Android</h3>");
-				bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
-				bw.write("<p>Lizenz: GPL v3.0</p>");
-				bw.write("<br/>");
-				bw.write("<p>Konzept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
-				bw.write("<p>Entwicklung: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
-				bw.write("<br/>");
-				bw.write("<p>Verwendete Files:</p>");
-				bw.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (Stand: " + date_str + ")</p>");
-				bw.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (Stand: " + date_str + ")</p>");
-				bw.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (Stand: " + date_str + ")</p>");
-				bw.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
-						"Packungen.xls</a> (Stand: " + date_str + ")</p>");
-				bw.write("<br/>");
-			} else if (DB_LANGUAGE.equals("fr")){
-				bw.write("<h3>Compendium des Médicaments Suisse pour Android</h3>");
-				bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
-				bw.write("<p>Licence: GPL v3.0</p>");
-				bw.write("<br/>");
-				bw.write("<p>Concept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
-				bw.write("<p>Développement: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
-				bw.write("<br/>");
-				bw.write("<p>Fichiers utilisés:</p>");
-				bw.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (actualisé: " + date_str + ")</p>");
-				bw.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (actualisé: " + date_str + ")</p>");
-				bw.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (actualisé: " + date_str + ")</p>");
-				bw.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
-						"Packungen.xls</a> (actualisé: " + date_str + ")</p>");
-				bw.write("<br/>");
-			
+			BufferedWriter bw = null;
+			if (GENERATE_REPORT==true) {
+				DateFormat df = new SimpleDateFormat("ddMMyy");
+				String date_str = df.format(new Date());
+				File report_file = new File(FILE_REPORT_BASE + "_" + date_str + "_" + DB_LANGUAGE + ".html");
+				if (!report_file.exists())
+					report_file.createNewFile();
+				FileWriter fw = new FileWriter(report_file.getAbsoluteFile());
+				bw = new BufferedWriter(fw);
+				
+				// Change dateformat
+				df = new SimpleDateFormat("dd.MM.yy");
+				date_str = df.format(new Date());
+				
+				if (DB_LANGUAGE.equals("de")) {
+					bw.write("<h3>Arzneimittel-Kompendium für Android</h3>");
+					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
+					bw.write("<p>Lizenz: GPL v3.0</p>");
+					bw.write("<br/>");
+					bw.write("<p>Konzept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
+					bw.write("<p>Entwicklung: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
+					bw.write("<br/>");
+					bw.write("<p>Verwendete Files:</p>");
+					bw.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (Stand: " + date_str + ")</p>");
+					bw.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (Stand: " + date_str + ")</p>");
+					bw.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (Stand: " + date_str + ")</p>");
+					bw.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
+							"Packungen.xls</a> (Stand: " + date_str + ")</p>");
+					bw.write("<br/>");
+				} else if (DB_LANGUAGE.equals("fr")){
+					bw.write("<h3>Compendium des Médicaments Suisse pour Android</h3>");
+					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
+					bw.write("<p>Licence: GPL v3.0</p>");
+					bw.write("<br/>");
+					bw.write("<p>Concept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
+					bw.write("<p>Développement: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
+					bw.write("<br/>");
+					bw.write("<p>Fichiers utilisés:</p>");
+					bw.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (actualisé: " + date_str + ")</p>");
+					bw.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (actualisé: " + date_str + ")</p>");
+					bw.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (actualisé: " + date_str + ")</p>");
+					bw.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
+							"Packungen.xls</a> (actualisé: " + date_str + ")</p>");
+					bw.write("<br/>");			
+				}
 			}
+			
 			// Initialize counters for different languages
 			int counter_de = 0;
 			int counter_fr = 0;		
@@ -334,143 +336,144 @@ public class Aips2Sqlite {
 							titles_str += (s.getTitle() + ";");
 						}						
 						
-						// ***************************** BEGIN DEBUG *************************
-						// if (m.getTitle().startsWith("And")) {
-						Document doc = Jsoup.parse(m.getContent());
-						doc.outputSettings().escapeMode(EscapeMode.xhtml);				
-						
-						html_utils = new HtmlUtils(m.getContent());
-						html_utils.clean();
-
-						// Extract registration number (swissmedic no5)
-						String regnr_str = "";
-						if (DB_LANGUAGE.equals("de"))
-							regnr_str = html_utils.extractRegNrDE(m.getTitle());
-						else if (DB_LANGUAGE.equals("fr"))
-							regnr_str = html_utils.extractRegNrFR(m.getTitle());
-						// bw.write(regnr_str + " - " + m.getTitle() + "\n");
-						if (regnr_str.isEmpty()) {							
-							errors++;
-							bw.write("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");							
-							// System.err.println(">> ERROR: " + counter_de + " - regnr  string is empty - " + m.getTitle());
-							missing_regnr_str++;
-						}			
-						
-						// Associate ATC classes and subclasses (atc_map)					
-						String atc_class_str = "";
-						String atc_description_str = "";	
-						String atc_code_str = m.getAtcCode();								
-						if (atc_code_str!=null) {
-							atc_code_str = atc_code_str.replaceAll("\\s","");										
-							// Take "leave" of the tree (most precise classification)
-							String a = atc_map.get(atc_code_str);
-							if (a!=null) {
-								atc_description_str = a;
-								atccode_set.add(atc_code_str + ": " + a);
-							}
-							else {
-								if (DB_LANGUAGE.equals("de"))
-									atc_description_str = "k.A.";
-								else if (DB_LANGUAGE.equals("fr"))
-									atc_description_str = "non spécifiée";									
-							}
+						if (m.getTitle().startsWith(OPT_MED_TITLE)) {
+							Document doc = Jsoup.parse(m.getContent());
+							doc.outputSettings().escapeMode(EscapeMode.xhtml);				
 							
-							// Read out only two levels (L1 and L3)
-							if (atc_code_str.length()>1) {
-								for (int i=1; i<4; i+=2) {
-									String atc_key = atc_code_str.substring(0, i);
-									if (atc_key!=null) {
-										String c = atc_map.get(atc_key);
-										if (c!=null) {
-											atc_class_str += (c + ";");
-											atccode_set.add(atc_key + ": " + c);
+							html_utils = new HtmlUtils(m.getContent());
+							html_utils.clean();
+	
+							// Extract registration number (swissmedic no5)
+							String regnr_str = "";
+							if (DB_LANGUAGE.equals("de"))
+								regnr_str = html_utils.extractRegNrDE(m.getTitle());
+							else if (DB_LANGUAGE.equals("fr"))
+								regnr_str = html_utils.extractRegNrFR(m.getTitle());
+							if (regnr_str.isEmpty()) {							
+								errors++;
+								if (GENERATE_REPORT==true) 
+									bw.write("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");							
+								// System.err.println(">> ERROR: " + counter_de + " - regnr  string is empty - " + m.getTitle());
+								missing_regnr_str++;
+							}			
+							
+							// Associate ATC classes and subclasses (atc_map)					
+							String atc_class_str = "";
+							String atc_description_str = "";	
+							String atc_code_str = m.getAtcCode();								
+							if (atc_code_str!=null) {
+								atc_code_str = atc_code_str.replaceAll("\\s","");										
+								// Take "leave" of the tree (most precise classification)
+								String a = atc_map.get(atc_code_str);
+								if (a!=null) {
+									atc_description_str = a;
+									atccode_set.add(atc_code_str + ": " + a);
+								}
+								else {
+									if (DB_LANGUAGE.equals("de"))
+										atc_description_str = "k.A.";
+									else if (DB_LANGUAGE.equals("fr"))
+										atc_description_str = "non spécifiée";									
+								}
+								
+								// Read out only two levels (L1 and L3)
+								if (atc_code_str.length()>1) {
+									for (int i=1; i<4; i+=2) {
+										String atc_key = atc_code_str.substring(0, i);
+										if (atc_key!=null) {
+											String c = atc_map.get(atc_key);
+											if (c!=null) {
+												atc_class_str += (c + ";");
+												atccode_set.add(atc_key + ": " + c);
+											}
 										}
 									}
 								}
+							} else {
+								errors++;
+								if (GENERATE_REPORT)
+									bw.write("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+								System.err.println(">> ERROR: " + counter_de + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
+								missing_atc_code++;
 							}
-						} else {
-							errors++;
-							bw.write("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
-							System.err.println(">> ERROR: " + counter_de + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
-							missing_atc_code++;
-						}
-						
-						// Additional info stored in add_info_map
-						String add_info_str = ";";
-						List<String> rnr_list = Arrays.asList(regnr_str.split("\\s*, \\s*"));
-						if (rnr_list.size()>0)
-							add_info_str = add_info_map.get(rnr_list.get(0));					
-						
-						// Sanitize html
-						String html_sanitized = "";								
-						// First check for bad boys (version=1! but actually version>1!)
-						if (!m.getVersion().equals("1") || m.getContent().substring(0, 20).contains("xml")) {
-							for (int i=1; i<22; ++i) {
-								html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), DB_LANGUAGE);
+							
+							// Additional info stored in add_info_map
+							String add_info_str = ";";
+							List<String> rnr_list = Arrays.asList(regnr_str.split("\\s*, \\s*"));
+							if (rnr_list.size()>0)
+								add_info_str = add_info_map.get(rnr_list.get(0));					
+							
+							// Sanitize html
+							String html_sanitized = "";								
+							// First check for bad boys (version=1! but actually version>1!)
+							if (!m.getVersion().equals("1") || m.getContent().substring(0, 20).contains("xml")) {
+								for (int i=1; i<22; ++i) {
+									html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), DB_LANGUAGE);
+								}
+								html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>" ;						
+							} else {
+								html_sanitized = m.getContent();
 							}
-							html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>" ;						
-						} else {
-							html_sanitized = m.getContent();
-						}
-						
-						// Update "Packungen" section and extract therapeutisches index
-						List<String> mTyIndex_list = new ArrayList<String>();						
-						String mContent_str = updateSectionPackungen(m.getTitle(), package_info, regnr_str, html_sanitized, mTyIndex_list);
-						m.setContent(mContent_str);
-												
-						// Fix problem with wrong div class in original Swissmedic file
-						if (DB_LANGUAGE.equals("de")) {
-							m.setStyle(m.getStyle().replaceAll("untertitel", "untertitle"));
-							m.setStyle(m.getStyle().replaceAll("untertitel1", "untertitle1"));
-						}
-						
-						// Correct formatting error introduced by Swissmedic
-						m.setAuthHolder(m.getAuthHolder().replaceAll("&#038;","&"));
-						
-						System.out.println(counter_de + " - " + m.getTitle() + ": " + regnr_str);
-						// System.out.println(">> TIndex: (1) " + mTyIndex_list.get(0) + " (2) " + mTyIndex_list.get(1));	
-						// Check if mPackSection_str is empty
-						if (mPackSection_str.isEmpty()) {	
-							errors++;
-							bw.write("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
-							System.err.println(">> ERROR: " + counter_de + " - SwissmedicNo5 not found in SwissMedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
-							missing_pack_info++;
-						}
-						
-						int customer_id = 0;
-						// Is the customer paying? If yes add customer id
-						// str1.toLowerCase().contains(str2.toLowerCase())
-						if (m.getAuthHolder().toLowerCase().contains("desitin"))
-							customer_id = 1;						
-						/*
-						/ HERE GO THE OTHER PAYING CUSTOMERS (increment customer_id respectively)
-						*/
-						
-		    			// Extract (O)riginal / (G)enerika info
-						String orggen_str = "";
-						if (add_info_str!=null) {
-							List<String> ai_list = Arrays.asList(add_info_str.split("\\s*;\\s*"));
-							if (ai_list!=null) {
-								if (!ai_list.get(0).isEmpty())
-									orggen_str = ai_list.get(0);				
+							
+							// Update "Packungen" section and extract therapeutisches index
+							List<String> mTyIndex_list = new ArrayList<String>();						
+							String mContent_str = updateSectionPackungen(m.getTitle(), package_info, regnr_str, html_sanitized, mTyIndex_list);
+							m.setContent(mContent_str);
+													
+							// Fix problem with wrong div class in original Swissmedic file
+							if (DB_LANGUAGE.equals("de")) {
+								m.setStyle(m.getStyle().replaceAll("untertitel", "untertitle"));
+								m.setStyle(m.getStyle().replaceAll("untertitel1", "untertitle1"));
 							}
+							
+							// Correct formatting error introduced by Swissmedic
+							m.setAuthHolder(m.getAuthHolder().replaceAll("&#038;","&"));
+							
+							System.out.println(counter_de + " - " + m.getTitle() + ": " + regnr_str);
+							// System.out.println(">> TIndex: (1) " + mTyIndex_list.get(0) + " (2) " + mTyIndex_list.get(1));	
+							// Check if mPackSection_str is empty
+							if (mPackSection_str.isEmpty()) {	
+								errors++;
+								if (GENERATE_REPORT)
+									bw.write("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+								System.err.println(">> ERROR: " + counter_de + " - SwissmedicNo5 not found in SwissMedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
+								missing_pack_info++;
+							}
+							
+							int customer_id = 0;
+							// Is the customer paying? If yes add customer id
+							// str1.toLowerCase().contains(str2.toLowerCase())
+							if (m.getAuthHolder().toLowerCase().contains("desitin"))
+								customer_id = 1;						
+							/*
+							/ HERE GO THE OTHER PAYING CUSTOMERS (increment customer_id respectively)
+							*/
+							
+			    			// Extract (O)riginal / (G)enerika info
+							String orggen_str = "";
+							if (add_info_str!=null) {
+								List<String> ai_list = Arrays.asList(add_info_str.split("\\s*;\\s*"));
+								if (ai_list!=null) {
+									if (!ai_list.get(0).isEmpty())
+										orggen_str = ai_list.get(0);				
+								}
+							}
+							
+							// Check if substances str has a '$a' and change it to '&alpha'
+							if( m.getSubstances()!=null )
+								m.setSubstances( m.getSubstances().replaceAll("\\$a","&alpha;") );
+							
+			    			// Add medis, titles and ids to database
+							sql_db.addDB( m, style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
+									mPackSection_str, orggen_str, customer_id, mTyIndex_list );
+							/*
+							try {
+								showHtml(style_v1_str, m.getContent());
+							} catch (Exception e) {
+								//
+							}
+							*/
 						}
-						
-						// Check if substances str has a '$a' and change it to '&alpha'
-						if( m.getSubstances()!=null )
-							m.setSubstances( m.getSubstances().replaceAll("\\$a","&alpha;") );
-						
-		    			// Add medis, titles and ids to database
-						sql_db.addDB( m, style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
-								mPackSection_str, orggen_str, customer_id, mTyIndex_list );
-						/*
-						try {
-							showHtml(style_v1_str, m.getContent());
-						} catch (Exception e) {
-							//
-						}
-						*/
-						// } // ****************************** END OF DEBUG ****************
 					}
 					counter_de++;				
 				}
@@ -488,20 +491,21 @@ public class Aips2Sqlite {
 			System.out.println("Number of German medis (Fach Info) : " + counter_de);
 			System.out.println("Number of French medis (Fach Info) : " + counter_fr);
 			
-			bw.write("<br/>");
-			bw.write("<p>Number of German medications : " + counter_de + "</p>");
-			bw.write("<p>Number of French medications : " + counter_fr + "</p>");
-			bw.write("<p>Total number of errors in db : " + errors + "</p>");
-			bw.write("<p>Total number of missing reg. nr. : " + missing_regnr_str + "</p>");
-			bw.write("<p>Total number of missing pack info : " + missing_pack_info + "</p>");
-			bw.write("<p>Total number of missing atc codes : " + missing_atc_code + "</p>");
-			bw.write("<br/>");
-			
-			// Close report file
-			bw.close();
+			if (GENERATE_REPORT) {
+				bw.write("<br/>");
+				bw.write("<p>Number of German medications : " + counter_de + "</p>");
+				bw.write("<p>Number of French medications : " + counter_fr + "</p>");
+				bw.write("<p>Total number of errors in db : " + errors + "</p>");
+				bw.write("<p>Total number of missing reg. nr. : " + missing_regnr_str + "</p>");
+				bw.write("<p>Total number of missing pack info : " + missing_pack_info + "</p>");
+				bw.write("<p>Total number of missing atc codes : " + missing_atc_code + "</p>");
+				bw.write("<br/>");				
+				// Close report file
+				bw.close();
+			}
 			
 			if (DB_LANGUAGE.equals("de")) {
-				// Dump set to file
+				// Dump set to file, currently we do this only for German
 				File atccodes_file = new File("./output/atc_codes_used_set.txt");
 				if (!atccodes_file.exists())
 					atccodes_file.createNewFile();
@@ -530,7 +534,7 @@ public class Aips2Sqlite {
 		try {
 			long startTime = System.currentTimeMillis();
 			if (SHOW_LOGS)
-				System.out.print("- Processing packages xls ... ");
+				System.out.print("- Processing packages xls... ");
 			// Load Swissmedic xls file
 			FileInputStream packages_file = new FileInputStream(FILE_PACKAGES_XLS);
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
@@ -616,7 +620,7 @@ public class Aips2Sqlite {
 			startTime = System.currentTimeMillis();
 			
 			if (SHOW_LOGS)
-				System.out.print("- Processing atc classes xls ... ");
+				System.out.print("- Processing atc classes xls... ");
 			if (DB_LANGUAGE.equals("de")) {
 				// Load ATC classes xls file
 				FileInputStream atc_classes_file = new FileInputStream(FILE_ATC_CLASSES_XLS);
@@ -679,7 +683,7 @@ public class Aips2Sqlite {
 
 			startTime = System.currentTimeMillis();
 			if (SHOW_LOGS)
-				System.out.print("- Unmarshalling Refdata Pharma "	+ DB_LANGUAGE + " ... ");
+				System.out.print("- Unmarshalling Refdata Pharma "	+ DB_LANGUAGE + "... ");
 
 			JAXBContext context = JAXBContext.newInstance(Pharma.class);
 			Unmarshaller um = context.createUnmarshaller();
@@ -729,7 +733,7 @@ public class Aips2Sqlite {
 
 			startTime = System.currentTimeMillis();
 			if (SHOW_LOGS)
-				System.out.print("- Processing preparations xml ... ");
+				System.out.print("- Processing preparations xml... ");
 
 			context = JAXBContext.newInstance(Preparations.class);
 			um = context.createUnmarshaller();
@@ -856,10 +860,12 @@ public class Aips2Sqlite {
 				System.out.println(num_preparations + " preparations in " + (stopTime - startTime) / 1000.0f + " sec");
 
 			// Loop through all SwissmedicNo8 numbers
+			/*
 			for (Map.Entry<String, ArrayList<String>> entry : package_info.entrySet()) {
 				String swissmedicno8 = entry.getKey();
 				ArrayList<String> pi_row = entry.getValue();
 			}
+			*/
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -891,7 +897,7 @@ public class Aips2Sqlite {
 			// Unmarshaller
 			long startTime = System.currentTimeMillis();
 			if (SHOW_LOGS)
-				System.out.print("- Unmarshalling Swissmedic xml ... ");
+				System.out.print("- Unmarshalling Swissmedic xml... ");
 
 			FileInputStream fis = new FileInputStream(new File(FILE_MEDICAL_INFOS_XML));
 			Unmarshaller um = context.createUnmarshaller();
@@ -913,10 +919,6 @@ public class Aips2Sqlite {
 	}
 
 	static String[] extractHtmlSection(MedicalInformations.MedicalInformation m) {
-		// Extract section titles and section ids
-		MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
-		List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
-
 		Document doc = Jsoup.parse(m.getContent());
 		doc.outputSettings().escapeMode(EscapeMode.xhtml);
 
@@ -999,8 +1001,7 @@ public class Aips2Sqlite {
 			String flagsb_str = "";
 			String addinfo_str = add_info_map.get(s);
 			if (addinfo_str != null) {
-				List<String> ai_list = Arrays.asList(addinfo_str
-						.split("\\s*;\\s*"));
+				List<String> ai_list = Arrays.asList(addinfo_str.split("\\s*;\\s*"));
 				if (ai_list != null) {
 					if (!ai_list.get(0).isEmpty())
 						orggen_str = ", " + ai_list.get(0);
@@ -1008,8 +1009,7 @@ public class Aips2Sqlite {
 						flagsb_str = ", " + ai_list.get(1);
 				}
 			}
-			// Now generate many swissmedicno8 = swissmedicno5 + ***, check if
-			// they're keys and retrieve package info
+			// Now generate many swissmedicno8 = swissmedicno5 + ***, check if they're keys and retrieve package info
 			String swissmedicno8_key = "";
 			for (int n = 0; n < 1000; ++n) {
 				if (n < 10)
