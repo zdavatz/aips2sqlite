@@ -1,0 +1,1521 @@
+A01: STOMATOLOGIKA; Préparations stomatologiques
+A01AA01: Natriumfluorid; Sodium fluorure
+A01AA30: Kombinationen; Associations de sels de fluor
+A01AB03: Chlorhexidin; Chlorhexidine
+A01AB08: Neomycin; Néomycine
+A01AB11: Verschiedene; Divers anti-infectieux pour traitement oral local
+A01AB12: Hexetidin; Hexétidine
+A01AB14: Benzoxoniumchlorid; Benzoxonium chlorure
+A01AC01: Triamcinolon; Triamcinolone
+A01AC03: Hydrocortison; Hydrocortisone
+A01AC54: Prednisolon, Kombinationen; Prednisolone en association
+A01AD02: Benzydamin; Benzydamine
+A01AD11: Verschiedene; Divers autres médicaments pour traitement oral local
+A02: MITTEL BEI SÄURE BEDINGTEN ERKRANKUNGEN; Anti-acides, médicaments de l’ulcère peptique et des flatulences
+A02AC10: Kombinationen; Associations d’anti-acides à base de calcium
+A02AD01: Einfache Salzkombinationen; Associations de sels anti-acides
+A02AD02: Magaldrat; Magaldrate
+A02AD04: Hydrotalcit; Hydrotalcite
+A02AF02: Einfache Salzkombinationen und Karminativa; Associations de sels et antiflatulents
+A02AH: Antacida mit Natriumbicarbonat; Anti-acides avec bicarbonate de sodium
+A02BA02: Ranitidin; Ranitidine
+A02BB01: Misoprostol; Misoprostol
+A02BC01: Omeprazol; Oméprazole
+A02BC02: Pantoprazol; Pantoprazole
+A02BC03: Lansoprazol; Lansoprazole
+A02BC04: Rabeprazol; Rabéprazole
+A02BC05: Esomeprazol; Ésoméprazole
+A02BX02: Sucralfat; Sucralfate
+A03: MITTEL BEI FUNKTIONELLEN GASTROINTESTINALEN STÖRUNGEN; Antispasmodiques, anticholinergiques et stimulants de la motricité intestinale
+A03AA04: Mebeverin; Mébéverine
+A03AA05: Trimebutin; Trimébutine
+A03AE04: Prucaloprid; Prucalopride
+A03AX04: Pinaverium; Pinavérium
+A03AX13: Silikone; Silicones
+A03BA01: Atropin; Atropine
+A03BB01: Butylscopolamin; Butylscopolamine
+A03CA02: Clidinium und Psycholeptika; Clidinium et psycholeptiques
+A03FA01: Metoclopramid; Métoclopramide
+A03FA03: Domperidon; Dompéridone
+A04: ANTIEMETIKA UND MITTEL GEGEN ÜBELKEIT; Anti-émétiques et antinauséeux
+A04A: ANTIEMETIKA UND MITTEL GEGEN ÜBELKEIT; Anti-émétiques et antinauséeux
+A04AA01: Ondansetron; Ondansétron
+A04AA02: Granisetron; Granisétron
+A04AA03: Tropisetron; Tropisétron
+A04AA05: Palonosetron; Palonosétron
+A04AB52: Dimenhydrinat, Kombinationen; 
+A04AD: Andere Antiemetika; Autres anti-émétiques
+A04AD12: Aprepitant, Fosaprepitant; Aprépitant
+A05: GALLEN- UND LEBERTHERAPIE; Thérapeutique hépatique et biliaire
+A05AA02: Ursodeoxycholsäure; Acide ursodésoxycholique
+A06: LAXANZIEN; Laxatifs
+A06AA01: Dickflüssiges Paraffin; Huile de paraffine
+A06AA51: Dickflüssiges Paraffin, Kombinationen; Huile de paraffine en association
+A06AB02: Bisacodyl; Bisacodyl
+A06AB06: Sennoside; Glycosides de séné
+A06AB08: Natriumpicosulfat; Sodium picosulfate
+A06AB20: Kontaktlaxanzien in Kombination; Laxatifs stimulants en association
+A06AB56: Sennoside, Kombinationen; Glycosides de séné en association
+A06AC01: Ispaghula (Flohsamen); Ispaghul
+A06AC03: Sterculia; Sterculia
+A06AC53: Sterculia, Kombinationen; Sterculia en association
+A06AC55: Leinsamen, Kombinationen; Lin graine en association
+A06AD10: Mineralsalze in Kombination; Sels minéraux laxatifs en association
+A06AD11: Lactulose; Lactulose
+A06AD12: Lactitol; Lactitol
+A06AD16: Mannitol; Mannitol
+A06AD17: Natriumphosphat; Sodium phosphate
+A06AD61: Lactulose, Kombinationen; Lactulose en association
+A06AD65: Macrogol, Kombinationen; Macrogol en association
+A06AG01: Natriumphosphat; Sodium phosphate
+A06AG10: Docusat-Natrium, inkl. Kombinationen; Docusate sodique, associations incluses
+A06AG11: Laurylsulfat, inkl. Kombinationen; Laurylsulfate, associations incluses
+A06AH01: Methylnaltrexon bromid; Méthylnaltrexone
+A06AX01: Glycerol; Glycérol
+A06AX02: Kohlendioxid freisetzende Mittel; Médicaments produisant de l’anhydride carbonique
+A06AX03: Lubiproston; 
+A07: ANTIDIARRHOIKA UND INTESTINALE ANTIPHLOGISTIKA/ANTIINFEKTIVA; Antidiarrhéiques, antiinflammatoires et anti-infectieux intestinaux
+A07AA02: Nystatin; Nystatine
+A07AA06: Paromomycin; Paromomycine
+A07BA01: Medizinische Kohle; Charbon médicinal
+A07BA51: Medizinische Kohle, Kombinationen; Charbon médicinal en association
+A07CA: Elektrolyte zur oralen Rehydrierung; Préparations salines pour réhydratation orale
+A07DA03: Loperamid; Lopéramide
+A07DA53: Loperamid, Kombinationen; Lopéramide en association
+A07EA06: Budesonid; Budésonide
+A07EC01: Sulfasalazin; Sulfasalazine
+A07EC02: Mesalazin; Mésalazine
+A07FA01: Milchsäurebildner; Micro-organismes produisant de l’acide lactique
+A08: ANTIADIPOSITA, EXKL. DIÄTETIKA; Préparations contre l’obésité, produits de régime exclus
+A08AB01: Orlistat; Orlistat
+A09: DIGESTIVA, INKL. ENZYME; Médicaments de la digestion, enzymes incluses
+A09AA02: Multienzyme (Lipase, Protease etc.); Multienzymes (lipase, protéase...)
+A09AA04: Tilactase; Tilactase
+A10: ANTIDIABETIKA; Médicaments du diabète
+A10AB01: Insulin (human); Insuline humaine rapide
+A10AB03: Insulin (Schwein); Insuline porcine d’action rapide
+A10AB04: Insulin lispro; Insuline lispro rapide
+A10AB05: Insulin aspart; Insuline aspart rapide
+A10AB06: Insulin glulisin; Insuline glulisine
+A10AC01: Insulin (human); Insuline humaine intermédiaire
+A10AD05: Insulin aspart; Insuline aspart intermédiaire à début rapide
+A10AE04: Insulin glargin; Insuline glargine
+A10AE05: Insulin detemir; Insuline détémir
+A10BA02: Metformin; Metformine
+A10BB01: Glibenclamid; Glibenclamide
+A10BB04: Glibornurid; Glibornuride
+A10BB09: Gliclazid; Glicazide
+A10BB12: Glimepirid; Glimépiride
+A10BD: Kombinationen mit oralen Antidiabetika; Biguanides et sulfamides en association
+A10BD02: Metformin und Sulfonamide; Metformine et sulfamides
+A10BD07: Metformin und Sitagliptin; Metformine et sitagliptine
+A10BD08: Metformin und Vildagliptin; Metformine et vildagliptine
+A10BD10: Metformin und Saxagliptin; Metformine et saxagliptine
+A10BD11: Metformin und Linagliptin; Metformine et linagliptine
+A10BF01: Acarbose; Acarbose
+A10BG03: Pioglitazon; Pioglitazone
+A10BH01: Sitagliptin; Sitagliptine
+A10BH02: Vildagliptin; Vildagliptine
+A10BH03: Saxagliptin; Saxagliptine
+A10BH05: Linagliptin; Linagliptine
+A10BX02: Repaglinid; Répaglinide
+A10BX03: Nateglinid; Natéglinide
+A10BX04: Exenatid; Exénatide
+A11: VITAMINE; Vitamines
+A11AA: Multivitamine mit Mineralstoffen; Polyvitamines avec éléments minéraux
+A11AA03: Multivitamine und andere Mineralstoffe, inkl. Kombinationen; Polyvitamines et autres éléments minéraux, associations incluses
+A11AB: Multivitamine, andere Kombinationen; Polyvitamines, autres associations
+A11BA: Multivitamine, rein; Polyvitamines non associées
+A11CA01: Retinol (Vitamin A); Rétinol
+A11CA02: Betacaroten; Bétacarotène
+A11CC02: Dihydrotachysterol; Dihydrotachystérol
+A11CC04: Calcitriol; Calcitriol
+A11CC05: Colecalciferol; Cholécalciférol
+A11DA01: Thiamin (Vitamin B1); Thiamine (vit B1)
+A11DB: Vitamin B1 in Kombination mit Vitamin B6 und/oder Vitamin B12; Vitamine B1 en association à la vitamine B6 et,ou à la vitamine B12
+A11EA: Vitamin-B-Komplex, rein; Complexe vitaminique B non associé
+A11EB: Vitamin-B-Komplex mit Vitamin C; Complexe vitaminique B avec vitamine C
+A11EX: Vitamin-B-Komplex, andere Kombinationen; Complexe vitaminique B, autres associations
+A11GA01: Ascorbinsäure (Vitamin C); Ascorbique acide (vit C)
+A11GB: Ascorbinsäure (Vitamin C), Kombinationen; Acide ascorbique (vit C), associations
+A11GB01: Ascorbinsäure (Vitamin C) und Calcium; Ascorbique acide (vit C) et calcium
+A11HA02: Pyridoxin (Vitamin B6); Pyridoxine
+A11HA03: Tocopherol (Vitamin E); Tocophérol
+A11HA04: Riboflavin (Vitamin B2); Riboflavine (vit B2)
+A11HA05: Biotin; Biotine
+A11HA30: Dexpanthenol; Dexpanthénol
+A12: MINERALSTOFFE; Suppléments minéraux
+A12AA02: Calciumglubionat; Calcium glubionate
+A12AA04: Calciumcarbonat; Calcium carbonate
+A12AA06: Calciumlactogluconat; Calcium gluconolactate
+A12AA12: Calciumacetat, wasserfrei; Calcium acétate anhydré
+A12AX: Calcium, Kombinationen mit Vitamin D und/oder anderen Mitteln; Calcium en association avec d’autres substances
+A12AX01: Calciumcarbonat und Colecalciferol; 
+A12BA01: Kaliumchlorid; Potassium chlorure
+A12CB01: Zinksulfat; Zinc sulfate
+A12CB02: Zinkgluconat; Zinc gluconate
+A12CB03: Zinkprotein-Komplex; Zinc protéïne complexe
+A12CC04: Magnesiumcitrat; Magnésium citrate
+A12CC05: Magnesiumaspartat; Magnésium aspartate
+A12CC08: Magnesiumpidolat; Magnésium pidolate
+A12CC09: Magnesiumorotat; Magnésium orotate
+A12CC10: Magnesiumoxid; Magnésium oxyde
+A12CC30: Magnesium (verschiedene Salze in Kombination); Magnésium (différents sels en association)
+A12CE02: Natriumselenit; Sodium sélénite
+A12CX: Andere Mineralstoff-haltige Zubereitungen; Autres éléments minéraux
+A13: TONIKA; Toniques
+A13A: TONIKA; Toniques
+A14: ANABOLIKA ZUR SYSTEMISCHEN ANWENDUNG; Anabolisants à usage systémique
+A14AB01: Nandrolon; Nandrolone
+A16: ANDERE MITTEL FÜR DAS ALIMENTÄRE SYSTEM UND DEN STOFFWECHSEL; Autres médicaments des voies digestives et du métabolisme
+A16AA01: Levocarnitin; L-carnitine
+A16AB02: Imiglucerase; Imiglucérase
+A16AB03: Agalsidase alfa; Agalsidase
+A16AB04: Agalsidase beta; Agalsidase bêta
+A16AB05: Laronidase; Laronidase
+A16AB07: Alglucosidase alfa; Alglucosidase alfa
+A16AB08: Galsulfase; Galsulfase
+A16AB09: Idursulfase; Idursulfase
+A16AB10: Velaglucerase alfa; Vélaglucérase alfa
+A16AX: Sonstige Mittel für das alimentäre System und den Stoffwechsel; Divers médicaments des voies digestives et du métabolisme
+A16AX02: Anetholtrithion; Anétholtrithione
+A16AX06: Miglustat; Miglustat
+A16AX07: Sapropterin; Saproptérine
+B: BLUT UND BLUTBILDENDE ORGANE; Sang et organes hématopoïétiques
+B01: ANTITHROMBOTISCHE MITTEL; Antithrombotiques
+B01A: ANTITHROMBOTISCHE MITTEL; Antithrombotiques
+B01AA04: Phenprocoumon; Phenprocoumone
+B01AA07: Acenocoumarol; Acénocoumarol
+B01AB01: Heparin; Héparine
+B01AB02: Antithrombin III, Antithrombin alfa ; Antithrombine III
+B01AB04: Dalteparin; Daltéparine
+B01AB06: Nadroparin; Nadroparine
+B01AB09: Danaparoid; Danaparoïde
+B01AC04: Clopidogrel; Clopidogrel
+B01AC06: Acetylsalicylsäure; Aspirine
+B01AC09: Epoprostenol; Epoprosténol
+B01AC11: Iloprost; Iloprost
+B01AC13: Abciximab; Abciximab
+B01AC16: Eptifibatid; Eptifibatide
+B01AC17: Tirofiban; Tirofiban
+B01AC21: Treprostinil; Tréprostinil
+B01AC22: Prasugrel; Prasugrel
+B01AC24: Ticagrelor; Ticagrélor
+B01AC30: Kombinationen; Associations d’inhibiteurs de l’agrégation plaquettaire
+B01AC56: Acetylsalicylsäure und Esomeprazol; 
+B01AD02: Alteplase; Alteplase
+B01AD04: Urokinase; Urokinase
+B01AD07: Reteplase; Retéplase
+B01AD11: Tenecteplase; Ténectéplase
+B01AE06: Bivalirudin; Bivalirudine
+B01AE07: Dabigatran etexilat; Dabigatran
+B01AX05: Fondaparinux; Fondaparinux
+B02: ANTIHÄMORRHAGIKA; Antihémorragiques
+B02AA02: Tranexamsäure; Acide tranexamique
+B02AB01: Aprotinin; Aprotinine
+B02AB02: Alfa1-Antitrypsin; Alpha-1 antitrypsine
+B02BA01: Phytomenadion; Phytoménadione
+B02BB01: Fibrinogen, human; Fibrinogène humain
+B02BC: Lokale Hämostatika; Hémostatiques locaux
+B02BC10: Fibrinogen, human; Fibrinogène humain
+B02BC30: Kombinationen; Associations d’hémostatiques locaux
+B02BD01: Gerinnungsfaktoren IX, II, VII und X in Kombination; Facteurs IX, II, VII et X
+B02BD02: Gerinnungsfaktor VIII; Facteur VIII
+B02BD03: Faktor-VIII-Inhibitor-bypass-Aktivität; Complexe prothrombique activé
+B02BD04: Gerinnungsfaktor IX; Facteur IX
+B02BD05: Gerinnungsfaktor VII; Facteur VII
+B02BD06: Von Willebrand-Faktor und Gerinnungsfaktor VIII in Kombination; Facteur Von Willebrand et facteur VIII de coagulation en association
+B02BD07: Gerinnungsfaktor XIII; Facteur XIII
+B02BD08: Eptacog alfa (aktiviert); Eptacog alfa (active)
+B02BD09: Nonacog alfa; Nonacog alfa
+B02BD10: Von Willebrand-Faktor; Facteur Von Willebrand
+B02BD11: Catridecacog; 
+B02BX04: Romiplostim; Romiplostim
+B02BX05: Eltrombopag; Eltrombopag
+B03: ANTIANÄMIKA; Préparations antianémiques
+B03AA01: Eisen(II)glycinsulfat; Sulfate ferreux - glycine
+B03AA02: Eisen(II)fumarat; Fumarate ferreux
+B03AA07: Eisen(II)sulfat; Sulfate ferreux
+B03AB05: Eisen(III)hydroxid-Polymaltose-Komplex; Dextriferron
+B03AC: Eisen dreiwertig, parenterale Zubereitungen; Fer trivalent, préparations parentérales
+B03AC01: Eisen(III)hydroxid-Polymaltose-Komplex; Dextriferron
+B03AC02: Eisen(III)oxid-Saccharose-Komplex; Oxyde de fer sucré
+B03AD03: Eisen(II)sulfat; Sulfate ferreux
+B03AD04: Eisen(III)hydroxid-Polymaltose-Komplex; Destriferron
+B03AE02: Eisen, Multivitamine und Folsäure; Fer, polyvitamines et acide folique
+B03AE10: Verschiedene Kombinationen; Associations diverses à base de fer
+B03BA01: Cyanocobalamin; Cyanocobalamine
+B03BA02: Cyanocobalamin-Tannin-Komplex; Complexe cyanocobalamine - tanin
+B03BA03: Hydroxocobalamin; Hydroxocobalamine
+B03BA53: Hydroxocobalamin, Kombinationen; Hydroxocobalamine en association
+B03BB01: Folsäure; Acide folique
+B03XA01: Erythropoietin; Erythropoïétine
+B03XA02: Darbepoetin alfa; Darbepoétine alfa
+B03XA03: Methoxy-Polyethylenglycol-Epoetin beta; Méthoxy polyéthylène glycol-époétine bêta
+B05: BLUTERSATZMITTEL UND PERFUSIONSLÖSUNGEN; Substituts du sang et solutions de perfusion
+B05AA: Blutersatzmittel und Plasmaproteinfraktionen; Substituts du sang et fractions protéiques plasmatiques
+B05AA01: Albumin; Albumine
+B05AA06: Gelatine-haltige Mittel; Gélatines
+B05AA07: Hydroxyethylstärke; Hydroxyéthylamidon
+B05BA: Lösungen zur parenteralen Ernährung; Solutions pour nutrition parentérale
+B05BA01: Aminosäuren; Acides aminés
+B05BA02: Fett-Emulsionen; Émulsions lipidiques
+B05BA03: Kohlenhydrate; Hydrates de carbone
+B05BA10: Kombinationen; Associations pour nutrition parentérale
+B05BB01: Elektrolyte; Électrolytes
+B05BB02: Elektrolyte mit Kohlenhydraten; Electrolytes avec hydrates de carbone
+B05BC01: Mannitol; Mannitol
+B05CA05: Taurolidin; Taurolidine
+B05CA08: Ethacridinlactat; Ethacridine lactate
+B05DA: Isotone Lösungen; Solutions isotoniques pour dialyse péritonéale
+B05DB: Hypertone Lösungen; Solutions hypertoniques pour dialyse péritonéale
+B05XA01: Kaliumchlorid; Potassium chlorure
+B05XA02: Natriumbicarbonat; Sodium bicarbonate
+B05XA03: Natriumchlorid; NaCl
+B05XA05: Magnesiumsulfat; Magnésium sulfate
+B05XA06: Kaliumphosphat, inkl. Kombinationen mit anderen Kaliumsalzen; Potassium phosphate, associations avec d’autres sels de potassium
+B05XA11: Magnesiumchlorid; Magnésium chlorure
+B05XA14: Dinatrium-1-glycerinphosphat; Sodium glycérophosphate
+B05XA31: Elektrolyte in Kombination mit anderen Mitteln; Electrolytes en association avec d’autres substances
+B05XB02: Alanylglutamin; Alanyl glutamine
+B05XC: Vitamine; Vitamines pour solutions intraveineuses
+B05XX: Andere Additiva zu i.v.-Lösungen; Autres additifs pour solutions intraveineuses
+B05ZB: Hämofiltrate; Solutions pour hémofiltration
+B06: ANDERE HÄMATOLOGIKA; Autres médicaments utilises en hématologie
+B06AA11: Bromelaine; Bromelaïne
+B06AB: Andere Hämprodukte; Autres médicaments dérivés de l’hème
+B06AC01: C1-Inhibitor, aus Plasma gewonnen; Inhibiteurs C1, dérivés du plasma
+C: KARDIOVASKULÄRES SYSTEM; Système cardio-vasculaire
+C01: HERZTHERAPIE; Médicaments en cardiologie
+C01AA05: Digoxin; Digoxine
+C01BB01: Lidocain; Lidocaïne
+C01BC03: Propafenon; Propafénone
+C01BD01: Amiodaron; Amiodarone
+C01BD05: Ibutilid; Ibutilide
+C01BD07: Dronedaron; Dronédarone
+C01BG11: Vernakalant; Vernakalant
+C01CA01: Etilefrin; Étiléfrine
+C01CA03: Norepinephrin; Norépinéphrine
+C01CA04: Dopamin; Dopamine
+C01CA06: Phenylephrin; Phényléphrine
+C01CA07: Dobutamin; Dobutamine
+C01CA17: Midodrin; Midodrine
+C01CA24: Epinephrin; Épinéphrine
+C01CE02: Milrinon; Milrinone
+C01DA02: Glyceroltrinitrat; Trinitrine
+C01DA08: Isosorbiddinitrat; Isosorbide dinitrate
+C01DA14: Isosorbidmononitrat; Isosorbide mononitrate
+C01DX12: Molsidomin; Molsidomine
+C01DX16: Nicorandil; Nicorandil
+C01EA01: Alprostadil; Alprostadil
+C01EB10: Adenosin; Adénosine
+C01EB18: Ranolazin; Ranolazine
+C01EX: Andere Herzmittel, Kombinationen; Autres médicaments en association en cardiologie
+C02: ANTIHYPERTONIKA; Antihypertenseurs
+C02AB01: Methyldopa (linksdrehend); Méthyldopa (lévogyre)
+C02AC01: Clonidin; Clonidine
+C02AC05: Moxonidin; Moxonidine
+C02CA04: Doxazosin; Doxazosine
+C02CA06: Urapidil; Urapidil
+C02DC01: Minoxidil; Minoxidil
+C02KX01: Bosentan; Bosentan
+C02KX02: Ambrisentan; Ambrisentan
+C02LA51: Reserpin und Diuretika, Kombinationen mit anderen Mitteln; Réserpine et diurétiques en association avec d’autres substances
+C03: DIURETIKA; Diurétiques
+C03AA03: Hydrochlorothiazid; Hydrochlorothiazide
+C03BA04: Chlortalidon; Chlortalidone
+C03BA08: Metolazon; Métolazone
+C03BA11: Indapamid; Indapamide
+C03CA01: Furosemid; Furosémide
+C03CA04: Torasemid; Torasémide
+C03DA01: Spironolacton; Spironolactone
+C03DA02: Kaliumcanrenoat; Canrénoate de potassium
+C03DA04: Eplerenon; Éplérénone
+C03EA01: Hydrochlorothiazid und Kalium sparende Mittel; Hydrochlorothiazide et épargneurs potassiques
+C03EB01: Furosemid und Kalium sparende Mittel; Furosémide et épargneurs potassiques
+C04: PERIPHERE VASODILATATOREN; Vasodilatateurs périphériques
+C04AB01: Phentolamin; Phentolamine
+C04AD03: Pentoxifyllin; Pentoxifylline
+C04AE01: Ergoloidmesylat; Ergoloïde mésylates
+C04AX: Andere periphere Vasodilatatoren; Autres vasodilatateurs périphériques
+C04AX21: Naftidrofuryl; Naftidrofuryl
+C05: VASOPROTEKTOREN; Vasculoprotecteurs
+C05AA04: Prednisolon; Prednisolone
+C05AA10: Fluocinolonacetonid; Fluocinolone acétonide
+C05AD01: Lidocain; Lidocaïne
+C05AE01: Glyceroltrinitrat; Trinitrate de glycéryle
+C05AX03: Andere Hämorrhoidenmittel, Kombinationen; Autres préparations antihémorroïdaires en association
+C05B: ANTIVARIKOSA; Thérapeutique antivariqueuse
+C05BA01: Heparinoide; Héparinoïde
+C05BA03: Heparin; Héparine
+C05BA53: Heparin, Kombinationen; Héparine en association
+C05BB02: Polidocanol (Lauromacrogol 400); Polidocanol
+C05CA01: Rutoside; Rutoside
+C05CA03: Diosmin; Diosmine
+C05CA04: Troxerutin; Troxérutine
+C05CA51: Rutosid, Kombinationen; Rutoside en association
+C05CA53: Diosmin, Kombinationen; Diosmine en association
+C05CA54: Troxerutin, Kombinationen; Troxérutine en association
+C05CX: Andere kapillarstabilisierende Mittel; Autres médicaments agissant sur les capillaires
+C07: BETA-ADRENOZEPTOR-ANTAGONISTEN; Bêtabloquants
+C07AA03: Pindolol; Pindolol
+C07AA05: Propranolol; Propranolol
+C07AA07: Sotalol; Sotalol
+C07AB02: Metoprolol; Métoprolol
+C07AB03: Atenolol; Aténolol
+C07AB07: Bisoprolol; Bisoprolol
+C07AB08: Celiprolol; Céliprolol
+C07AB09: Esmolol; Esmolol
+C07AB12: Nebivolol; Nébivolol
+C07AG01: Labetalol; Labétalol
+C07AG02: Carvedilol; Carvédilol
+C07BB07: Bisoprolol und Thiazide; Bisoprolol et thiazidiques
+C07CA02: Oxprenolol und andere Diuretika; Oxprénolol et autres diurétiques
+C07CA03: Pindolol und andere Diuretika; Pindolol et autres diurétiques
+C07CB02: Metoprolol und andere Diuretika; Métoprolol et autres diurétiques
+C07CB03: Atenolol und andere Diuretika; Aténolol et autres diurétiques
+C07FB02: Metoprolol und andere Antihypertonika; Métoprolol et autres antihypertenseurs
+C07FB03: Atenolol und andere Antihypertonika; Aténolol et autres antihypertenseurs
+C08: CALCIUMKANALBLOCKER; Inhibiteurs calciques
+C08CA01: Amlodipin; Amlodipine
+C08CA02: Felodipin; Félodipine
+C08CA03: Isradipin; Isradipine
+C08CA05: Nifedipin; Nifédipine
+C08CA06: Nimodipin; Nimodipine
+C08CA08: Nitrendipin; Nitrendipine
+C08CA09: Lacidipin; Lacidipine
+C08CA13: Lercanidipin; Lercanidipine
+C08CA16: Clevidipin; Clévidipine
+C08DA01: Verapamil; Vérapamil
+C08DA51: Verapamil, Kombinationen; Vérapamil en association
+C08DB01: Diltiazem; Diltiazem
+C09: MITTEL MIT WIRKUNG AUF DAS RENIN-ANGIOTENSIN-SYSTEM; Médicaments agissant sur le système rénine-angiotensine
+C09AA01: Captopril; Captopril
+C09AA02: Enalapril; Énalapril
+C09AA03: Lisinopril; Lisinopril
+C09AA04: Perindopril; Périndopril
+C09AA05: Ramipril; Ramipril
+C09AA06: Quinapril; Quinapril
+C09AA07: Benazepril; Bénazépril
+C09AA08: Cilazapril; Cilazapril
+C09AA10: Trandolapril; Trandolapril
+C09BA: ACE-Hemmer und Diuretika; Inhibiteurs de l’enzyme de conversion (IEC) et diurétiques
+C09BA01: Captopril und Diuretika; Captopril et diurétiques
+C09BA02: Enalapril und Diuretika; Enalapril et diurétiques
+C09BA03: Lisinopril und Diuretika; Lisinopril et diurétiques
+C09BA04: Perindopril und Diuretika; Périndopril et diurétiques
+C09BA05: Ramipril und Diuretika; Ramipril et diurétiques
+C09BA06: Quinapril und Diuretika; Quinapril et diurétiques
+C09BA07: Benazepril und Diuretika; Bénazépril et diurétiques
+C09BA08: Cilazapril und Diuretika; Cilazapril et diurétiques
+C09BA09: Fosinopril und Diuretika; Fosinopril et diurétiques
+C09BB: ACE-Hemmer und Calciumkanalblocker; Inhibiteurs de l’enzyme de conversion (IEC) et inhibiteurs calciques
+C09BB02: Enalapril und Lercanidipin; Enalapril et lercanidipine
+C09CA01: Losartan; Losartan
+C09CA02: Eprosartan; Éprosartan
+C09CA03: Valsartan; Valsartan
+C09CA04: Irbesartan; Irbésartan
+C09CA06: Candesartan; Candésartan
+C09CA07: Telmisartan; Telmisartan
+C09CA09: Azilsartan medoxomil; 
+C09DA: Angiotensin-II-Antagonisten und Diuretika; Antagonistes de l’angiotensine II et diurétiques
+C09DA01: Losartan und Diuretika; Losartan et diurétiques
+C09DA03: Valsartan und Diuretika; Valsartan et diurétiques
+C09DA04: Irbesartan und Diuretika; Irbesartan et diurétiques
+C09DA06: Candesartan und Diuretika; Candesartan et diurétiques
+C09DA07: Telmisartan und Diuretika; Telmisartan et diurétiques
+C09DA08: Olmesartan medoxomil und Diuretika; Olmésartan médoxomil et diurétiques
+C09DB: Angiotensin-II-Antagonisten und Calciumkanalblocker; Antagonistes de l’angiotensine II et inhibiteurs calciques
+C09DB01: Valsartan und Amlodipin; Valsartan et amlodipine
+C09DB04: Telmisartan und Amlodipin; Telmisartan et amlodipine
+C09DX01: Valsartan, Amlodipin und Hydrochlorothiazid; Valsartan, amlodipine et hydrochlorothiazide
+C09DX03: Olmesartan medoxomil, Amlodipin und Hydrochlorothiazid; 
+C09XA02: Aliskiren; Aliskirène
+C09XA52: Aliskiren und Hydrochlorothiazid; Aliskirène et hydrochlorothiazide
+C09XA53: Aliskiren und Amlodipin; Aliskirène et amlodipine
+C09XA54: Aliskiren, Amlodipin und Hydrochlorothiazid; Aliskirène, amlodipine et hydrochlorothiazide
+C10: MITTEL, DIE DEN LIPIDSTOFFWECHSEL BEEINFLUSSEN; Médicaments modificateurs des lipides
+C10AA01: Simvastatin; Simvastatine
+C10AA03: Pravastatin; Pravastatine
+C10AA04: Fluvastatin; Fluvastatine
+C10AA05: Atorvastatin; Atorvastatine
+C10AA07: Rosuvastatin; Rosuvastatine
+C10AB02: Bezafibrat; Bézafibrate
+C10AB04: Gemfibrozil; Gemfibrozil
+C10AB05: Fenofibrat; Fénofibrate
+C10AB08: Ciprofibrat; Ciprofibrate
+C10AC: Gallensäure bindende Mittel; Séquestrants d’acides biliaires
+C10AC01: Colestyramin; Cholestyramine
+C10AC02: Colestipol; Colestipol
+C10AD06: Acipimox; Acipimox
+C10AD52: Nicotinsäure, Kombinationen; Acide nicotinique en association
+C10AX06: Omega-3-Fettsäuren inkl. andere Ester und Säuren; Triglycérides oméga 3
+C10AX09: Ezetimib; Ezétimibe
+C10BA02: Simvastatin und Ezetimib; Simvastatine et ézétimibe
+C10BX03: Atorvastatin und Amlodipin; Atorvastatine et amlodipine
+D: DERMATIKA; Médicaments dermatologiques
+D01: ANTIMYKOTIKA ZUR DERMATOLOGISCHEN ANWENDUNG; Antifongiques à usage dermatologique
+D01AA01: Nystatin; Nystatine
+D01AC01: Clotrimazol; Clotrimazole
+D01AC02: Miconazol; Miconazole
+D01AC03: Econazol; Éconazole
+D01AC05: Isoconazol; Isoconazole
+D01AC08: Ketoconazol; Kétoconazole
+D01AC11: Oxiconazol; Oxiconazole
+D01AC20: Kombinationen; Associations d’azolés à usage topique
+D01AE04: Undecylensäure; Undécylénique acide
+D01AE14: Ciclopirox; Ciclopiroxolamine
+D01AE15: Terbinafin; Terbinafine
+D01AE16: Amorolfin; Amorolfine
+D01AE20: Kombinationen; Associations d’autres antifongiques à usage topique
+D01BA02: Terbinafin; Terbinafine
+D02: EMOLLIENTIA UND HAUTSCHUTZMITTEL; Émollients et protecteurs
+D02AB: Zink-haltige Mittel; Médicaments à base de zinc
+D02AC: Vaseline und Fett-haltige Mittel; Paraffine et produits gras
+D02AE01: Harnstoff; Urée
+D02AE51: Harnstoff, Kombinationen; Urée en association
+D02AF: Salicylsäure-haltige Zubereitungen; Préparations à base d’acide salicylique
+D02BB01: Betacaroten; Bétacarotène
+D03: ZUBEREITUNGEN ZUR BEHANDLUNG VON WUNDEN UND GESCHWÜREN; Préparations pour le traitement des plaies et ulcères
+D03AA: Lebertransalben; Préparations à base d’huile de foie de morue
+D03AX: Andere Wundbehandlungsmittel; Autres cicatrisants
+D03AX03: Dexpanthenol; Dexpanthénol
+D03AX05: Hyaluronsäure; Hyaluronique acide
+D03BA: Proteolytische Enzyme; Enzymes protéolytiques
+D03BA02: Kollagenase; Clostridiopeptidase
+D04: ANTIPRURIGINOSA, INKL. ANTIHISTAMINIKA, ANÄSTHETIKA ETC.; Antiprurigineux, incluant antihistaminiques,
+D04AA13: Dimetinden; Dimétindène
+D04AB: Lokalanästhetika; Anesthésiques à usage topique
+D04AB01: Lidocain; Lidocaïne
+D04AB05: Chinisocain; Quinisocaïne
+D04AX: Andere Antipruriginosa; Autres antiprurigineux
+D05: ANTIPSORIATIKA; Médicaments contre le psoriasis
+D05AX02: Calcipotriol; Calcipotriol
+D05AX03: Calcitriol; Calcitriol
+D05AX04: Tacalcitol; Tacalcitol
+D05AX52: Calcipotriol, Kombinationen; Calcipotriol en association
+D05BB02: Acitretin; Acitrétine
+D06: ANTIBIOTIKA UND CHEMOTHERAPEUTIKA ZUR DERMATOLOGISCHEN ANWENDUNG; Antibiotiques et chimiothérapie à usage dermatologique
+D06AX01: Fusidinsäure; Fusidique acide
+D06AX04: Neomycin; Néomycine
+D06AX07: Gentamicin; Gentamicine
+D06AX09: Mupirocin; Mupirocine
+D06BA01: Sulfadiazin-Silber; Sulfadiazine argentique
+D06BA51: Sulfadiazin-Silber, Kombinationen; Sulfadiazine argentique en association
+D06BB03: Aciclovir; Aciclovir
+D06BB04: Podophyllotoxin; Podophyllotoxine
+D06BB06: Penciclovir; Penciclovir
+D06BB10: Imiquimod; Imiquimod
+D06BB12: Sinecatechins; 
+D06BX01: Metronidazol; Métronidazole
+D07: CORTICOSTEROIDE, DERMATOLOGISCHE ZUBEREITUNGEN; Corticoïdes, Préparations dermatologiques
+D07AA02: Hydrocortison; Hydrocortisone
+D07AA03: Prednisolon; Prednisolone
+D07AB01: Clobetason; Clobétasone
+D07AB02: Hydrocortisonbutyrat; Hydrocortisone butyrate
+D07AB03: Flumetason; Flumétasone
+D07AB08: Desonid; Désonide
+D07AC01: Betamethason; Bétaméthasone
+D07AC04: Fluocinolonacetonid; Fluocinolone acétonide
+D07AC08: Fluocinonid; Fluocinonide
+D07AC13: Mometason; Mométasone
+D07AC14: Methylprednisolonaceponat; Méthylprednisolone
+D07AC17: Fluticason; Fluticasone
+D07AC18: Prednicarbat; Prednicarbate
+D07AD01: Clobetasol; Clobétasol
+D07BC: Corticosteroide, stark wirksam, Kombinationen mit Antiseptika; Corticoïdes d’activité forte et antiseptiques
+D07CA01: Hydrocortison und Antibiotika; Hydrocortisone et antibiotiques
+D07CC01: Betamethason und Antibiotika; Bétaméthasone et antibiotiques
+D07CC02: Fluocinolonacetonid und Antibiotika; Fluocinolone acétonide et antibiotiques
+D07CC05: Fluocinonid und Antibiotika; Fluocinonide et antibiotiques
+D07XA01: Hydrocortison; Hydrocortisone, autres associations
+D07XA02: Prednisolon; Prednisolone, autres associations
+D07XB01: Flumetason; Flumétasone, autres associations
+D07XB02: Triamcinolon; Triamcinolone, autres associations
+D07XB05: Dexamethason; Dexaméthasone, autres associations
+D07XC01: Betamethason; Bétaméthasone
+D07XD: Corticosteroide, sehr stark wirksam, andere Kombinationen; Corticoïdes d’activité très forte, autres associations
+D08: ANTISEPTIKA UND DESINFEKTIONSMITTEL; Antiseptiques et désinfectants
+D08AC02: Chlorhexidin; Chlorhexidine
+D08AC05: Polihexanid; Polihexanide
+D08AC52: Chlorhexidin, Kombinationen; Chlorhexidine en association
+D08AE04: Triclosan; Triclosan
+D08AG02: Povidon-Iod; Polyvidone iodée
+D08AJ: Quartäre Ammonium-Verbindungen; Ammoniums quaternaires
+D08AJ01: Benzalkonium; Benzalkonium
+D08AX: Andere Antiseptika und Desinfektionsmittel; Autres antiseptiques et désinfectants
+D08AX05: Isopropanol; Isopropanol
+D08AX07: Natriumhypochlorit; Sodium hypochlorite
+D08AX08: Ethanol; Éthanol
+D08AX53: Propanol, Kombinationen; Propanol en association
+D10: AKNEMITTEL; Préparations antiacnéiques
+D10AB02: Schwefel; Soufre
+D10AD01: Tretinoin; Trétinoïne
+D10AD03: Adapalen; Adapalène
+D10AD04: Isotretinoin; Isotrétinoïne
+D10AD05: Motretinid; Motrétinide
+D10AD53: Adapalen, Kombinationen; Adapalène en association
+D10AE01: Benzoylperoxid; Benzoyle peroxyde
+D10AE51: Benzoylperoxid, Kombinationen; Benzoyle peroxyde en association
+D10AF01: Clindamycin; Clindamycine
+D10AF02: Erythromycin; Erythromycine
+D10AF51: Clindamycin, Kombinationen; Clindamycine en association
+D10AX03: Azelainsäure; Acide azélaïque
+D10AX30: Verschiedene Kombinationen; Associations diverses antiacnéiques
+D10BA01: Isotretinoin; Isotrétinoïne
+D11: ANDERE DERMATIKA; Autres Préparations dermatologiques
+D11AC03: Selen-haltige Verbindungen; Dérivés du sélénium
+D11AC08: Schwefel-haltige Verbindungen; Dérivés soufres
+D11AF: Warzenmittel und Keratolytika; Verrucides et coricides
+D11AH01: Tacrolimus; Tacrolimus
+D11AH02: Pimecrolimus; Pimécrolimus
+D11AH04: Alitretinoin; 
+D11AX: Andere Dermatika; Autres médicaments dermatologiques
+D11AX01: Minoxidil; Minoxidil à usage topique
+D11AX04: Lithiumsuccinat; Lithium succinate
+D11AX10: Finasterid; Finastéride
+D11AX11: Hydrochinon; Hydroquinone
+G: UROGENITALSYSTEM UND SEXUALHORMONE; Système génito-urinaire et hormones sexuelles
+G01: GYNÄKOLOGISCHE ANTIINFEKTIVA UND ANTISEPTIKA; Anti-infectieux et antiseptiques à usage gynécologique
+G01AA10: Clindamycin; Clindamycine
+G01AC05: Dequalinium; Déqualinium
+G01AD01: Milchsäure; Lactique acide
+G01AF02: Clotrimazol; Clotrimazole
+G01AF04: Miconazol; Miconazole
+G01AF05: Econazol; Econazole
+G01AF07: Isoconazol; Isoconazole
+G01AF17: Oxiconazol; Oxiconazole
+G01AX: Andere Antiinfektiva und Antiseptika; Autres anti-infectieux et antiseptiques
+G01AX12: Ciclopirox; Ciclopirox
+G02: ANDERE GYNÄKOLOGIKA; Autres médicaments gynécologiques
+G02AB01: Methylergometrin; Méthylergométrine
+G02AD02: Dinoproston; Dinoprostone
+G02AD05: Sulproston; Sulprostone
+G02BA03: Plastik-IUP mit Gestagen; DIU en plastique avec des progestatifs
+G02BB01: Vaginalring mit Gestagenen und Estrogenen; Anneau vaginal avec progestérone et estrogène
+G02CB03: Cabergolin; Cabergoline
+G02CB04: Quinagolid; Quinagolide
+G02CX: Andere Gynäkologika; Autres médicaments gynécologiques
+G02CX01: Atosiban; Atosiban
+G02CX04: Ovarialextrakt; 
+G03: SEXUALHORMONE UND MODULATOREN DES GENITALSYSTEMS; Hormones sexuelles et modulateurs de la fonction génitale
+G03AA: Gestagene und Estrogene, fixe Kombinationen; Estroprogestatifs en association fixe
+G03AA07: Levonorgestrel und Estrogen; Lévonorgestrel et estrogène
+G03AA09: Desogestrel und Estrogen; Désogestrel et estrogène
+G03AA10: Gestoden und Estrogen; Gestodène et estrogène
+G03AA11: Norgestimat und Estrogen; Norgestimate et estrogène
+G03AA12: Drospirenon und Estrogen; Drospirénone et estrogène
+G03AA13: Norelgestromin und Estrogen; Norelgestromine et estrogène
+G03AA14: Nomegestrol und Estrogen; Nomégestrol et estrogène
+G03AA15: Chlormadinon und Estrogen; Chlormadinone et estrogène
+G03AB: Gestagene und Estrogene, Sequenzialpräparate; Estroprogestatifs pour administration séquentielle
+G03AB03: Levonorgestrel und Estrogen; Lévonorgestrel et estrogène
+G03AB04: Norethisteron und Estrogen; Norethistérone et estrogène
+G03AB05: Desogestrel und Estrogen; Désogestrel et estrogène
+G03AB06: Gestoden und Estrogen; Gestodène et estrogène
+G03AC01: Norethisteron; Norethistérone
+G03AC06: Medroxyprogesteron; Médroxyprogestérone
+G03AC08: Etonogestrel; Étonogestrel
+G03AC09: Desogestrel; Désogestrel
+G03BA03: Testosteron; Testostérone
+G03CA03: Estradiol; Estradiol
+G03CA04: Estriol; Estriol
+G03CA09: Promestrien; Promestriène
+G03CC: Estrogene, Kombinationen mit anderen Mitteln; Estrogènes en association avec d’autres substances
+G03CX01: Tibolon; 
+G03D: GESTAGENE; Progestatifs
+G03DA02: Medroxyprogesteron; Médroxyprogestérone
+G03DA04: Progesteron; Progestérone
+G03DB01: Dydrogesteron; Dydrogestérone
+G03DC02: Norethisteron; Noréthistérone
+G03EA03: Prasteron und Estrogen; Prastérone et estrogène
+G03FA01: Norethisteron und Estrogen; Noréthistérone et estrogène
+G03FA12: Medroxyprogesteron und Estrogen; Médroxyprogestérone et estrogène
+G03FA14: Dydrogesteron und Estrogen; Dydrogestérone et estrogène
+G03FA17: Drospirenon und Estrogen; Drospirénone et estrogène
+G03FB01: Norgestrel und Estrogen; Norgestrel et estrogène
+G03FB05: Norethisteron und Estrogen; Norethistérone et estrogène
+G03FB08: Dydrogesteron und Estrogen; Dydrogestérone et estrogène
+G03G: GONADOTROPINE UND ANDERE OVULATIONSAUSLÖSER; Gonadotrophines et autres stimulants de l’ovulation
+G03GA01: Choriongonadotrophin; Gonadotrophine chorionique
+G03GA02: Humanes menopausales Gonadotrophin; Gonadotrophine ménopausique humaine
+G03GA04: Urofollitropin; Urofollitrophine
+G03GA05: Follitropin alfa; Follitropine
+G03GA06: Follitropin beta; Follitropine bêta
+G03GA07: Lutropin alfa; Lutropine alfa
+G03GA08: Choriongonadotropin alfa; Choriogonadotropine alfa
+G03GB02: Clomifen; Clomifène
+G03HA01: Cyproteron; Cyprotérone
+G03HB01: Cyproteron und Estrogen; Cyprotérone et estrogène
+G03XB01: Mifepriston; Mifépristone
+G03XC01: Raloxifen; Raloxifène
+G03XC02: Bazedoxifen; Bazédoxifène
+G04: UROLOGIKA; Médicaments urologiques
+G04BC: Harnkonkrement lösende Mittel; Solubilisants des calculs urinaires
+G04BD02: Flavoxat; Flavoxate
+G04BD04: Oxybutynin; Oxybutynine
+G04BD07: Tolterodin; Toltérodine
+G04BD08: Solifenacin; Solifénacine
+G04BD09: Trospium; Trospium
+G04BD10: Darifenacin; Darifénacine
+G04BD11: Fesoterodin; Fésotérodine
+G04BE01: Alprostadil; Alprostadil
+G04BE03: Sildenafil; Sildénafil
+G04BE08: Tadalafil; Tadalafil
+G04BE09: Vardenafil; Vardénafil
+G04CA01: Alfuzosin; Alfuzosine
+G04CA02: Tamsulosin; Tamsulosine
+G04CA03: Terazosin; Térazosine
+G04CA52: Tamsulosin und Dutasterid; Tamsulosine et dutastéride
+G04CB01: Finasterid; Finastéride
+G04CB02: Dutasterid; Dutastéride
+H: SYSTEMISCHE HORMONPRÄPARATE, EXKL. SEXUALHORMONE UND INSULINE; Hormones systémiques, hormones sexuelles exclues
+H01: HYPOPHYSEN- UND HYPOTHALAMUSHORMONE UND ANALOGA; Hormones hypophysaires, hypothalamiques, hormones de l’ante hypophyse, analogues
+H01AA02: Tetracosactid; Tétracosactide
+H01AB01: Thyrotropin; Thyrotrophine
+H01AC01: Somatropin; Somatropine
+H01AX01: Pegvisomant; Pegvisomant
+H01BA02: Desmopressin; Desmopressine
+H01BA04: Terlipressin; Terlipressine
+H01BB02: Oxytocin; Oxytocine
+H01BB03: Carbetocin; Carbétocine
+H01CA01: Gonadorelin; Gonadoréline
+H01CA02: Nafarelin; Nafaréline
+H01CA03: Histrelin; Histréline
+H01CB01: Somatostatin; Somatostatine
+H01CB02: Octreotid; Ocréotide
+H01CB03: Lanreotid; Lanréotide
+H01CB05: Pasireotid; Pasiréotide
+H01CC01: Ganirelix; Ganirélix
+H01CC02: Cetrorelix; Cétrorélix
+H02: CORTICOSTEROIDE ZUR SYSTEMISCHEN ANWENDUNG; Corticoïdes à usage systémique
+H02AA02: Fludrocortison; Fludrocortisone
+H02AB01: Betamethason; Bétaméthasone
+H02AB02: Dexamethason; Dexaméthasone
+H02AB04: Methylprednisolon; Méthylprednisolone
+H02AB06: Prednisolon; Prednisolone
+H02AB07: Prednison; Prednisone
+H02AB08: Triamcinolon; Triamcinolone
+H02AB09: Hydrocortison; Hydrocortisone
+H02AB13: Deflazacort; Déflazacort
+H02BX01: Methylprednisolon, Kombinationen; Méthylprednisolone en association
+H03: SCHILDDRÜSENTHERAPIE; Médicaments de la thyroïde
+H03AA01: Levothyroxin-Natrium; Lévothyroxine
+H03AA03: Kombinationen von Levothyroxin und Liothyronin; Associations de lévothyroxine et liothyronine
+H03BA02: Propylthiouracil; Propylthiouracile
+H03BB01: Carbimazol; Carbimazole
+H04: PANKREASHORMONE; Hormones pancréatiques
+H04AA01: Glucagon; Glucagon
+H05: CALCIUMHOMÖOSTASE; Médicaments de l’équilibre calcique
+H05AA02: Teriparatid; Tériparatide
+H05BA01: Calcitonin (Lachs, synthetisch); Calcitonine (synthétique de saumon)
+H05BX01: Cinacalcet; Cinacalcet
+H05BX02: Paricalcitol; 
+J: ANTIINFEKTIVA ZUR SYSTEMISCHEN ANWENDUNG; Anti-infectieux généraux à usage systémique
+J01: ANTIBIOTIKA ZUR SYSTEMISCHEN ANWENDUNG; Antibactériens à usage systémique
+J01AA02: Doxycyclin; Doxycycline
+J01AA04: Lymecyclin; Limécycline
+J01AA08: Minocyclin; Minocycline
+J01AA12: Tigecyclin; Tigécycline
+J01CA04: Amoxicillin; Amoxicilline
+J01CE01: Benzylpenicillin; Benzylpénicilline
+J01CE02: Phenoxymethylpenicillin; Pénicilline V (phénoxyméthylpénicilline)
+J01CF05: Flucloxacillin; Flucloxacilline
+J01CR02: Amoxicillin und Enzym-Inhibitoren; Amoxicilline et acide clavulanique
+J01CR05: Piperacillin und Enzym-Inhibitoren; Pipéracilline et inhibiteur d’enzyme
+J01DB04: Cefazolin; Céfazoline
+J01DC02: Cefuroxim; Céfuroxime
+J01DC04: Cefaclor; Céfaclor
+J01DD02: Ceftazidim; Ceftazidime
+J01DD04: Ceftriaxon; Ceftriaxone
+J01DD08: Cefixim; Céfixime
+J01DD13: Cefpodoxim; Cefpodoxime
+J01DE01: Cefepim; Céfépime
+J01DF01: Aztreonam; Aztréonam
+J01DH02: Meropenem; Méropénème
+J01DH04: Doripenem; Doripénème
+J01DH51: Imipenem und Enzym-Inhibitoren; Imipénème et inhibiteur d’enzyme
+J01EE01: Sulfamethoxazol und Trimethoprim; Sulfaméthoxazole et triméthoprime
+J01FA01: Erythromycin; Erythromycine
+J01FA09: Clarithromycin; Clarithromycine
+J01FA10: Azithromycin; Azithromycine
+J01FF01: Clindamycin; Clindamycine
+J01GB01: Tobramycin; Tobramycine
+J01GB03: Gentamicin; Gentamicine
+J01GB06: Amikacin; Amikacine
+J01MA01: Ofloxacin; Ofloxacine
+J01MA02: Ciprofloxacin; Ciprofloxacine
+J01MA06: Norfloxacin; Norfloxacine
+J01MA12: Levofloxacin; Lévofloxacine
+J01MA14: Moxifloxacin; Moxifloxacine
+J01XA01: Vancomycin; Vancomycine
+J01XA02: Teicoplanin; Téicoplanine
+J01XB01: Colistin; Colistine
+J01XC01: Fusidinsäure; Acide fusidique
+J01XD01: Metronidazol; Métronidazole
+J01XE01: Nitrofurantoin; Nitrofurantoïne
+J01XX01: Fosfomycin; Fosfomycine
+J01XX08: Linezolid; Linézolide
+J01XX09: Daptomycin; Daptomycine
+J02: ANTIMYKOTIKA ZUR SYSTEMISCHEN ANWENDUNG; Antimycosiques à usage systémique
+J02AA01: Amphotericin B; Amphotéricine B
+J02AC01: Fluconazol; Fluconazole
+J02AC02: Itraconazol; Itraconazole
+J02AC03: Voriconazol; Voriconazole
+J02AC04: Posaconazol; Posaconazole
+J02AX01: Flucytosin; Flucytosine
+J02AX04: Caspofungin; Caspofungine
+J02AX05: Micafungin; Micafongine
+J02AX06: Anidulafungin; Anidulafungine
+J04: MITTEL GEGEN MYKOBAKTERIEN; Antimycobactériens
+J04AB02: Rifampicin; Rifampicine
+J04AB04: Rifabutin; Rifabutine
+J04AC01: Isoniazid; Isoniazide
+J04AK01: Pyrazinamid; Pyrazinamide
+J04AK02: Ethambutol; Ethambutol
+J04AM02: Rifampicin und Isoniazid; Rifampicine en association
+J04AM05: Rifampicin, Pyrazinamid und Isoniazid; Rifampicine, pyrazinamide et isoniazide
+J05: ANTIVIRALE MITTEL ZUR SYSTEMISCHEN ANWENDUNG; Antiviraux à usage systémique
+J05A: DIREKT WIRKENDE ANTIVIRALE MITTEL; Antiviraux à action directe
+J05AB01: Aciclovir; Aciclovir
+J05AB04: Ribavirin; Ribavirine
+J05AB06: Ganciclovir; Ganciclovir
+J05AB09: Famciclovir; Famciclovir
+J05AB11: Valaciclovir; Valaciclovir
+J05AB12: Cidofovir; Cidofovir
+J05AB14: Valganciclovir; Valganciclovir
+J05AD01: Foscarnet; Foscarnet
+J05AE01: Saquinavir; Saquinavir
+J05AE03: Ritonavir; Ritonavir
+J05AE04: Nelfinavir; Nelfinavir
+J05AE09: Tipranavir; Tipranavir
+J05AE11: Telaprevir; Télaprévir
+J05AE12: Boceprevir; Bocéprévir
+J05AF02: Didanosin; Didanosine
+J05AF04: Stavudin; Stavudine
+J05AF05: Lamivudin; Lamivudine
+J05AF06: Abacavir; Abacavir
+J05AF07: Tenofovir disoproxil; Ténofovir
+J05AF08: Adefovir dipivoxil; Adéfovir
+J05AF09: Emtricitabin; Emtricitabine
+J05AF10: Entecavir; Entécavir
+J05AF11: Telbivudin; Telbivudine
+J05AG01: Nevirapin; Névirapine
+J05AG03: Efavirenz; Efavirenz
+J05AG04: Etravirin; Étravirine
+J05AG05: Rilpivirin; Rilpivirine
+J05AH01: Zanamivir; Zanamivir
+J05AH02: Oseltamivir; Oseltamivir
+J05AR01: Zidovudin und Lamivudin; Zidovudine et lamivudine
+J05AR02: Lamivudin und Abacavir; Lamivudine et abacavir
+J05AR03: Tenofovir disoproxil und Emtricitabin; Ténofovir, disoproxil et emtricitabine
+J05AR04: Zidovudin, Lamivudin und Abacavir; Zidovudine, lamivudine et abacavir
+J05AR06: Emtricitabin, Tenofovir disoproxil und Efavirenz; Emtricitabine, ténofovir et efavirenz
+J05AR08: Emtricitabin, Tenofovir disoproxil und Rilpivirin; Emcitrabine, ténofovir et rilpivirine
+J05AX07: Enfuvirtid; Enfuvirtide
+J05AX08: Raltegravir; Raltégravir
+J05AX09: Maraviroc; Maraviroc
+J06: IMMUNSERA UND IMMUNGLOBULINE; Immunsérums et immunoglobulines
+J06AA: Immunsera; Immunsérums
+J06BA01: Immunglobuline, normal human, zur extravasalen Anwendung; Immunoglobulines humaines normales [extravasculaires]
+J06BA02: Immunglobuline, normal human, zur intravasalen Anwendung; Immunoglobulines humaines normales [intravasculaires]
+J06BB01: Anti-D(rh)-Immunglobulin; Immunoglobuline anti-D (RH)
+J06BB02: Tetanus-Immunglobulin; Immunoglobuline antitétanique
+J06BB03: Varicella/Zoster-Immunglobulin; Immunoglobuline antivaricelle-zona
+J06BB04: Hepatitis-B-Immunglobulin; Immunoglobuline anti-hépatite B
+J06BB05: Tollwut-Immunglobulin; Immunoglobuline antirabique
+J06BB09: Cytomegalievirus-Immunglobulin; Immunoglobuline anticytomégalovirus
+J06BB16: Palivizumab; Palivizumab
+J07: IMPFSTOFFE; Vaccins
+J07AE01: Cholera, inaktiviert, ganze Zelle; Vibrion cholérique inactivé entier
+J07AG01: Haemophilus influenzae B, gereinigtes Antigen konjugiert; Haemophilus influenzae B, antigène purifié conjugué
+J07AH: Meningokokken-Impfstoffe; Vaccins antiméningococciques
+J07AH04: Meningokokken tetravalent (A, C, Y, W-135), gereinigtes Polysaccharid-Antigen; Méningocoques, antigènes polysaccharidiques tétravalents
+J07AH07: Meningokokken C, gereinigtes Polysaccharid-Antigen, konjugiert; Méningocoque type C, antigènes polysaccharidiques purifiés
+J07AH08: Meningokokken tetravalent (A, C, Y, W-135), gereinigtes Polysaccharid-Antigen, konjugiert; Méningocoque types A, C, W135 et Y, antigènes polysaccharadiques polyvalents
+J07AJ52: Pertussis, gereinigtes Antigen, Kombinationen mit Toxoiden; Coqueluche, antigène purifié en association avec des anatoxines
+J07AL01: Pneumokokken, gereinigtes Polysaccharid-Antigen; Pneumococcus, antigènes polysaccharidiques purifiés
+J07AL02: Pneumokokken, gereinigtes Polysaccharid-Antigen, konjugiert; Pneumococcus, antigènes polysaccharidiques purifiés conjugués
+J07AM01: Tetanus-Toxoid; Anatoxine tétanique
+J07AM51: Tetanus-Toxoid, Kombinationen mit Diphtherie-Toxoid; Anatoxine tétanique en association avec anatoxine diphtérique
+J07AP01: Typhus, oral, lebend abgeschwächt; Typhoïde, bactérie vivante attenuée orale
+J07AX: Andere bakterielle Impfstoffe; Autres vaccins bactériens
+J07BA01: FSME, inaktiviert, ganzes Virus; Encéphalite transmise par les tiques, virus entier inactivé
+J07BA02: Encephalitis, japanische, inaktiviert, ganzes Virus; Encéphalite japonaise, virus entier inactivé
+J07BB02: Influenza, inaktiviert, Spaltvirus oder Oberflächenantigen; Grippe, antigène purifé
+J07BC01: Hepatitis B, gereinigtes Antigen; Vaccins contre l’hépatite B
+J07BC02: Hepatitis A, inaktiviert, ganzes Virus; Vaccins contre l’hépatite A
+J07BC20: Kombinationen; Associations de vaccins contre l’hépatite
+J07BD01: Masern, lebend abgeschwächt; Rougeole, virus vivant attenué
+J07BD52: Masern, Kombinationen mit Mumps und Röteln, lebend abgeschwächt; Rougeole en association aux oreillons et à la rubéole, virus vivants atténués
+J07BD54: Masern, Kombinationen mit Mumps, Röteln und Varicella, lebend abgeschwächt; Rougeole en association à oreillons, varicelle, rubéole, virus vivants atténués
+J07BF03: Poliomyelitis, trivalent, inaktiviert, ganzes Virus; Poliomyélite, virus entier trivalent inactivé
+J07BG01: Tollwut, inaktiviert, ganzes Virus; Rage, virus entier inactivé
+J07BH01: Rotavirus, lebend abgeschwächt; Rotavirus vivant atténué
+J07BK: Varicella Zoster Impfstoffe; Vaccins contre la varicelle
+J07BK01: Varicella, lebend abgeschwächt; Varicelle, virus vivant atténué
+J07BK02: Zoster Virus, lebend abgeschwächt; 
+J07BL01: Gelbfieber, lebend abgeschwächt; Fièvre jaune, virus vivant atténué
+J07BM01: Humaner Papillomvirus-Impfstoff (Typen 6,11,16,18); Papillomavirus (types humains 6, 11, 16, 18)
+J07BM02: Humaner Papillomvirus-Impfstoff (Typen 16,18); Papillomavirus (types humains 16, 18)
+J07BX: Andere virale Impfstoffe; Autres vaccins viraux
+J07CA01: Diphtherie-Poliomyelitis-Tetanus; Diphtérie - poliomyélite - tétanos
+J07CA02: Diphtherie-Pertussis-Poliomyelitis-Tetanus; Diphtérie - coqueluche - poliomyélite - tétanos
+J07CA06: Diphtherie-Haemophilus-influenzae B-Pertussis-Poliomyelitis-Tetanus; Diphtérie - hémophilus influenzae B - coqueluche - poliomyélite - tétanos
+L: ANTINEOPLASTISCHE UND IMMUNMODULIERENDE MITTEL; Antinéoplasiques et immunomodulateurs
+L01: ANTINEOPLASTISCHE MITTEL; Antinéoplasiques
+L01AA01: Cyclophosphamid; Cyclophosphamide
+L01AA02: Chlorambucil; Chlorambucil
+L01AA03: Melphalan; Melphalan
+L01AA06: Ifosfamid; Ifosfamide
+L01AA09: Bendamustin; Bendamustine
+L01AB01: Busulfan; Busulfan
+L01AX03: Temozolomid; Témozolomide
+L01AX04: Dacarbazin; Dacarbazine
+L01BA01: Methotrexat; Méthotrexate
+L01BA03: Raltitrexed; Raltitrexed
+L01BA04: Pemetrexed; Pemetrexed
+L01BB02: Mercaptopurin; Mercaptopurine
+L01BB03: Tioguanin; Thioguanine
+L01BB04: Cladribin; Cladribine
+L01BB05: Fludarabin; Fludarabine
+L01BB07: Nelarabin; Nélarabine
+L01BC: Pyrimidin-Analoga; Analogues de la pyrimidine
+L01BC01: Cytarabin; Cytarabine
+L01BC02: Fluorouracil; Fluorouracile
+L01BC05: Gemcitabin; Gemcitabine
+L01BC06: Capecitabin; Capécitabine
+L01CA01: Vinblastin; Vinblastine
+L01CA02: Vincristin; Vincristine
+L01CA03: Vindesin; Vindésine
+L01CA04: Vinorelbin; Vinorelbine
+L01CB01: Etoposid; Étoposide
+L01CD01: Paclitaxel; Paclitaxel
+L01CD02: Docetaxel; Docétaxel
+L01CX01: Trabectedin; Trabectédine
+L01DA01: Dactinomycin; Dactinomycine
+L01DB01: Doxorubicin; Doxorubicine
+L01DB03: Epirubicin; Epirubicine
+L01DB06: Idarubicin; Idarubicine
+L01DB07: Mitoxantron; Mitoxantrone
+L01DC01: Bleomycin; Bléomycine
+L01DC04: Ixabepilon; Ixabépilone
+L01XA01: Cisplatin; Cisplatine
+L01XA02: Carboplatin; Carboplatine
+L01XA03: Oxaliplatin; Oxaliplatine
+L01XB01: Procarbazin; Procarbazine
+L01XC02: Rituximab; Rituximab
+L01XC03: Trastuzumab; Trastuzumab
+L01XC06: Cetuximab; Cétuximab
+L01XC07: Bevacizumab; Bévacizumab
+L01XC08: Panitumumab; Panitumumab
+L01XC10: Ofatumumab; Ofatumumab
+L01XC11: Ipilimumab; Ipilimumab
+L01XD03: Methylaminolevulinat; Méthyl aminolévulinate
+L01XD04: Aminolevulinsäure; Acide 5-aminolévulinique
+L01XE01: Imatinib; Imatinib
+L01XE03: Erlotinib; Erlotinib
+L01XE04: Sunitinib; Sunitinib
+L01XE05: Sorafenib; Sorafénib
+L01XE06: Dasatinib; Dasatinib
+L01XE07: Lapatinib; Lapatinib
+L01XE08: Nilotinib; Nilotinib
+L01XE09: Temsirolimus; Temsirolimus
+L01XE10: Everolimus; Evérolimus
+L01XE11: Pazopanib; Pazopanib
+L01XE12: Vandetanib; Vandétanib
+L01XE15: Vemurafenib; Vémurafénib
+L01XE16: Crizotinib; Crizotinib
+L01XE17: Axitinib; Axitinib
+L01XE18: Ruxolitinib; Ruxolitinib
+L01XX01: Amsacrin; Amsacrine
+L01XX05: Hydroxycarbamid; Hydroxycarbamide
+L01XX11: Estramustin; Estramustine
+L01XX14: Tretinoin; Trétinoïne
+L01XX17: Topotecan; Topotécan
+L01XX19: Irinotecan; Irinotécan
+L01XX23: Mitotan; Mitotane
+L01XX32: Bortezomib; Bortézomib
+L01XX35: Anagrelid; Anagrélide
+L01XX41: Eribulin; Eribuline
+L02: ENDOKRINE THERAPIE; Thérapeutique endocrine
+L02AA02: Polyestradiolphosphat; Polyestradiol phosphate
+L02AB02: Medroxyprogesteron; Médroxyprogestérone
+L02AE02: Leuprorelin; Leuproréline
+L02AE03: Goserelin; Goséréline
+L02AE04: Triptorelin; Triptoréline
+L02BA01: Tamoxifen; Tamoxifène
+L02BA03: Fulvestrant; Fulvestrant
+L02BB03: Bicalutamid; Bicalutamide
+L02BG03: Anastrozol; Anastrozole
+L02BG04: Letrozol; Létrozole
+L02BG06: Exemestan; Exémestane
+L02BX02: Degarelix; Dégarelix
+L02BX03: Abirateron; Abiratérone
+L03: IMMUNSTIMULANZIEN; Immunostimulants
+L03AA02: Filgrastim; Filgrastim
+L03AA10: Lenograstim; Lénograstim
+L03AA13: Pegfilgrastim; Pegfilgrastim
+L03AB03: Interferon gamma; Interféron gamma
+L03AB04: Interferon alfa-2a; Interféron alfa-2a
+L03AB05: Interferon alfa-2b; Interféron alfa-2b
+L03AB07: Interferon beta-1a; Interféron bêta-1a
+L03AB08: Interferon beta-1b; Interféron bêta-1b
+L03AB10: Peginterferon alfa-2b; Peginterféron alfa-2b
+L03AB11: Peginterferon alfa-2a; Peginterféron alfa-2a
+L03AC01: Aldesleukin; Aldesleukine
+L03AX03: BCG-Impfstoff; Vaccin BCG
+L03AX13: Glatirameracetat; Glatiramère acétate
+L03AX15: Mifamurtid; Mifamurtide
+L04: IMMUNSUPPRESSIVA; Immunosuppresseurs
+L04AA04: Antithymozytäres Immunglobulin (Kaninchen); Immunoglobuline antithymocyte
+L04AA06: Mycophenolsäure; Mycophénolate
+L04AA10: Sirolimus; Sirolimus
+L04AA13: Leflunomid; Léflunomide
+L04AA18: Everolimus; Evérolimus
+L04AA23: Natalizumab; Natalizumab
+L04AA24: Abatacept; Abatacept
+L04AA25: Eculizumab; Eculizumab
+L04AA26: Belimumab; Bélimumab
+L04AA27: Fingolimod; Fingolimod
+L04AA28: Belatacept; Bélatacept
+L04AB01: Etanercept; Étanercept
+L04AB04: Adalimumab; Adalimumab
+L04AB05: Certolizumab pegol; Certolizumab pégol
+L04AB06: Golimumab; Golimumab
+L04AC05: Ustekinumab; Ustékinumab
+L04AC07: Tocilizumab; Tocilizumab
+L04AC08: Canakinumab; Canakinumab
+L04AD01: Ciclosporin; Ciclosporine
+L04AD02: Tacrolimus; Tacrolimus
+L04AX01: Azathioprin; Azathioprine
+L04AX04: Lenalidomid; Lénalidomide
+M: MUSKEL- UND SKELETTSYSTEM; Muscle et squelette
+M01: ANTIPHLOGISTIKA UND ANTIRHEUMATIKA; Anti-inflammatoires et antirhumatismaux
+M01AB01: Indometacin; Indométacine
+M01AB05: Diclofenac; Diclofénac
+M01AB08: Etodolac; Étodolac
+M01AB11: Acemetacin; Acémétacine
+M01AB15: Ketorolac; Kétorolac
+M01AB55: Diclofenac, Kombinationen; Diclofénac en association
+M01AC01: Piroxicam; Piroxicam
+M01AC02: Tenoxicam; Ténoxicam
+M01AC05: Lornoxicam; Lornoxicam
+M01AC06: Meloxicam; Méloxicam
+M01AE01: Ibuprofen; Ibuprofène
+M01AE02: Naproxen; Naproxène
+M01AE09: Flurbiprofen; Flurbiprofène
+M01AE14: Dexibuprofen; Dexibuprofène
+M01AE17: Dexketoprofen; Dexkétoprofène
+M01AG01: Mefenaminsäure; Méfénamique acide
+M01AH01: Celecoxib; Célécoxib
+M01AH05: Etoricoxib; Etoricoxib
+M01AX01: Nabumeton; Nabumétone
+M01AX17: Nimesulid; Nimésulide
+M01AX25: Chondroitinsulfat; Chondroïtine sulfate
+M01CB01: Natrium aurothiomalat; Aurothiomalate sodique
+M02: TOPISCHE MITTEL GEGEN GELENK- UND MUSKELSCHMERZEN; Topiques pour douleurs articulaire et musculaire
+M02AA: Nichtsteroidale Antiphlogistika zur topischen Anwendung; Anti-inflammatoires non stéroïdiens à usage topique
+M02AA06: Etofenamat; Etofénamate
+M02AA07: Piroxicam; Piroxicam
+M02AA10: Ketoprofen; Kétoprofène
+M02AA13: Ibuprofen; Ibuprofène
+M02AA15: Diclofenac; Diclofénac
+M02AA23: Indometacin; Indométacine
+M02AB: Capsaicin und ähnliche Mittel; Préparations à base de capsicum et apparentés
+M02AC: Zubereitungen mit Salicylsäure-Derivaten; Préparations avec des dérivés de l’acide salicylique
+M03: MUSKELRELAXANZIEN; Myorelaxants
+M03AB01: Suxamethonium; Suxaméthonium
+M03AC03: Vecuronium; Vécuronium
+M03AC04: Atracurium; Atracurium
+M03AC09: Rocuroniumbromid; Rocuronium bromure
+M03AC10: Mivacuriumchlorid; Mivacurium chlorure
+M03AC11: Cisatracurium; Cisatracurium
+M03BX01: Baclofen; Baclofène
+M03BX02: Tizanidin; Tizanidine
+M03BX04: Tolperison; Tolpérisone
+M03CA01: Dantrolen; Dantrolène
+M04: GICHTMITTEL; Antigoutteux
+M04AA01: Allopurinol; Allopurinol
+M04AB01: Probenecid; Probénécide
+M05: MITTEL ZUR BEHANDLUNG VON KNOCHENERKRANKUNGEN; Médicaments pour le traitement des désordres osseux
+M05BA02: Clodronsäure; Acide clodronique
+M05BA03: Pamidronsäure; Acide pamidronique
+M05BA04: Alendronsäure; Acide alendronique
+M05BA06: Ibandronsäure; Acide ibandronique
+M05BA07: Risedronsäure; Acide risédronique
+M05BA08: Zoledronsäure; Acide zolédronique
+M05BB: Bisphosphonate, Kombinationen; Biphosphonates et calcium, pour administration séquentielle
+M05BC01: Dibotermin alfa; Dibotermine
+M05BC02: Eptotermin alfa; Eptotermine alpha
+M05BX02: Aluminiumhydroxychlorid; Aluminium chlorhydrate
+M05BX04: Denosumab; Dénosumab
+M09: ANDERE MITTEL GEGEN STÖRUNGEN DES MUSKEL- UND SKELETTSYSTEMS; Autres médicaments des désordres musculo-squelettiques
+M09AB02: Kollagenase aus Clostridium histolyticum; Collagénase clostridium histolyticum
+N: NERVENSYSTEM; Système nerveux
+N01: ANÄSTHETIKA; Anesthésiques
+N01AB06: Isofluran; Isoflurane
+N01AB07: Desfluran; Desflurane
+N01AB08: Sevofluran; Sévoflurane
+N01AF03: Thiopental; Thiopental
+N01AH01: Fentanyl; Fentanyl
+N01AH02: Alfentanil; Alfentanil
+N01AH03: Sufentanil; Sufentanil
+N01AH06: Remifentanil; Rémifentanil
+N01AX01: Droperidol; Dropéridol
+N01AX03: Ketamin; Kétamine
+N01AX07: Etomidate; Étomidate
+N01AX10: Propofol; Propofol
+N01AX13: Distickstoffmonoxid; Protoxyde d’azote
+N01AX63: Distickstoffmonoxid, Kombinationen; Protoxyde d’azote en association
+N01BA02: Procain; Procaïne
+N01BA04: Chloroprocain; Chloroprocaïne
+N01BB01: Bupivacain; Bupivacaïne
+N01BB02: Lidocain; Lidocaïne
+N01BB03: Mepivacain; Mépivacaïne
+N01BB04: Prilocain; Prilocaïne
+N01BB09: Ropivacain; Ropivacaïne
+N01BB10: Levobupivacain; Lévobupivacaïne
+N01BB20: Kombinationen; Associations
+N01BB51: Bupivacain, Kombinationen; Bupivacaïne en association
+N01BB52: Lidocain, Kombinationen; Lidocaïne en association
+N01BB58: Articain, Kombinationen; Articaïne en association
+N01BX01: Ethylchlorid; Chlorure d’éthyle
+N01BX04: Capsaicin; Capsaïcine
+N02: ANALGETIKA; Analgésiques
+N02AA01: Morphin; Morphine
+N02AA03: Hydromorphon; Hydromorphone
+N02AA04: Nicomorphin; Nicomorphine
+N02AA05: Oxycodon; Oxycodone
+N02AA08: Dihydrocodein; Dihydrocodéine
+N02AA55: Oxycodon, Kombinationen; Oxycodone en association
+N02AA59: Codein, Kombinationen exkl. Psycholeptika; Codéine en association
+N02AB02: Pethidin; Péthidine
+N02AB03: Fentanyl; Fentanyl
+N02AE01: Buprenorphin; Buprénorphine
+N02AF02: Nalbufin; Nalbuphine
+N02AX01: Tilidin; Tilidine
+N02AX02: Tramadol; Tramadol
+N02AX06: Tapentadol; Tapentadol
+N02AX52: Tramadol, Kombinationen; Tramadol en association
+N02BA01: Acetylsalicylsäure; Acétylsalicylique acide
+N02BA51: Acetylsalicylsäure, Kombinationen exkl. Psycholeptika; Acétylsalicylique acide en association sauf aux psycholeptiques
+N02BA65: Carbasalat calcium, Kombinationen exkl. Psycholeptika; Carbasalate calcique en association sauf aux psycholeptiques
+N02BB02: Metamizol-Natrium; Métamizole sodique
+N02BE01: Paracetamol; Paracétamol
+N02BE51: Paracetamol, Kombinationen exkl. Psycholeptika; Paracétamol en association sauf aux psycholeptiques
+N02BG08: Ziconotid; Ziconotide
+N02CA01: Dihydroergotamin; Dihydroergotamine
+N02CA52: Ergotamin, Kombinationen exkl. Psycholeptika; Ergotamine en association sauf aux psycholeptiques
+N02CC01: Sumatriptan; Sumatriptan
+N02CC02: Naratriptan; Naratriptan
+N02CC03: Zolmitriptan; Zolmitriptan
+N02CC04: Rizatriptan; Rizatriptan
+N02CC06: Eletriptan; Élétriptan
+N02CC07: Frovatriptan; Frovatriptan
+N03: ANTIEPILEPTIKA; Anti-épileptiques
+N03AA02: Phenobarbital; Phénobarbital
+N03AA03: Primidon; Primidone
+N03AB02: Phenytoin; Phénytoïne
+N03AD01: Ethosuximid; Ethosuximide
+N03AD03: Mesuximid; Mésuximide
+N03AE01: Clonazepam; Clonazépam
+N03AF01: Carbamazepin; Carbamazépine
+N03AF02: Oxcarbazepin; Oxcarbazépine
+N03AF03: Rufinamid; Rufinamide
+N03AG01: Valproinsäure; Acide valproïque
+N03AG04: Vigabatrin; Vigabatrin
+N03AG06: Tiagabin; Tiagabine
+N03AX03: Sultiam; Sultiame
+N03AX09: Lamotrigin; Lamotrigine
+N03AX10: Felbamat; Felbamate
+N03AX11: Topiramat; Topiramate
+N03AX12: Gabapentin; Gabapentine
+N03AX14: Levetiracetam; Lévétiracétam
+N03AX15: Zonisamid; Zonisamide
+N03AX16: Pregabalin; Prégabaline
+N03AX18: Lacosamid; Lacosamide
+N03AX21: Retigabin; Rétigabine
+N03AX22: Perampanel; 
+N04: ANTIPARKINSONMITTEL; Antiparkinsoniens
+N04AA02: Biperiden; Bipéridène
+N04AA04: Procyclidin; Procyclidine
+N04BA03: Levodopa, Decarboxylasehemmer und COMT-Hemmer; Lévodopa, inhibiteur de décarboxylase et inhibiteur COMT
+N04BB01: Amantadin; Amantadine
+N04BC01: Bromocriptin; Bromocriptine
+N04BC04: Ropinirol; Ropinirole
+N04BC05: Pramipexol; Pramipexole
+N04BC06: Cabergolin; Cabergoline
+N04BC07: Apomorphin; Apomorphine
+N04BC09: Rotigotin; Rotigotine
+N04BD01: Selegilin; Sélégiline
+N04BX01: Tolcapon; Tolcapone
+N05: PSYCHOLEPTIKA; Psycholeptiques
+N05AA02: Levomepromazin; Lévomépromazine
+N05AA03: Promazin; Promazine
+N05AB03: Perphenazin; Perphénazine
+N05AD01: Haloperidol; Halopéridol
+N05AD05: Pipamperon; Pipampérone
+N05AE03: Sertindol; Sertindole
+N05AF01: Flupentixol; Flupentixol
+N05AF03: Chlorprothixen; Chlorprothixène
+N05AF05: Zuclopenthixol; Zuclopenthixol
+N05AH02: Clozapin; Clozapine
+N05AH03: Olanzapin; Olanzapine
+N05AH04: Quetiapin; Quétiapine
+N05AH05: Asenapin; Asénapine
+N05AL01: Sulpirid; Sulpiride
+N05AL03: Tiaprid; Tiapride
+N05AL05: Amisulprid; Amisulpride
+N05AN01: Lithium; Lithium
+N05AX08: Risperidon; Rispéridone
+N05AX12: Aripiprazol; Aripiprazole
+N05AX13: Paliperidon; Palipéridone
+N05BA01: Diazepam; Diazépam
+N05BA04: Oxazepam; Oxazépam
+N05BA05: Dikaliumclorazepat; Clorazépate potassique
+N05BA06: Lorazepam; Lorazépam
+N05BA08: Bromazepam; Bromazépam
+N05BA09: Clobazam; Clobazam
+N05BA10: Ketazolam; Kétazolam
+N05BA11: Prazepam; Prazépam
+N05BA12: Alprazolam; Alprazolam
+N05BB01: Hydroxyzin; Hydroxyzine
+N05CC01: Chloralhydrat; Chloral hydrate
+N05CD01: Flurazepam; Flurazépam
+N05CD02: Nitrazepam; Nitrazépam
+N05CD03: Flunitrazepam; Flunitrazépam
+N05CD05: Triazolam; Triazolam
+N05CD06: Lormetazepam; Lormétazépam
+N05CD07: Temazepam; Temazépam
+N05CD08: Midazolam; Midazolam
+N05CF01: Zopiclon; Zopiclone
+N05CF02: Zolpidem; Zolpidem
+N05CF03: Zaleplon; Zaléplon
+N05CH01: Melatonin; Mélatonine
+N05CM: Andere Hypnotika und Sedativa; Autres hypnotiques et sédatifs
+N05CM02: Clomethiazol; Clométhiazole
+N05CM18: Dexmedetomidin; Dexmédétomidine
+N06: PSYCHOANALEPTIKA; Psychoanaleptiques
+N06AA02: Imipramin; Imipramine
+N06AA04: Clomipramin; Clomipramine
+N06AA05: Opipramol; Opipramol
+N06AA06: Trimipramin; Trimipramine
+N06AA08: Dibenzepin; Dibenzépine
+N06AA09: Amitriptylin; Amitriptyline
+N06AA10: Nortriptylin; Nortriptyline
+N06AA12: Doxepin; Doxépine
+N06AA21: Maprotilin; Maprotiline
+N06AB03: Fluoxetin; Fluoxétine
+N06AB04: Citalopram; Citalopram
+N06AB05: Paroxetin; Paroxétine
+N06AB06: Sertralin; Sertraline
+N06AB08: Fluvoxamin; Fluvoxamine
+N06AB10: Escitalopram; Escitalopram
+N06AG02: Moclobemid; Moclobémide
+N06AX03: Mianserin; Miansérine
+N06AX05: Trazodon; Trazodone
+N06AX11: Mirtazapin; Mirtazapine
+N06AX12: Bupropion; Bupropion
+N06AX16: Venlafaxin; Venlafaxine
+N06AX18: Reboxetin; Réboxetine
+N06AX21: Duloxetin; Duloxétine
+N06AX22: Agomelatin; Agomélatine
+N06BA04: Methylphenidat; Méthylphénidate
+N06BA07: Modafinil; Modafinil
+N06BA09: Atomoxetin; Atomoxétine
+N06BX03: Piracetam; Piracétam
+N06CA01: Amitriptylin und Psycholeptika; Amitriptyline et psycholeptiques
+N06CA02: Melitracen und Psycholeptika; Mélitracen et psycholeptiques
+N06DA02: Donepezil; Donépézil
+N06DA03: Rivastigmin; Rivastigmine
+N06DA04: Galantamin; Galantamine
+N06DX01: Memantin; Mémantine
+N07: ANDERE MITTEL FÜR DAS NERVENSYSTEM; Autres médicaments du système nerveux
+N07AA02: Pyridostigmin; Pyridostigmine
+N07AA03: Distigmin; Distigmine
+N07AA51: Neostigmin, Kombinationen; Néostigmine en association
+N07AB02: Bethanechol; Béthanéchol
+N07AX01: Pilocarpin; Pilocarpine
+N07BA01: Nicotin; Nicotine
+N07BA02: Bupropion; 
+N07BA03: Vareniclin; Varénicline
+N07BB01: Disulfiram; Disulfirame
+N07BB03: Acamprosat; Acamprosate
+N07BB04: Naltrexon; Naltrexone
+N07BC02: Methadon; Méthadone
+N07CA01: Betahistin; Bétahistine
+N07CA02: Cinnarizin; Cinnarizine
+N07CA03: Flunarizin; Flunarizine
+N07CA52: Cinnarizin, Kombinationen; Cinnarizine en association
+N07XX02: Riluzol; Riluzole
+N07XX04: Natriumoxybat; Acide hydroxybutyrique
+N07XX05: Amifampridin; Amifampridine
+N07XX06: Tetrabenazin; Tétrabénazine
+P: ANTIPARASITÄRE MITTEL, INSEKTIZIDE UND REPELLENZIEN; Antiparasitaires, insecticides
+P01: MITTEL GEGEN PROTOZOEN-ERKRANKUNGEN; Antiprotozoaires
+P01AB01: Metronidazol; Métronidazole
+P01AX06: Atovaquon; Atovaquone
+P01BA01: Chloroquin; Chloroquine
+P01BA02: Hydroxychloroquin; Hydroxychloroquine
+P01BB51: Proguanil, Kombinationen; Proguanil en association
+P01BC01: Chinin; Quinine
+P01BC02: Mefloquin; Méfloquine
+P01BD01: Pyrimethamin; Pyriméthamine
+P01CX01: Pentamidindiisetionat; Pentamidine iséthionate
+P02: ANTHELMINTIKA; Antihelminthiques
+P02CA01: Mebendazol; Mébendazole
+P02CA03: Albendazol; Albendazole
+P02CC01: Pyrantel; Pyrantel
+P03: MITTEL GEGEN EKTOPARASITEN, INKL. ANTISCABIOSA, INSEKTIZIDE UND REPELLENZIEN; Antiparasitaires externes, incluant scabicides
+P03AC04: Permethrin; Perméthrine
+P03AX03: Malathion; Malathion
+R: RESPIRATIONSTRAKT; Système respiratoire
+R01: RHINOLOGIKA; Préparations nasales
+R01AA04: Phenylephrin; Phényléphrine
+R01AA05: Oxymetazolin; Oxymétazoline
+R01AA07: Xylometazolin; Xylométazoline
+R01AB01: Phenylephrin; Phényléphrine
+R01AB06: Xylometazolin; Xylométazoline
+R01AB08: Tuaminoheptan; Tuaminoheptane
+R01AC01: Cromoglicinsäure; Cromoglicique acide
+R01AC02: Levocabastin; Lévocabastine
+R01AC03: Azelastin; Azélastine
+R01AD01: Beclometason; Béclométasone
+R01AD05: Budesonid; Budésonide
+R01AD08: Fluticason; Fluticasone
+R01AD09: Mometason; Mométasone
+R01AD11: Triamcinolon; Triamcinolone
+R01AD12: Fluticason furoat; Fluticasone
+R01AD57: Tixocortol, Kombinationen; Tixocortol en association
+R01AX02: Retinol; Rétinol
+R01AX03: Ipratropiumbromid; Ipratropium
+R01AX06: Mupirocin; Mupirocine
+R01AX09: Hyaluronsäure; 
+R01AX10: Verschiedene; Divers préparations nasales
+R01AX30: Kombinationen; Associations pour préparations nasales
+R01BA02: Pseudoephedrin; Pseudoéphédrine
+R01BA53: Phenylephrin, Kombinationen; Phényléphrine en association
+R02: HALS- UND RACHENTHERAPEUTIKA; Préparations pour la gorge
+R02AA02: Dequalinium; Déqualinium
+R02AA03: Dichlorbenzylalkohol; Dichlorobenzique alcool
+R02AA05: Chlorhexidin; Chlorhexidine
+R02AA06: Cetylpyridinium; Cétylpyridinium
+R02AA20: Verschiedene; Divers antiseptiques pour la gorge
+R02AB02: Tyrothricin; Tyrothricine
+R02AB03: Fusafungin; Fusafungine
+R02AX: Andere Hals- und Rachentherapeutika; 
+R03: MITTEL BEI OBSTRUKTIVEN ATEMWEGSERKRANKUNGEN; Antiasthmatiques
+R03AC02: Salbutamol; Salbutamol
+R03AC04: Fenoterol; Fénotérol
+R03AC12: Salmeterol; Salmétérol
+R03AC13: Formoterol; Formotérol
+R03AC18: Indacaterol; Indacatérol
+R03AK03: Fenoterol und andere Mittel bei obstruktiven Atemwegserkrankungen; Fénotérol et autres anti-asthmatiques
+R03AK04: Salbutamol und andere Mittel bei obstruktiven Atemwegserkrankungen; Salbutamol et autres anti-asthmatiques
+R03AK07: Formoterol und andere Mittel bei obstruktiven Atemwegserkrankungen; Formotérol et autres anti-asthmatiques
+R03BA01: Beclometason; Béclométasone
+R03BA02: Budesonid; Budésonide
+R03BA05: Fluticason; Fluticasone
+R03BA07: Mometason; Mométasone
+R03BA08: Ciclesonid; Ciclésonide
+R03BB01: Ipratropiumbromid; Ipratropium
+R03BB04: Tiotropiumbromid; Tiotropium
+R03BC01: Cromoglicinsäure; Cromoglicique acide
+R03CA02: Ephedrin; Ephédrine
+R03CC02: Salbutamol; Salbutamol
+R03DA04: Theophyllin; Théophylline
+R03DA05: Aminophyllin; Aminophylline
+R03DC01: Zafirlukast; Zafirlukast
+R03DC03: Montelukast; Montélukast
+R03DX05: Omalizumab; Omalizumab
+R03DX07: Roflumilast; Roflumilast
+R05: HUSTEN- UND ERKÄLTUNGSPRÄPARATE; Médicaments du rhume et de la toux
+R05CA: Expektoranzien; Expectorants
+R05CA03: Guaifenesin; Guaïfénésine
+R05CA10: Kombinationen; Associations d’expectorants
+R05CB01: Acetylcystein; Acétylcystéine
+R05CB02: Bromhexin; Bromhexine
+R05CB03: Carbocistein; Carbocistéine
+R05CB06: Ambroxol; Ambroxol
+R05CB10: Kombinationen; 
+R05CB13: Dornase alfa (Desoxyribonuclease); Dornase alfa (désoxyribonucléase)
+R05CB15: Erdostein; Erdostéine
+R05DA03: Hydrocodon; Hydrocodone
+R05DA04: Codein; Codéine
+R05DA07: Noscapin; Noscapine
+R05DA09: Dextromethorphan; Dextrométhorphane
+R05DA20: Kombinationen; Associations d’alcaloïdes de l’opium et dérivés
+R05DB13: Butamirat; Butamirate
+R05DB25: Morclofon; Morclofone
+R05FA02: Opium-Derivate und Expektoranzien; Dérivés de l’opium et expectorants
+R05X: ANDERE ZUBEREITUNGEN GEGEN ERKÄLTUNGSKRANKHEITEN; Autres médicaments du rhume
+R06: ANTIHISTAMINIKA ZUR SYSTEMISCHEN ANWENDUNG; Antihistaminiques à usage systémique
+R06AA04: Clemastin; Clémastine
+R06AA52: Diphenhydramin, Kombinationen; Diphénhydramine en association
+R06AB03: Dimetinden; Dimétindène
+R06AB04: Chlorphenamin; Chlorphénamine
+R06AD03: Thiethylperazin; Thiéthylpérazine
+R06AD08: Oxomemazin; Oxomémazine
+R06AE07: Cetirizin; Cétirizine
+R06AE09: Levocetirizin; Lévocétirizine
+R06AX13: Loratadin; Loratadine
+R06AX17: Ketotifen; Kétotifène
+R06AX26: Fexofenadin; Fexofénadine
+R06AX27: Desloratadin; Desloratadine
+R06AX29: Bilastin; Bilastine
+R07: ANDERE MITTEL FÜR DEN RESPIRATIONSTRAKT; Autres médicaments de l’appareil respiratoire
+R07AA30: Kombinationen; Associations de surfactants pulmonaires
+R07AX: Andere Mittel für den Respirationstrakt; Autres médicaments du système respiratoire
+R07AX01: Stickoxid; Oxyde nitrique
+S: SINNESORGANE; Organes sensoriels
+S01: OPHTHALMIKA*; Médicaments ophtalmologiques
+S01AA11: Gentamicin; Gentamicine
+S01AA12: Tobramycin; Tobramycine
+S01AA13: Fusidinsäure; Fusidique acide
+S01AA30: Kombinationen von Antibiotika; Associations de différents antibiotiques
+S01AX05: Bibrocathol; Bibrocathol
+S01AX08: Hexamidin; Hexamidine
+S01BA01: Dexamethason; Dexaméthasone
+S01BA04: Prednisolon; Prednisolone
+S01BA05: Triamcinolon; Triamcinolone
+S01BA07: Fluorometholon; Fluorométholone
+S01BA13: Rimexolon; Rimexolone
+S01BC01: Indometacin; Indométacine
+S01BC03: Diclofenac; Diclofénac
+S01BC05: Ketorolac; Kétorolac
+S01BC10: Nepafenac; Népafénac
+S01CA01: Dexamethason und Antiinfektiva; Dexaméthasone et anti-infectieux
+S01CA02: Prednisolon und Antiinfektiva; Prednisolone et anti-infectieux
+S01CA07: Fluorometholon und Antiinfektiva; Fluorométholone et anti-infectieux
+S01CC01: Diclofenac und Antiinfektiva; Diclofénac et anti-infectieux
+S01EA03: Apraclonidin; Apraclonidine
+S01EA05: Brimonidin; Brimonidine
+S01EB01: Pilocarpin; Pilocarpine
+S01EB02: Carbachol; Carbachol
+S01EB09: Acetylcholin; Acétylcholine
+S01EC01: Acetazolamid; Acétazolamide
+S01EC03: Dorzolamid; Dorzolamide
+S01EC04: Brinzolamid; Brinzolamide
+S01ED01: Timolol; Timolol
+S01ED02: Betaxolol; Bétaxolol
+S01ED03: Levobunolol; Lévobunolol
+S01ED05: Carteolol; Cartéolol
+S01ED51: Timolol, Kombinationen; Timolol en association
+S01EE01: Latanoprost; Latanoprost
+S01EE03: Bimatoprost; Bimatoprost
+S01EE04: Travoprost; Travoprost
+S01EE05: Tafluprost; Tafluprost
+S01FA01: Atropin; Atropine
+S01FA02: Scopolamin; Scopolamine
+S01FA04: Cyclopentolat; Cyclopentolate
+S01FA06: Tropicamid; Tropicamide
+S01FA56: Tropicamid, Kombinationen; Tropicamide en association
+S01GA02: Tetryzolin; Tétryzoline
+S01GA51: Naphazolin, Kombinationen; Naphazoline en association
+S01GA52: Tetryzolin, Kombinationen; Tétryzoline en association
+S01GX01: Cromoglicinsäure; Cromoglicique acide
+S01GX02: Levocabastin; Lévocabastine
+S01GX03: Spagluminsäure; Spaglumique acide
+S01GX06: Emedastin; Emédastine
+S01GX07: Azelastin; Azélastine
+S01GX08: Ketotifen; Kétotifène
+S01GX09: Olopatadin; Olopatadine
+S01GX10: Epinastin; Epinastine
+S01HA02: Oxybuprocain; Oxybuprocaïne
+S01HA03: Tetracain; Tétracaïne
+S01HA04: Proxymetacain; Proxymétacaïne
+S01JA01: Fluorescein; Fluorescéine
+S01JA51: Fluorescein, Kombinationen; Fluorescéine en association
+S01KA51: Hyaluronsäure, Kombinationen; Hyaluronique acide en association
+S01LA03: Pegaptanib; Pegaptanib
+S01LA04: Ranibizumab; Ranibizumab
+S01LA05: Aflibercept; Aflibercept
+S01XA: Andere Ophthalmika; Autres médicaments ophtalmologiques
+S01XA02: Retinol; Rétinol
+S01XA03: Natriumchlorid, hyperton; Sodium chlorure, hypertonique
+S01XA04: Kaliumiodid; Potassium iodure
+S01XA12: Dexpanthenol; Dexpanthénol
+S01XA20: Künstliche Tränen und andere indifferente Mittel; Larmes artificielles
+S02: OTOLOGIKA; Médicaments otologiques
+S02AA12: Rifamycin; Rifamycine
+S02AA30: Antiinfektiva, Kombinationen; Anti-infectieux otologiques en association
+S02CA03: Hydrocortison und Antiinfektiva; Hydrocortisone et anti-infectieux
+S02CA06: Dexamethason und Antiinfektiva; Dexaméthasone et anti-infectieux
+S02CA07: Fludrocortison und Antiinfektiva; Fludrocortisone et anti-infectieux
+S02DA01: Lidocain; Lidocaïne
+S02DA30: Kombinationen; Associations d’analgésiques et anesthésiques otologiques
+S02DC: Indifferente Zubereitungen; Autres médicaments otologiques
+V: VARIA; Divers
+V01: ALLERGENE; Allergènes
+V01AA: Allergen-Extrakte; Extraits d’allergènes
+V01AA02: Gräserpollen; Pollen d’herbe
+V01AA05: Baumpollen; Pollen d’arbre
+V03: ALLE ÜBRIGEN THERAPEUTISCHEN MITTEL; Tous autres médicaments
+V03AB: Antidote; Antidotes
+V03AB13: Obidoxim; Obidoxime
+V03AB14: Protamin; Protamine
+V03AB15: Naloxon; Naloxone
+V03AB21: Kaliumiodid; Potassium iodure
+V03AB23: Acetylcystein; Acétylcystéine
+V03AB25: Flumazenil; Flumazénil
+V03AB26: Methionin; Méthionine
+V03AB33: Hydroxocobalamin; Hydroxocobalamine
+V03AB35: Sugammadex; Sugammadex
+V03AC01: Deferoxamin; Déféroxamine
+V03AC02: Deferipron; Défériprone
+V03AC03: Deferasirox; Déférasirox
+V03AE01: Polystyrolsulfonat; Sulfonate de polystyrène
+V03AE02: Sevelamer; Sevelamer
+V03AE03: Lanthan(III)-carbonat; Lanthanum carbonate
+V03AF01: Mesna; Mesna
+V03AF03: Calciumfolinat; Folinate de calcium
+V03AF05: Amifostin; Amifostine
+V03AF07: Rasburicase; Rasburicase
+V03AF08: Palifermin; Palifermine
+V04: DIAGNOSTIKA; Médicaments pour diagnostic
+V04CD01: Metyrapon; Métyrapone
+V04CD05: Somatorelin; Somatoréline
+V04CF01: Tuberkulin; Tuberculine
+V04CH02: Indigokarmin; Carmin indigo
+V04CL: Allergie-Tests; Tests pour les affections allergiques
+V04CX: Andere Diagnostika; Autres médicaments pour diagnostic
+V07: ALLE ÜBRIGEN NICHTTHERAPEUTISCHEN MITTEL; Tous autres produits non thérapeutiques
+V07AB: Lösungs- und Verdünnungsmittel, inkl. Spüllösungen; Solvants et diluants, solutions d’irrigation incluses
+V08: KONTRASTMITTEL; Produits de contraste
+V08AA01: Amidotrizoesäure; Diatrizoïque acide
+V08AA05: Ioxitalaminsäure; Ioxitalamique acide
+V08AB02: Iohexol; Iohexol
+V08AB03: Ioxaglinsäure; Ioxaglique acide
+V08AB04: Iopamidol; Iopamidol
+V08AB05: Iopromid; Iopromide
+V08AB07: Ioversol; Ioversol
+V08AB09: Iodixanol; Iodixanol
+V08AB10: Iomeprol; Ioméprol
+V08AB11: Iobitridol; Iobitridol
+V08AD01: Ethylester iodierter Fettsäuren; Esters éthyliques d’acides gras iodés
+V08BA01: Bariumsulfat mit Suspensionsmittel; Sulfate de baryum avec agents de mise en suspension
+V08CA: Paramagnetische Kontrastmittel; Produits de contraste paramagnétiques
+V08CA01: Gadopentetsäure; Gadopentétique acide
+V08CA02: Gadotersäure; Gadotérique acide
+V08CA03: Gadodiamid; Gadodiamide
+V08CA04: Gadoteridol; Gadotéridol
+V08CA09: Gadobutrol; Gadobutrol
+V08CA10: Gadoxetsäure; Gadoxétique acide
+V08DA05: Schwefelhexafluorid; Soufre hexafluorure
+V09: RADIODIAGNOSTIKA; Produits radiopharmaceutiques à usage diagnostique
+V09AB03: [123I]Iod-Ioflupan; 123I-Iode ioflupane
+V09BA: [99mTc]Technetium-Verbindungen; Dérivés du 99mTc-Technetium
+V09DB01: [99mTc]Technetium-Nanokolloid; 99mTc-Technetium nanocolloïdes
+V09EB01: [99mTc]Technetium-Macrosalb; 99mTc-Technetium macrosalb
+V09GA01: [99mTc]Technetiumsestamibi; 99mTc-Technetium sestamibi
+V09GA02: [99mTc]Technetiumtetrofosmin; 99mTc-Technetium tétrofosmine
+V09GB02: [125I]Iod-Humanalbumin; 125I-Iode albumine humaine
+V10: RADIOTHERAPEUTIKA; Produits radiopharmaceutiques à usage thérapeutique
+V10AA01: [90Y]Yttriumcitrat-Kolloid; 90 Y-Yttrium colloïde de citrate
+V10AX05: [186Re]Rheniumsulfid-Kolloid; 186Re-Rhenium colloïde de sulfure
+V10BX01: [89Sr]Strontiumchlorid; 89Sr-Strontium chlorure
+V10BX02: [153Sm]Samariumlexidronam; 153Sm-Samarium lexidronam
+V10X: ANDERE RADIOTHERAPEUTIKA; Autres produits radiopharmaceutiques à usage thérapeutique
+V10XA01: [131I]Natriumiodid; 131I -Iode sodium iodide
+V10XX02: [90Y]Ibritumomab tiuxetan; 90Y-Ibritumomab tiuxetan

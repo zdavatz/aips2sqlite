@@ -1,0 +1,29 @@
+#menue{z-index:1;position:fixed;left:0px;top:0px;}
+#monographie{margin-left:5px;margin-right:5px;margin-top:20px;margin-bottom:20px;font-family:"Verdana","Arial","Tahoma","Helvetica","Geneva","sans-serif";color:black;}
+#monographie .MonTitle{font-size:1.5em;font-weight:bold;margin-bottom:0.2em;}
+#monographie .absTitle{font-size:0.9em;font-weight:bold;font-style:italic;margin-bottom:0.0em;}
+#monographie .untertitle{font-size:0.9em;font-weight:normal;margin-top:0.5em;margin-bottom:0.0em;}
+#monographie .untertitle1{font-size:0.9em;font-weight:normal;font-style:italic;margin-top:0.2em;margin-bottom:0.0em;}
+#monographie .header{font-size:0.85em;font-weight:normal;color:#999999;text-align:left;margin-bottom:2em;visibility:hidden;display:none;}
+#monographie .footer{font-size:0.85em;font-weight:normal;color:#999999;margin-top:2.0em;border-top:#999999 1px solid;padding-top:0.5em;}
+#monographie div p{font-size:0.9em;}
+#monographie .paragraph{font-weight:normal;font-style:normal;margin-top:0.8em;}.noSpacing{margin-top:0em;margin-bottom:0em;}.spacing1{margin-top:0em;margin-bottom:0.25em;}.spacing2{margin-top:0em;margin-bottom:0.5em;}
+#monographie .ownerCompany{font-size:1em;font-style:italic;font-weight:bold;text-align:right;margin-bottom:1.0em;border-top:black 1px solid;border-bottom:black 1px solid;padding-top:0.2em;padding-bottom:0.2em;}
+#monographie .titleAdd{font-size:0.9em;font-weight:bold;font-style:italic;}
+#monographie .shortCharacteristic{font-size:1.1em;font-style:italic;}
+#monographie .indention1{margin-left:5em;}
+#monographie .indention2{margin-left:10em;}
+#monographie .indention3{margin-left:15em;}
+#monographie .box{font-size:.9em;font-weight:normal;font-style:normal;margin-top:5px;margin-bottom:5px;padding-top:5px;padding-bottom:6px;padding-left:5px;padding-right:5px;border-width:1px;border-color:Black;border-style:solid;}
+#monographie .image{margin-top:20px;margin-bottom:20px;}
+#monographie table{font-family:"Courier New","sans-serif";font-size:0.9em;margin-top:1.0em;margin-bottom:1.0em;border-top:solid 1px black;border-bottom:solid 1px black;}
+#monographie td{font-family:"Courier New","sans-serif";font-size:0.9em;}
+.rowSepBelow{border-bottom:solid 1px black;}
+.goUp{float:right;margin-right:-40px;}
+.tblArticles{border:solid 1pt #E5E7E8;vertical-align:top;text-align:left;border-spacing:0;width:100%;}
+.tblArticles .product{width:37%;font-size:small;vertical-align:top;border-top:solid 1pt #E5E7E8;border-right:solid 1pt #E5E7E8;}
+.tblArticles .productEmpty{width:37%;}
+.tblArticles .normal-right{border-right:solid 1pt #E5E7E8;border-top:solid 1pt #E5E7E8;width:15%;text-align:right;vertical-align:top;font-size:small;}
+.tblArticles .normal-center{border-right:solid 1pt #E5E7E8;border-top:solid 1pt #E5E7E8;width:10%;text-align:center;vertical-align:top;font-size:small;}
+.tblArticles .picture{width:15%;text-align:center;border-top:solid 1pt #E5E7E8;}
+.tblArticles .pictureEmpty{width:15%;border-top:solid 1pt #E5E7E8;}
