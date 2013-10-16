@@ -268,8 +268,10 @@ public class Aips2Sqlite {
 				DateFormat df = new SimpleDateFormat("ddMMyy");
 				String date_str = df.format(new Date());
 				File report_file = new File(FILE_REPORT_BASE + "_" + date_str + "_" + DB_LANGUAGE + ".html");
-				if (!report_file.exists())
+				if (!report_file.exists()) {
+					report_file.getParentFile().mkdirs();
 					report_file.createNewFile();
+				}
 				FileWriter fw = new FileWriter(report_file.getAbsoluteFile());
 				bw = new BufferedWriter(fw);
 				
@@ -507,8 +509,10 @@ public class Aips2Sqlite {
 			if (DB_LANGUAGE.equals("de")) {
 				// Dump set to file, currently we do this only for German
 				File atccodes_file = new File("./output/atc_codes_used_set.txt");
-				if (!atccodes_file.exists())
+				if (!atccodes_file.exists()) {
+					atccodes_file.getParentFile().mkdirs();
 					atccodes_file.createNewFile();
+				}
 				FileWriter fwriter = new FileWriter(atccodes_file.getAbsoluteFile());
 				BufferedWriter bwriter = new BufferedWriter(fwriter);  
 				
@@ -1353,14 +1357,15 @@ public class Aips2Sqlite {
 			if (!wdir.exists())
 				wdir.mkdirs();
 			File wfile = new File(dir_name + file_name);
-			if (!wfile.exists())
+			if (!wfile.exists()) {
+				wfile.getParentFile().mkdirs();
 				wfile.createNewFile();
+			}
 			// FileWriter fw = new FileWriter(wfile.getAbsoluteFile());
 			CharsetEncoder encoder = Charset.forName("UTF-8").newEncoder();
 			encoder.onMalformedInput(CodingErrorAction.REPORT);
 			encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
-			OutputStreamWriter osw = new OutputStreamWriter(
-					new FileOutputStream(wfile.getAbsoluteFile()), encoder);
+			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(wfile.getAbsoluteFile()), encoder);
 			BufferedWriter bw = new BufferedWriter(osw);
 			bw.write(string_to_write);
 			bw.close();

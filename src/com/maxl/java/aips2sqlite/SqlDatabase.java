@@ -19,6 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package com.maxl.java.aips2sqlite;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -38,8 +40,14 @@ public class SqlDatabase {
 		Class.forName("org.sqlite.JDBC");
 
 		try {
+			// Touch db file if it does not exist
+			String db_url = System.getProperty("user.dir") + "/output/amiko_db_full_idx_" + db_lang + ".db";			
+			File db_file = new File(db_url);
+			if (!db_file.exists()) {
+				db_file.getParentFile().mkdirs();
+				db_file.createNewFile();
+			}
 			// Creates connection
-			String db_url = System.getProperty("user.dir") + "/output/amiko_db_full_idx_" + db_lang + ".db";
 			conn = DriverManager.getConnection("jdbc:sqlite:" + db_url);		
 			stat = conn.createStatement();
 			
@@ -70,6 +78,8 @@ public class SqlDatabase {
 	        		"ids_str TEXT, titles_str TEXT, style TEXT, content TEXT);");
 	        */		        
 	        prep = conn.prepareStatement("INSERT INTO amikodb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
+		} catch (IOException e) {
+			System.err.println(">> SqlDatabase: DB file does not exist!");
 		} catch (SQLException e ) {
 			System.err.println(">> SqlDatabase: SQLException!");
 		} 
