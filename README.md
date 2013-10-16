@@ -5,7 +5,11 @@ aips2sqlite - creates an SQLite DB from AIPS, Swissmedic, BAG and Refdata
 
 ## Requirements
 
-Java 1.7 (tested on Windows)
+Java 1.7 (tested on Windows, Linux, Mac OS X)
+
+## Caveats
+
+On some systems it may be necessary to increase the heap space with the Java option -Xmx, see below for an example.
 
 ## Options
 
@@ -30,3 +34,7 @@ $ java -jar aips2sqlite.jar --lang=de --verbose --report
 Generate French SQLite database, do not download any files and be extra quiet:
 
 $ java -jar aips2sqlite.jar --lang=fr --quiet --nodown
+
+To increase the heap space use the option -Xmx
+
+$ java -jar -Xmx2048m aips2sqlite.jar --lang=de --verbose --report
