@@ -280,7 +280,7 @@ public class Aips2Sqlite {
 				date_str = df.format(new Date());
 				
 				if (DB_LANGUAGE.equals("de")) {
-					bw.write("<h3>Arzneimittel-Kompendium</h3>");
+					bw.write("<h3>Schweizer Arzneimittel-Kompendium</h3>");
 					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
 					bw.write("<p>Lizenz: GPL v3.0</p>");
 					bw.write("<br/>");
@@ -295,7 +295,7 @@ public class Aips2Sqlite {
 							"Packungen.xls</a> (Stand: " + date_str + ")</p>");
 					bw.write("<br/>");
 				} else if (DB_LANGUAGE.equals("fr")){
-					bw.write("<h3>Compendium des Médicaments Suisse pour Android</h3>");
+					bw.write("<h3>Compendium des Médicaments Suisse</h3>");
 					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
 					bw.write("<p>Licence: GPL v3.0</p>");
 					bw.write("<br/>");
