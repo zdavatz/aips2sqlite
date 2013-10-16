@@ -280,7 +280,7 @@ public class Aips2Sqlite {
 				date_str = df.format(new Date());
 				
 				if (DB_LANGUAGE.equals("de")) {
-					bw.write("<h3>Arzneimittel-Kompendium für Android</h3>");
+					bw.write("<h3>Arzneimittel-Kompendium</h3>");
 					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
 					bw.write("<p>Lizenz: GPL v3.0</p>");
 					bw.write("<br/>");
