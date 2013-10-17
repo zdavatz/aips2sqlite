@@ -452,11 +452,12 @@ public class HtmlUtils {
 				}
 			}
 		} else {
-			// Title
+			// SectionX==1, that's the "title"
 			Element title = mDoc.select("p[id=section1]").first();
 			String clean_title = "";
-			if (title!=null) 
-				clean_title = title.text();
+			// Some med titles have a 'Ò' which on Windows and Android systems is not translated into a '®' (reserved symbol)
+			if (title!=null)
+				clean_title = title.text().replace("Ò","®");
 			// Some German medications have wrong characters in the titles, this is a fix
 			if (language.equals("de"))
 				clean_title = clean_title.replace("â","®");

@@ -89,16 +89,16 @@ public class Aips2Sqlite {
 
 	// Set by command line options (default values)
 	private static String APP_VERSION = "1.0.0";
+	private static String DB_LANGUAGE = "de";	
 	private static boolean SHOW_ERRORS = false;
 	private static boolean SHOW_LOGS = true;
 	private static boolean DOWNLOAD_ALL = true;
 	private static boolean ZIP_SQL = false;
 	private static boolean GENERATE_REPORT = false;
+	private static String OPT_MED_TITLE = "";
 	
 	// Other global variables or constants
-	private static String DB_LANGUAGE = "";
 	private static String DB_VERSION = "1.2.7";
-	private static String OPT_MED_TITLE = "";
 	
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
 	private static final String FILE_MEDICAL_INFOS_XML = "./downloads/aips_xml.xml";
