@@ -438,7 +438,7 @@ public class Aips2Sqlite {
 								errors++;
 								if (GENERATE_REPORT)
 									bw.write("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
-								System.err.println(">> ERROR: " + counter_de + " - SwissmedicNo5 not found in SwissMedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
+								System.err.println(">> ERROR: " + counter_de + " - SwissmedicNo5 not found in Swissmedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
 								missing_pack_info++;
 							}
 							
