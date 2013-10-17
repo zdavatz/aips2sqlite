@@ -454,7 +454,9 @@ public class HtmlUtils {
 		} else {
 			// Title
 			Element title = mDoc.select("p[id=section1]").first();
-			String clean_title = title.text();
+			String clean_title = "";
+			if (title!=null) 
+				clean_title = title.text();
 			// Some German medications have wrong characters in the titles, this is a fix
 			if (language.equals("de"))
 				clean_title = clean_title.replace("â","®");
