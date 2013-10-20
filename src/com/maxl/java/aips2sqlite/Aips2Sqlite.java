@@ -92,10 +92,10 @@ public class Aips2Sqlite {
 	private static String DB_LANGUAGE = "de";	
 	private static boolean SHOW_ERRORS = false;
 	private static boolean SHOW_LOGS = true;
-	private static boolean DOWNLOAD_ALL = false;//true;
+	private static boolean DOWNLOAD_ALL = true;
 	private static boolean ZIP_SQL = false;
 	private static boolean GENERATE_REPORT = false;
-	private static String OPT_MED_TITLE = "Remif";
+	private static String OPT_MED_TITLE = "";
 	
 	// Other global variables or constants
 	private static String DB_VERSION = "1.2.7";
@@ -436,10 +436,10 @@ public class Aips2Sqlite {
 							
 							if (sstr1!=null && sstr2!=null ) {
 								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
+									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
+									int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
 									try {
-										section_indications = html_sanitized.substring(
-												html_sanitized.indexOf(sstr1) + sstr1.length(), 
-												html_sanitized.indexOf(sstr2));	
+										section_indications = html_sanitized.substring(idx1, idx1+idx2);
 									} catch(StringIndexOutOfBoundsException e) {
 										e.printStackTrace();
 									}
