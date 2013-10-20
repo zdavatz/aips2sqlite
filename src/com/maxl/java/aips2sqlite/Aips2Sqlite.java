@@ -92,10 +92,10 @@ public class Aips2Sqlite {
 	private static String DB_LANGUAGE = "de";	
 	private static boolean SHOW_ERRORS = false;
 	private static boolean SHOW_LOGS = true;
-	private static boolean DOWNLOAD_ALL = true;
+	private static boolean DOWNLOAD_ALL = false;//true;
 	private static boolean ZIP_SQL = false;
 	private static boolean GENERATE_REPORT = false;
-	private static String OPT_MED_TITLE = "";
+	private static String OPT_MED_TITLE = "Remif";
 	
 	// Other global variables or constants
 	private static String DB_VERSION = "1.2.7";
@@ -359,6 +359,8 @@ public class Aips2Sqlite {
 								// System.err.println(">> ERROR: " + counter_de + " - regnr  string is empty - " + m.getTitle());
 								missing_regnr_str++;
 							}			
+														
+							System.out.println(counter_de + " - " + m.getTitle() + ": " + regnr_str);							
 							
 							// Associate ATC classes and subclasses (atc_map)					
 							String atc_class_str = "";
@@ -398,7 +400,7 @@ public class Aips2Sqlite {
 									bw.write("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
 								System.err.println(">> ERROR: " + counter_de + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
 								missing_atc_code++;
-							}
+							}						
 							
 							// Additional info stored in add_info_map
 							String add_info_str = ";";
@@ -414,10 +416,41 @@ public class Aips2Sqlite {
 									html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), DB_LANGUAGE);
 								}
 								html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>" ;
-								// System.out.println(html_sanitized);
 							} else {
 								html_sanitized = m.getContent();
 							}
+
+							// System.out.println(html_sanitized);
+							
+							// Extract section indications
+							String section_indications = "";
+							String sstr1 = null;
+							String sstr2 = null;
+							if (DB_LANGUAGE.equals("de")) {
+								sstr1 = "Indikationen/Anwendungsmöglichkeiten";
+								sstr2 = "Dosierung/Anwendung";
+							} else if (DB_LANGUAGE.equals("fr")) {
+								sstr1 = "Indications/Possibilités d&apos;emploi";
+								sstr2 = "Posologie/Mode d&apos;emploi";
+							}
+							
+							if (sstr1!=null && sstr2!=null ) {
+								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
+									try {
+										section_indications = html_sanitized.substring(
+												html_sanitized.indexOf(sstr1) + sstr1.length(), 
+												html_sanitized.indexOf(sstr2));	
+									} catch(StringIndexOutOfBoundsException e) {
+										e.printStackTrace();
+									}
+								}
+							}							
+							
+							// Remove all p's, div's and span's
+							section_indications = section_indications.replaceAll("\\<p.*?\\>", "").replaceAll("</p>", "");							
+							section_indications = section_indications.replaceAll("\\<div.*?\\>", "").replaceAll("</div>", "");
+							section_indications = section_indications.replaceAll("\\<span.*?\\>", "").replaceAll("</span>", "");							
+							// System.out.println(section_indications);
 							
 							// Update "Packungen" section and extract therapeutisches index
 							List<String> mTyIndex_list = new ArrayList<String>();						
@@ -433,7 +466,6 @@ public class Aips2Sqlite {
 							// Correct formatting error introduced by Swissmedic
 							m.setAuthHolder(m.getAuthHolder().replaceAll("&#038;","&"));
 							
-							System.out.println(counter_de + " - " + m.getTitle() + ": " + regnr_str);
 							// System.out.println(">> TIndex: (1) " + mTyIndex_list.get(0) + " (2) " + mTyIndex_list.get(1));	
 							// Check if mPackSection_str is empty
 							if (mPackSection_str.isEmpty()) {	
@@ -469,7 +501,7 @@ public class Aips2Sqlite {
 							
 			    			// Add medis, titles and ids to database
 							sql_db.addDB( m, style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
-									mPackSection_str, orggen_str, customer_id, mTyIndex_list );
+									mPackSection_str, orggen_str, customer_id, mTyIndex_list, section_indications );
 							/*
 							try {
 								showHtml(style_v1_str, m.getContent());

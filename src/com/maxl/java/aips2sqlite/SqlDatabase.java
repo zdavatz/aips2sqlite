@@ -60,7 +60,8 @@ public class SqlDatabase {
 	        stat.executeUpdate("DROP TABLE IF EXISTS amikodb;");
 	        stat.executeUpdate("CREATE TABLE amikodb (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, atc_class TEXT, " +
-	        		"tindex_str TEXT, application_str TEXT, customer_id INTEGER, pack_info_str TEXT, " + 
+	        		"tindex_str TEXT, application_str TEXT, " +
+	        		"customer_id INTEGER, pack_info_str TEXT, " + 
 	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, style_str TEXT);");
 	        // Create indices
 	        stat.executeUpdate("CREATE INDEX idx_title ON amikodb(title);");
@@ -98,7 +99,7 @@ public class SqlDatabase {
 
 	public void addDB(MedicalInformations.MedicalInformation m, String style_str, String regnr_str, String ids_str, 
 			String titles_str, String atc_description_str, String atc_class_str, String pack_info_str, 
-			String add_info_str, int customer_id, List<String> tIndex_list) throws SQLException {
+			String add_info_str, int customer_id, List<String> tIndex_list, String indications_str) throws SQLException {
 		if (prep!=null) {
 			prep.setString(1, m.getTitle());
 	        prep.setString(2, m.getAuthHolder());
@@ -107,7 +108,8 @@ public class SqlDatabase {
 	        prep.setString(5, regnr_str);
 	        prep.setString(6, atc_class_str);
 	        prep.setString(7, tIndex_list.get(0));	// therapeutic index
-	        prep.setString(8, tIndex_list.get(1));	// application area	 	
+	        prep.setString(8, tIndex_list.get(1));	// application area	 
+	        // prep.setString(9,  indications_str);
 	        prep.setInt(9, customer_id);	        
 	        prep.setString(10,  pack_info_str);
 	        prep.setString(11, add_info_str);

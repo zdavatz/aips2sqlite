@@ -469,7 +469,7 @@ public class HtmlUtils {
 								String attr_str = (cs.attributes().toString()).replaceAll("[^0-9].[^0-9]+", ""); 	// e.g. style="width:1.75347in"
 								float width = 100.0f*Float.valueOf(attr_str)/sum;
 								// Save new attribute!								
-								attr_str = "width:" + width + "%25;"; // "%;"; 
+								attr_str = "width:" + width + "%25;" + "background-color: #EEEEEE; padding-right: 5px; padding-left: 5px"; // "%25;"; 
 								// Set new attribute
 								cs.attr("style", attr_str);
 							}
