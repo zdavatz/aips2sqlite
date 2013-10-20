@@ -223,7 +223,6 @@ public class Aips2Sqlite {
 				System.out.println("- Generating sqlite database... ");
 			}
 			long startTime = System.currentTimeMillis();
-			int counter = 0;
 			
 			// Generates SQLite database - function should return the number of entries
 			generateSQLiteDB();
@@ -280,6 +279,7 @@ public class Aips2Sqlite {
 				date_str = df.format(new Date());
 				
 				if (DB_LANGUAGE.equals("de")) {
+					// bw.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");
 					bw.write("<h3>Schweizer Arzneimittel-Kompendium</h3>");
 					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
 					bw.write("<p>Lizenz: GPL v3.0</p>");
@@ -295,6 +295,7 @@ public class Aips2Sqlite {
 							"Packungen.xls</a> (Stand: " + date_str + ")</p>");
 					bw.write("<br/>");
 				} else if (DB_LANGUAGE.equals("fr")){
+					// bw.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");					
 					bw.write("<h3>Compendium des Médicaments Suisse</h3>");
 					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
 					bw.write("<p>Licence: GPL v3.0</p>");
@@ -412,7 +413,8 @@ public class Aips2Sqlite {
 								for (int i=1; i<22; ++i) {
 									html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), DB_LANGUAGE);
 								}
-								html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>" ;						
+								html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>" ;
+								// System.out.println(html_sanitized);
 							} else {
 								html_sanitized = m.getContent();
 							}
@@ -948,7 +950,7 @@ public class Aips2Sqlite {
 		} else {
 			html_sanitized = m.getContent();
 		}
-
+		
 		// Update "Packungen" section and extract therapeutisches index
 		List<String> mTyIndex_list = new ArrayList<String>();
 		String mContent_str = updateSectionPackungen(m.getTitle(), 

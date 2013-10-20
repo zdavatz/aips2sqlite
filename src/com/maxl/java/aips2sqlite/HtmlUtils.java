@@ -21,6 +21,7 @@ package com.maxl.java.aips2sqlite;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,11 +37,11 @@ public class HtmlUtils {
 	private Document mDoc;
 	
 	static private String ListOfKeywordsDE[] = {"Wirkstoffe","Wirkstoff\\(e\\)","Wirkstoff","Hilfsstoffe","Hilfsstoff\\(e\\)","Hilfsstoff",
-		"Kindern","Kinder","Sonstige Hinweise","Hinweis","Lagerungshinweise","Erwachsene","ATC-Code","Inkompatibilit�ten","Haltbarkeit",
-		"�ltere Patienten","Schwangerschaft","Stillzeit","Jugendliche","Jugendlichen"};
+		"Kindern","Kinder","Sonstige Hinweise","Hinweis","Lagerungshinweise","Erwachsene","ATC-Code","Inkompatibilitäten","Haltbarkeit",
+		"Ältere Patienten","Schwangerschaft","Stillzeit","Jugendliche","Jugendlichen"};
 
 	static private String ListOfKeywordsFR[] = {"Principe actif","Excipient","Excipients",
-		"Enfant","Enfants","Adolescents","Adultes","Posologie usuelle","Remarques particuli�res", "Remarques concernant la manipulation",
+		"Enfant","Enfants","Adolescents","Adultes","Posologie usuelle","Remarques particulières", "Remarques concernant la manipulation",
 		"Remarques concernant le stockage","Conseils d'utilisation","Code ATC","Incompatibilités","Stabilité",
 		"Conservation","Patients âgés","Grossesse","Allaitement","Population spéciales","Absorption","Distribution","Métabolisme",
 		"Elimination"};
@@ -53,6 +54,9 @@ public class HtmlUtils {
 		return mHtmlStr;
 	}
 	
+	/**
+	 * Removes all <span> and </span> and other weird characters and symbols
+	 */
 	public void clean() {
 		// Remove all <span> and </span>
 		mHtmlStr = mHtmlStr.replaceAll("\\<span.*?\\>", "");		
@@ -62,6 +66,11 @@ public class HtmlUtils {
 		mHtmlStr = mHtmlStr.replaceAll("&lt;", "&lt; ");
 	}
 	
+	/**
+	 * Extracts Swissmedic registration number(s) for given German med title
+	 * @param med title
+	 * @return comma-separated list of registration numbers
+	 */
 	public String extractRegNrDE(String title) {
 		mDoc = Jsoup.parse(mHtmlStr);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);	
@@ -203,6 +212,11 @@ public class HtmlUtils {
 		return regnr_str;
 	}
 
+	/**
+	 * Extracts Swissmedic registration number(s) for given French med title
+	 * @param med title
+	 * @return comma-separated list of registration numbers
+	 */	
 	public String extractRegNrFR(String title) {
 		mDoc = Jsoup.parse(mHtmlStr);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);	
@@ -238,7 +252,7 @@ public class HtmlUtils {
 					h = h.replaceAll("\\<p.*?\\>", "");
 					h = h.replaceAll("<\\/p\\>", "");					
 					// Remove anything after "Packungen"
-					h = h.replaceAll("(?<=Pr�sentation).*", "");
+					h = h.replaceAll("(?<=Présentation).*", "");
 					// Remove all parenthesized stuff, e.g. Vistagan ... !
 					h = h.replaceAll("\\(.*?\\)","");
 					// Special character found in some files							
@@ -277,12 +291,12 @@ public class HtmlUtils {
 				}
 			} else {
 				// Find "Packungen" und "Zulassungsnummer"
-				Element start_elem = mDoc.select("p:contains(Num�ro d�autorisation)").first();			
+				Element start_elem = mDoc.select("p:contains(Numéro d'autorisation)").first();			
 				String h = "";
 				if (start_elem!=null) {
 					h = "";
 					// Parse everything until "Swissmedic";
-					String a = start_elem.toString().replaceAll("(?<=Pr�sentation).*", "");
+					String a = start_elem.toString().replaceAll("(?<=Présentation).*", "");
 					a = a.replaceAll("\\<table.*?\\>", "");
 					a = a.replaceAll("<\\/table\\>", "");	
 					// Remove all parenthesized stuff, e.g. Vistagan ... !
@@ -294,7 +308,7 @@ public class HtmlUtils {
 					a = a.replaceAll("’", "");
 					a = a.replaceAll("`", "");
 					
-					Element stop_elem = mDoc.select("p:contains(Pr�sentation)").first();						
+					Element stop_elem = mDoc.select("p:contains(Présentation)").first();						
 					if (start_elem==stop_elem) {
 						Matcher m = d5_pattern.matcher(a);
 						while (m.find())
@@ -363,6 +377,14 @@ public class HtmlUtils {
 		return pack_section;
 	}
 	
+	/**
+	 * Cleans a given SectionX for a given med title of a given language
+	 * Note: not the most efficient implementations, html file is parsed always
+	 * @param sectionX
+	 * @param med_title
+	 * @param language
+	 * @return
+	 */
 	public String sanitizeSection(int sectionX, String med_title, String language) {
 		mDoc = Jsoup.parse(mHtmlStr);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);		
@@ -372,25 +394,33 @@ public class HtmlUtils {
 		newDoc.outputSettings().charset("UTF-8");
 		
 		if (sectionX>1) {
+			// Create brand new div for section with id=sectionN
 			newDoc.html("<div class=\"paragraph\" id=\"section"+sectionX+"\">");
 			Element paraDiv = newDoc.select("div[class=paragraph]").first();
 			
-			// Find sectionX
+			// Find sectionX 
 			Element section_header = mDoc.select("p[id=section"+sectionX+"]").first();		
 			if (section_header!=null) {
-				// Sanitize header
-				paraDiv.html("<div class=\"absTitle\">"+section_header.text()+"</div>");
-											
+				// Sanitize header (*section title*)
+				// Remove all <br /> in the title! 
+				int substr_index = section_header.html().indexOf("<br />");
+				int tot_len = section_header.html().length();
+				if (substr_index>0) {
+					paraDiv.html("<div class=\"absTitle\">"+section_header.html().substring(0, substr_index)+"</div>" 
+						+ "<p class=\"spacing1\">"+ section_header.html().substring(substr_index+6, tot_len)+"</p>");				
+				} else {
+					paraDiv.html("<div class=\"absTitle\">"+section_header.html()+"</div>");
+				}
 				// Find all information between X and X+1
 				Elements elems = mDoc.select("p[id=section"+sectionX+"] ~ *");			
 				Element elemXp1 = mDoc.select("p[id=section"+(sectionX+1)+"]").first();			
-					
+								
 				// Loop through the content
 				if (elems!=null) {
 					for (Element e : elems) {
 						// Sanitize
 						Element img = null;
-						if (e.tagName().equals("p")) {						
+						if (e.tagName().equals("p")) {
 							if (e.select("img[src]")!=null) 
 								img = e.select("img[src]").first();
 							String re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
@@ -420,14 +450,15 @@ public class HtmlUtils {
 									re = re.replaceAll("\\b"+ListOfKeywordsFR[i]+"$", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[i]+"</span>");								
 									re = re.replaceAll("\\b"+ListOfKeywordsFR[i]+"\\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[i]+"</span>");									
 								}
-							}
+							}							
+							// Important step: add the section content!
 							if (img==null)
 								paraDiv.append("<p class=\"spacing1\">" + re + "</p>");
 							else 
 								paraDiv.append("<p class=\"spacing1\">" + img + "</p>");
-
 						}
 						else if (e.tagName().equals("table")) {
+							// Important: deal with the tables
 							Elements col_styles = e.select("col[style]");
 							float sum = 0.0f;
 							for (Element cs : col_styles) {
@@ -462,7 +493,6 @@ public class HtmlUtils {
 			if (language.equals("de"))
 				clean_title = clean_title.replace("â","®");
 			else if (language.equals("fr"))
-				// clean_title = title.html().replace("<sup class=(.*?)>�</sup>", "�");
 				clean_title = med_title;
 			newDoc.html("<div class=\"MonTitle\" id=\"section"+sectionX+"\">"+clean_title+"</div>");
 			Element elem = null;
@@ -484,6 +514,26 @@ public class HtmlUtils {
 		// Replaces all supscripted � in the main text with �
 		html_str = html_str.replaceAll(">â</sup>", ">®</sup>");
 
+		// Remove multiple instances of <p class="spacing1"> </p>
+		Scanner scanner = new Scanner(html_str);
+		html_str = "";
+		int counter = 0;
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			// System.out.println(line.trim());
+			if (line.trim().contains("<p class=\"spacing1\"> </p>")) {
+				counter++;
+			} else 
+				counter = 0;
+			if (counter<2)
+				html_str += (line + '\n');
+		}	
+		scanner.close();
+		
+		// Cosmetic upgrades. Use with care!
+		html_str = html_str.replaceAll("<p class=\"spacing1\"> </p>\n</div>", "</div>");
+		html_str = html_str.replaceAll("</div>\n <p class=\"spacing1\"> </p>", "</div>");
+		
 		return html_str;
 	}
 }
