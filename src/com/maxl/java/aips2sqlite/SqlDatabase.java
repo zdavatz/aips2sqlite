@@ -60,7 +60,7 @@ public class SqlDatabase {
 	        stat.executeUpdate("DROP TABLE IF EXISTS amikodb;");
 	        stat.executeUpdate("CREATE TABLE amikodb (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, atc_class TEXT, " +
-	        		"tindex_str TEXT, application_str TEXT, " +
+	        		"tindex_str TEXT, application_str TEXT, indications_str TEXT, " +
 	        		"customer_id INTEGER, pack_info_str TEXT, " + 
 	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, style_str TEXT);");
 	        // Create indices
@@ -78,7 +78,7 @@ public class SqlDatabase {
 	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, " +
 	        		"ids_str TEXT, titles_str TEXT, style TEXT, content TEXT);");
 	        */		        
-	        prep = conn.prepareStatement("INSERT INTO amikodb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
+	        prep = conn.prepareStatement("INSERT INTO amikodb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
 		} catch (IOException e) {
 			System.err.println(">> SqlDatabase: DB file does not exist!");
 		} catch (SQLException e ) {
@@ -109,14 +109,14 @@ public class SqlDatabase {
 	        prep.setString(6, atc_class_str);
 	        prep.setString(7, tIndex_list.get(0));	// therapeutic index
 	        prep.setString(8, tIndex_list.get(1));	// application area	 
-	        // prep.setString(9,  indications_str);
-	        prep.setInt(9, customer_id);	        
-	        prep.setString(10,  pack_info_str);
-	        prep.setString(11, add_info_str);
-	        prep.setString(12, ids_str);
-	        prep.setString(13, titles_str);
-	        prep.setString(14, m.getContent()); 
-	        prep.setString(15, style_str);
+	        prep.setString(9,  indications_str);	// indications section
+	        prep.setInt(10, customer_id);	        
+	        prep.setString(11,  pack_info_str);
+	        prep.setString(12, add_info_str);
+	        prep.setString(13, ids_str);
+	        prep.setString(14, titles_str);
+	        prep.setString(15, m.getContent()); 
+	        prep.setString(16, style_str);
 	        prep.addBatch();        
 			conn.setAutoCommit(false);
 	        prep.executeBatch();

@@ -40,7 +40,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -89,7 +91,7 @@ public class Aips2Sqlite {
 
 	// Set by command line options (default values)
 	private static String APP_VERSION = "1.0.0";
-	private static String DB_LANGUAGE = "de";	
+	private static String DB_LANGUAGE = "fr";	
 	private static boolean SHOW_ERRORS = false;
 	private static boolean SHOW_LOGS = true;
 	private static boolean DOWNLOAD_ALL = true;
@@ -117,6 +119,9 @@ public class Aips2Sqlite {
 	private static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";	
 	// ****** Parse reports (DE != FR) ******
 	private static final String FILE_REPORT_BASE = "./output/parse_report";
+	// ****** Stop words (DE != FR) ******
+	private static final String FILE_STOP_WORDS_DE = "./input/german_stop_words.txt";
+	private static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";
 	
 	// Map to list with all the relevant information
 	// HashMap is faster, but TreeMap is sort by the key :)
@@ -132,6 +137,7 @@ public class Aips2Sqlite {
 	// Global variables
 	private static String mPackSection_str = "";
 	private static HtmlUtils html_utils = null;		
+	private static HashSet<String> StopWords_hash = null;
 
 	/**
 	 * Adds an option into the command line parser
@@ -222,6 +228,22 @@ public class Aips2Sqlite {
 				System.out.println("");
 				System.out.println("- Generating sqlite database... ");
 			}
+			
+			// Read stop words as String
+			String stopWords_str = null;
+			if (DB_LANGUAGE.equals("de"))
+				stopWords_str = readFromFile(FILE_STOP_WORDS_DE);
+			else if (DB_LANGUAGE.equals("fr"))
+				stopWords_str = readFromFile(FILE_STOP_WORDS_FR);				
+			// Create stop word hash set!
+			if (stopWords_str!=null) {
+				List<String> sw = Arrays.asList(stopWords_str.split("\n"));
+				StopWords_hash = new HashSet<String>();
+				for (String w : sw) {
+					StopWords_hash.add(w.trim().toLowerCase());
+				}	
+			}
+			
 			long startTime = System.currentTimeMillis();
 			
 			// Generates SQLite database - function should return the number of entries
@@ -419,22 +441,32 @@ public class Aips2Sqlite {
 							} else {
 								html_sanitized = m.getContent();
 							}
-
+					
 							// System.out.println(html_sanitized);
 							
 							// Extract section indications
 							String section_indications = "";
-							String sstr1 = null;
-							String sstr2 = null;
 							if (DB_LANGUAGE.equals("de")) {
-								sstr1 = "Indikationen/Anwendungsmöglichkeiten";
-								sstr2 = "Dosierung/Anwendung";
+								String sstr1 = "Indikationen/Anwendungsmöglichkeiten";
+								String sstr2 = "Dosierung/Anwendung";
+								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
+									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
+									int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
+									try {
+										section_indications = html_sanitized.substring(idx1, idx1+idx2);
+									} catch(StringIndexOutOfBoundsException e) {
+										e.printStackTrace();
+									}
+								}						
 							} else if (DB_LANGUAGE.equals("fr")) {
-								sstr1 = "Indications/Possibilités d&apos;emploi";
-								sstr2 = "Posologie/Mode d&apos;emploi";
-							}
-							
-							if (sstr1!=null && sstr2!=null ) {
+								String sstr1 = "Indications/Possibilités d’emploi";
+								String sstr2 = "Posologie/Mode d’emploi";
+								
+								html_sanitized = html_sanitized.replaceAll("Indications/Possibilités d&apos;emploi", sstr1);
+								html_sanitized = html_sanitized.replaceAll("Posologie/Mode d&apos;emploi", sstr2);
+								html_sanitized = html_sanitized.replaceAll("Indications/possibilités d’emploi", sstr1);
+								html_sanitized = html_sanitized.replaceAll("Posologie/mode d’emploi", sstr2);
+														
 								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
 									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
 									int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
@@ -445,13 +477,36 @@ public class Aips2Sqlite {
 									}
 								}
 							}							
-							
+
 							// Remove all p's, div's and span's
 							section_indications = section_indications.replaceAll("\\<p.*?\\>", "").replaceAll("</p>", "");							
 							section_indications = section_indications.replaceAll("\\<div.*?\\>", "").replaceAll("</div>", "");
-							section_indications = section_indications.replaceAll("\\<span.*?\\>", "").replaceAll("</span>", "");							
+							section_indications = section_indications.replaceAll("\\<span.*?\\>", "").replaceAll("</span>", "");
+
 							// System.out.println(section_indications);
 							
+							// Remove commas, semicolons, parentheses, etc.
+							if (DB_LANGUAGE.equals("de"))
+								section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
+							else if (DB_LANGUAGE.equals("fr")) {
+								section_indications = section_indications.replaceAll("l&apos;", "").replaceAll("d&apos;", "");
+								section_indications = section_indications.replaceAll("l’", "").replaceAll("d’", "");
+								section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
+							}
+							// Remove stop words
+							LinkedList<String> wordsAsList = new LinkedList<String>(
+									Arrays.asList(section_indications.split("\\s+")));
+							Iterator<String> wordIterator = wordsAsList.iterator();
+							while (wordIterator.hasNext()) {
+								// Note: This assumes there are no null entries in the list and all stopwords are stored in lower case
+								String word = wordIterator.next().trim().toLowerCase();
+								if (word.length()<3 || StopWords_hash.contains(word))
+									wordIterator.remove();
+							}
+							section_indications = "";
+							for (String w: wordsAsList) {
+								section_indications += (w+";");
+							}
 							// Update "Packungen" section and extract therapeutisches index
 							List<String> mTyIndex_list = new ArrayList<String>();						
 							String mContent_str = updateSectionPackungen(m.getTitle(), package_info, regnr_str, html_sanitized, mTyIndex_list);
@@ -1371,7 +1426,7 @@ public class Aips2Sqlite {
 		String file_str = "";
 		try {
 			FileInputStream fis = new FileInputStream(filename);
-			BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
 			String line;
 			while ((line = br.readLine()) != null) {
 				file_str += (line + "\n");
