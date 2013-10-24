@@ -18,14 +18,14 @@ On some systems it may be necessary to increase the heap space with the Java opt
 
 --help
 
---lang <arg>	generate database with given language, two options are supported: 'de' and 'fr'
---nodown		  do not download the aips, swissmedic, bag and refdata files
---quiet			  be extra quiet
---report		  generate also report file
---verbose		  be extra verbose
---version		  print the version information and exit
---zip			    generate a zipped version of the database 
---indications to generate a report about the keywords…found in the section indications
+--lang <arg>		generate database with given language, two options are supported: 'de' and 'fr'
+--nodown		  	do not download the aips, swissmedic, bag and refdata files
+--quiet			  	be extra quiet
+--report		  	generate parse error report (folder output)
+--verbose		  	be extra verbose
+--version		  	print the version information and exit
+--zip			    generate zipped version of the database 
+--indications 		generate report about keywords found in section indications (folder output)
 ```
 
 ## Examples
