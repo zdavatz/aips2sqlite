@@ -14,15 +14,18 @@ On some systems it may be necessary to increase the heap space with the Java opt
 ## Options
 
 ```
---alpha <arg> 	generate database with drugs whose titles start with <arg>
+--alpha <arg> generate database with drugs whose titles start with <arg>
+
 --help
+
 --lang <arg>	generate database with given language, two options are supported: 'de' and 'fr'
---nodown		do not download the aips, swissmedic, bag and refdata files
---quiet			be extra quiet
---report		generate also report file
---verbose		be extra verbose
---version		print the version information and exit
---zip			generate a zipped version of the database 
+--nodown		  do not download the aips, swissmedic, bag and refdata files
+--quiet			  be extra quiet
+--report		  generate also report file
+--verbose		  be extra verbose
+--version		  print the version information and exit
+--zip			    generate a zipped version of the database 
+--indications to generate a report about the keywords…found in the section indications
 ```
 
 ## Examples
