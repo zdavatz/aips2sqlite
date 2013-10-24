@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -97,6 +98,7 @@ public class Aips2Sqlite {
 	private static boolean DOWNLOAD_ALL = true;
 	private static boolean ZIP_SQL = false;
 	private static boolean GENERATE_REPORT = false;
+	private static boolean INDICATIONS_REPORT = false;
 	private static String OPT_MED_TITLE = "";
 	
 	// Other global variables or constants
@@ -119,6 +121,7 @@ public class Aips2Sqlite {
 	private static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";	
 	// ****** Parse reports (DE != FR) ******
 	private static final String FILE_REPORT_BASE = "./output/parse_report";
+	private static final String FILE_INDICATIONS_REPORT = "./output/indications_report";
 	// ****** Stop words (DE != FR) ******
 	private static final String FILE_STOP_WORDS_DE = "./input/german_stop_words.txt";
 	private static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";
@@ -195,6 +198,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("report")) {
 				GENERATE_REPORT = true;
 			}
+			if (cmd.hasOption("indications")) {
+				INDICATIONS_REPORT = true;
+			}
 		} catch (ParseException e) {
 			System.err.println("Parsing failed: " + e.getMessage());
 		}
@@ -210,7 +216,8 @@ public class Aips2Sqlite {
 		addOption(options, "zip", "generate zip file", false, false);
 		addOption(options, "alpha",	"only include titles which start with option value", true, false);
 		addOption(options, "nodown", "no download, parse only", false, false);
-		addOption(options, "report", "generates report", false, false);
+		addOption(options, "report", "generates error report", false, false);
+		addOption(options, "indications", "generates section indications keyword report", false, false);
 
 		// Parse command line options
 		commandLineParse(options, args);
@@ -282,8 +289,8 @@ public class Aips2Sqlite {
 			
 			// Load CSS files
 			String style_v1_str = readCSSfromFile(FILE_STYLE_CSS_BASE + "v1.css");
-			
-			// Create report file
+						
+			// Create error report file
 			BufferedWriter bw = null;
 			if (GENERATE_REPORT==true) {
 				DateFormat df = new SimpleDateFormat("ddMMyy");
@@ -334,6 +341,21 @@ public class Aips2Sqlite {
 					bw.write("<br/>");			
 				}
 			}
+			
+			// Create indications report file
+			BufferedWriter bw_indications = null;
+			Map<String, String> tm_indications = new TreeMap<String, String>();
+			if (INDICATIONS_REPORT==true) {
+				DateFormat df = new SimpleDateFormat("ddMMyy");
+				String date_str = df.format(new Date());
+				File report_file = new File(FILE_INDICATIONS_REPORT + "_" + date_str + "_" + DB_LANGUAGE + ".txt");
+				if (!report_file.exists()) {
+					report_file.getParentFile().mkdirs();
+					report_file.createNewFile();
+				}
+				FileWriter fw = new FileWriter(report_file.getAbsoluteFile());
+				bw_indications = new BufferedWriter(fw);				
+			}			
 			
 			// Initialize counters for different languages
 			int counter_de = 0;
@@ -506,7 +528,27 @@ public class Aips2Sqlite {
 							section_indications = "";
 							for (String w: wordsAsList) {
 								section_indications += (w+";");
+								if (INDICATIONS_REPORT==true) {
+									// Add to map (key->value), word = key, value = how many times used
+									String t_str = tm_indications.get(w);
+									if (t_str==null) {
+										t_str = m.getTitle();
+										tm_indications.put(w, t_str);										
+									} else {
+										t_str += (", " + m.getTitle());
+										tm_indications.put(w, t_str);
+									}
+									/*
+									Integer count = tm_indications.get(w);
+									if (count == null) {
+									    tm_indications.put(w, 1);
+									} else {
+									   tm_indications.put(w, count+1);
+									}
+									*/								
+								}								
 							}
+						
 							// Update "Packungen" section and extract therapeutisches index
 							List<String> mTyIndex_list = new ArrayList<String>();						
 							String mContent_str = updateSectionPackungen(m.getTitle(), package_info, regnr_str, html_sanitized, mTyIndex_list);
@@ -593,6 +635,17 @@ public class Aips2Sqlite {
 				bw.write("<br/>");				
 				// Close report file
 				bw.close();
+			}
+			
+			if (INDICATIONS_REPORT) {
+				// Dump everything to file
+				bw_indications.write("Total number of words: " + tm_indications.size() + "\n\n");
+				for (Map.Entry<String, String> entry : tm_indications.entrySet()) {
+				    String key = entry.getKey();
+				    String value = entry.getValue();
+				    bw_indications.write(key + " [" + value + "]\n");
+				}
+				bw_indications.close();
 			}
 			
 			if (DB_LANGUAGE.equals("de")) {
