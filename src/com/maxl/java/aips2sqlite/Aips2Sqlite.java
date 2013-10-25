@@ -599,13 +599,6 @@ public class Aips2Sqlite {
 			    			// Add medis, titles and ids to database
 							sql_db.addDB( m, style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
 									mPackSection_str, orggen_str, customer_id, mTyIndex_list, section_indications );
-							/*
-							try {
-								showHtml(style_v1_str, m.getContent());
-							} catch (Exception e) {
-								//
-							}
-							*/
 						}
 					}
 					counter_de++;				
