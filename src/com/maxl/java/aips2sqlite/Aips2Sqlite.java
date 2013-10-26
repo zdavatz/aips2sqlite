@@ -507,17 +507,21 @@ public class Aips2Sqlite {
 
 							// System.out.println(section_indications);
 							
-							// Remove commas, semicolons, parentheses, etc.
-							if (DB_LANGUAGE.equals("de"))
-								section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
-							else if (DB_LANGUAGE.equals("fr")) {
+							if (DB_LANGUAGE.equals("fr")) {
+								// Remove apostrophes
 								section_indications = section_indications.replaceAll("l&apos;", "").replaceAll("d&apos;", "");
 								section_indications = section_indications.replaceAll("l’", "").replaceAll("d’", "");
-								section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
 							}
-							// Remove stop words
+							// Remove all URLs
+							section_indications = section_indications.replaceAll("\\b(http|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "");
+							// Remove list of type a) b) c) ... 1) 2) ...
+							section_indications = section_indications.replaceAll("\\w\\)", "");
+							// Remove commas, semicolons, parentheses, etc.								
+							section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
+							// Generate long list of keywords
 							LinkedList<String> wordsAsList = new LinkedList<String>(
 									Arrays.asList(section_indications.split("\\s+")));
+							// Remove stop words
 							Iterator<String> wordIterator = wordsAsList.iterator();
 							while (wordIterator.hasNext()) {
 								// Note: This assumes there are no null entries in the list and all stopwords are stored in lower case
@@ -527,9 +531,13 @@ public class Aips2Sqlite {
 							}
 							section_indications = "";
 							for (String w: wordsAsList) {
+								// Remove any leading dash or hyphen
+								if (w.startsWith("-"))
+									w = w.substring(1);
 								section_indications += (w+";");
 								if (INDICATIONS_REPORT==true) {
 									// Add to map (key->value), word = key, value = how many times used
+									// Is word w already stored in treemap?
 									String t_str = tm_indications.get(w);
 									if (t_str==null) {
 										t_str = m.getTitle();
@@ -537,15 +545,7 @@ public class Aips2Sqlite {
 									} else {
 										t_str += (", " + m.getTitle());
 										tm_indications.put(w, t_str);
-									}
-									/*
-									Integer count = tm_indications.get(w);
-									if (count == null) {
-									    tm_indications.put(w, 1);
-									} else {
-									   tm_indications.put(w, count+1);
-									}
-									*/								
+									}					
 								}								
 							}
 						
