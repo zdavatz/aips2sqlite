@@ -22,6 +22,7 @@ anders
 auch
 auf
 aus
+beginnt
 bei
 beim
 bereits
@@ -77,6 +78,7 @@ dieses
 dir
 doch
 dort
+drei
 du
 durch
 ein
@@ -95,8 +97,11 @@ einmal
 eint
 entweder
 er
+ergibt
+erhalten
 erste
 ersten
+ertragen
 es
 etwas
 euch
@@ -220,6 +225,7 @@ oder
 ohne
 pdf
 sehr
+sei
 seid
 sein
 seine
@@ -262,6 +268,7 @@ unser
 unsere
 unses
 unter
+vgl
 viel
 vom
 von
@@ -275,7 +282,9 @@ waren
 warst
 warum
 was
+weder
 weg
+wegen
 weil
 weiter
 weitere
@@ -306,11 +315,23 @@ wollte
 worden
 wurde
 wurden
+zählen
+zeigen 
+zeigt 
+zeigte
+zeigten
 zu
+zudem
 zum
 zur
+zusätzlich 
+zusätzliche 
+zusätzlichen 
+zusätzlicher 
+zusätzliches
 zwar
 zwecks
+zwei
 zwischen
 Prophylaxe
 Prävention

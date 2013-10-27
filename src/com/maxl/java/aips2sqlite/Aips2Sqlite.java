@@ -526,14 +526,14 @@ public class Aips2Sqlite {
 							while (wordIterator.hasNext()) {
 								// Note: This assumes there are no null entries in the list and all stopwords are stored in lower case
 								String word = wordIterator.next().trim().toLowerCase();
-								if (word.length()<3 || StopWords_hash.contains(word))
+								if (word.length()<3 || m.getTitle().toLowerCase().contains(word) || StopWords_hash.contains(word))
 									wordIterator.remove();
 							}
 							section_indications = "";
 							for (String w: wordsAsList) {
 								// Remove any leading dash or hyphen
 								if (w.startsWith("-"))
-									w = w.substring(1);
+									w = w.substring(1);	
 								section_indications += (w+";");
 								if (INDICATIONS_REPORT==true) {
 									// Add to map (key->value), word = key, value = how many times used
