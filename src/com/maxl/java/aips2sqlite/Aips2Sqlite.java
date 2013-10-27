@@ -516,7 +516,7 @@ public class Aips2Sqlite {
 							// Remove all URLs
 							section_indications = section_indications.replaceAll("\\b(http|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "");
 							// Remove list of type a) b) c) ... 1) 2) ...
-							section_indications = section_indications.replaceAll("\\w\\)", "");
+							section_indications = section_indications.replaceAll("^\\w\\)", "");
 							// Remove numbers, commas, semicolons, parentheses, etc.								
 							section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
 							// Generate long list of keywords

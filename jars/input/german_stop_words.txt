@@ -22,6 +22,10 @@ anders
 auch
 auf
 aus
+behandelt
+behandlung
+behandlung
+behandlungen
 beginnt
 bei
 beim
@@ -254,6 +258,7 @@ sondern
 sonst
 soweit
 sowie
+spp
 stets
 überprüft
 überwacht
@@ -315,6 +320,8 @@ wollte
 worden
 wurde
 wurden
+zähem
+zäher
 zählen
 zeigen 
 zeigt 
