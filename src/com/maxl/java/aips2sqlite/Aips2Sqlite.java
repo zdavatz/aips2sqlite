@@ -500,10 +500,11 @@ public class Aips2Sqlite {
 								}
 							}							
 
-							// Remove all p's, div's and span's
+							// Remove all p's, div's, span's and sup's
 							section_indications = section_indications.replaceAll("\\<p.*?\\>", "").replaceAll("</p>", "");							
 							section_indications = section_indications.replaceAll("\\<div.*?\\>", "").replaceAll("</div>", "");
 							section_indications = section_indications.replaceAll("\\<span.*?\\>", "").replaceAll("</span>", "");
+							section_indications = section_indications.replaceAll("\\<sup.*?\\>", "").replaceAll("</sup>", "");
 
 							// System.out.println(section_indications);
 							
@@ -516,7 +517,7 @@ public class Aips2Sqlite {
 							section_indications = section_indications.replaceAll("\\b(http|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "");
 							// Remove list of type a) b) c) ... 1) 2) ...
 							section_indications = section_indications.replaceAll("\\w\\)", "");
-							// Remove commas, semicolons, parentheses, etc.								
+							// Remove numbers, commas, semicolons, parentheses, etc.								
 							section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
 							// Generate long list of keywords
 							LinkedList<String> wordsAsList = new LinkedList<String>(
