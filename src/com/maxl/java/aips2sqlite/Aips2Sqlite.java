@@ -300,15 +300,17 @@ public class Aips2Sqlite {
 					report_file.getParentFile().mkdirs();
 					report_file.createNewFile();
 				}
-				FileWriter fw = new FileWriter(report_file.getAbsoluteFile());
-				bw = new BufferedWriter(fw);
+				// FileWriter fw = new FileWriter(report_file.getAbsoluteFile());
+				// bw = new BufferedWriter(fw);
+				bw = new BufferedWriter(new OutputStreamWriter(
+						new FileOutputStream(report_file.getAbsoluteFile()),"UTF-8"));		
 				
 				// Change dateformat
 				df = new SimpleDateFormat("dd.MM.yy");
 				date_str = df.format(new Date());
 				
 				if (DB_LANGUAGE.equals("de")) {
-					// bw.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");
+					bw.write("<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /></head>");
 					bw.write("<h3>Schweizer Arzneimittel-Kompendium</h3>");
 					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
 					bw.write("<p>Lizenz: GPL v3.0</p>");
