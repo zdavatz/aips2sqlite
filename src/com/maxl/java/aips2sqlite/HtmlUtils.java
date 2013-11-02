@@ -20,6 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package com.maxl.java.aips2sqlite;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -33,6 +34,7 @@ import org.jsoup.select.Elements;
 
 public class HtmlUtils {
 
+	private String mLanguage;
 	private String mHtmlStr;
 	private Document mDoc;
 	
@@ -52,6 +54,10 @@ public class HtmlUtils {
 	
 	public String getClean() {
 		return mHtmlStr;
+	}
+	
+	public void setLanguage(String lang) {
+		mLanguage = lang;
 	}
 	
 	/**
@@ -536,5 +542,175 @@ public class HtmlUtils {
 		
 		return html_str;
 	}
+	
+	String convertHtmlToXml(String med_title, String html_str, String regnr_str) {				
+		Document mDoc = Jsoup.parse(html_str);
+		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
+		mDoc.outputSettings().prettyPrint(true);
+		mDoc.outputSettings().indentAmount(4);
+		
+		// <div id="monographie"> -> <fi>
+		mDoc.select("div[id=monographie]").tagName("fi").removeAttr("id");
+		// <div class="MonTitle"> -> <title>
+		mDoc.select("div[class=MonTitle]").tagName("title").removeAttr("class").removeAttr("id");
+		// Beautify the title to the best of my possibilities ... still not good enough!
+		String title_str = mDoc.select("title").text().trim().replaceAll("<br />","").replaceAll("(\\t|\\r?\\n)+","");
+		// title_str is redundant...
+		// Fallback solution: use title from the header AIPS.xml file - the titles look all pretty good!
+		mDoc.select("title").first().text(med_title);
+		// <div class="ownerCompany"> -> <owner>
+		Element owner_elem = mDoc.select("div[class=ownerCompany]").first();
+		if (owner_elem!=null) {
+			owner_elem.tagName("owner").removeAttr("class");			
+			String owner_str = mDoc.select("owner").text();		
+			mDoc.select("owner").first().text(owner_str);
+		} else {
+			mDoc.select("title").after("<owner></owner>");
+			if (mLanguage.equals("de"))
+				mDoc.select("owner").first().text("k.A.");
+			else if (mLanguage.equals("fr"))
+				mDoc.select("owner").first().text("n.s.");				
+			else
+				return ""; 
+		}
+		
+		// <div class="paragraph"> -> <paragraph>
+		mDoc.select("div[class=paragraph]").tagName("paragraph").removeAttr("class").removeAttr("id");
+		// <div class="absTitle"> -> <paragraphTitle>
+		mDoc.select("div[class=absTitle]").tagName("paragraphtitle").removeAttr("class");
+		// <div class="untertitle1"> -> <paragraphSubTitle>
+		mDoc.select("div[class=untertitle1]").tagName("paragraphsubtitle").removeAttr("class");
+		// <div class="untertitle"> -> <paragraphSubTitle>
+		mDoc.select("div[class=untertitle]").tagName("paragraphsubtitle").removeAttr("class");		
+		// <div class="shortCharacteristic"> -> <characteristic>
+		mDoc.select("div[class=shortCharacteristic]").tagName("characteristic").removeAttr("class");
+		// <div class="image">
+		mDoc.select("div[class=image]").tagName("image").removeAttr("class");
+		
+		// <p class="spacing1"> -> <p> / <p class="noSpacing"> -> <p>
+		mDoc.select("p[class]").tagName("p").removeAttr("class");
+		// <span style="font-style:italic"> -> <i>
+		mDoc.select("span").tagName("i").removeAttr("style");
+		// <i class="indention1"> -> <i> / <i class="indention2"> -> <b-i> 
+		mDoc.select("i[class=indention1]").tagName("i").removeAttr("class");
+		mDoc.select("i[class=indention2]").tagName("i").removeAttr("class");
+		// mDoc.select("p").select("i").tagName("i");
+		// mDoc.select("paragraphtitle").select("i").tagName("para-i");
+		// mDoc.select("paragraphsubtitle").select("i").tagName("parasub-i");
+		Elements elems = mDoc.select("paragraphtitle");
+		for (Element e : elems) {
+			if (!e.text().isEmpty())
+				e.text(e.text());
+		}
+		elems = mDoc.select("paragraphsubtitle");
+		for (Element e : elems) {
+			if (!e.text().isEmpty())
+				e.text(e.text());
+		}
+		
+		// Here we take care of tables
+		// <table class="s21"> -> <table>
+		mDoc.select("table[class]").removeAttr("class");
+		mDoc.select("table").removeAttr("cellspacing").removeAttr("cellpadding").removeAttr("border");
+		mDoc.select("colgroup").remove();
+		mDoc.select("td").removeAttr("class").removeAttr("colspan").removeAttr("rowspan");
+		mDoc.select("tr").removeAttr("class");
+		elems = mDoc.select("div[class]");
+		for (Element e : elems) {
+			if (e.text().isEmpty())
+				e.remove();
+		}
+
+		mDoc.select("tbody").unwrap();
+		// Remove nested table (a nasty table-in-a-table
+		Elements nested_table = mDoc.select("table").select("tr").select("td").select("table");
+		if (!nested_table.isEmpty()) {
+			nested_table.select("table").unwrap();
+		}
+
+		// Here we take care of the images
+		mDoc.select("img").removeAttr("align").removeAttr("border");
+		
+		// Subs and sups
+		mDoc.select("sub[class]").tagName("sub").removeAttr("class");
+		mDoc.select("sup[class]").tagName("sup").removeAttr("class");
+		mDoc.select("td").select("sub").tagName("td-sub");		
+		mDoc.select("td").select("sup").tagName("td-sup");
+		// Remove floating <td-sup> tags
+		mDoc.select("p").select("td-sup").tagName("sup");		
+		mDoc.select("p").select("td-sub").tagName("sub");
+		
+		// Box
+		mDoc.select("div[class=box]").tagName("box").removeAttr("class");
+		
+		// Insert swissmedicno5 after <owner> tag
+		mDoc.select("owner").after("<swissmedicno5></swissmedicno5");
+		mDoc.select("swissmedicno5").first().text(regnr_str);
+		
+		// Remove html, head and body tags			
+		String xml_str = mDoc.select("body").first().html();
+				
+		//xml_str = xml_str.replaceAll("<tbody>", "").replaceAll("</tbody>", "");
+		xml_str = xml_str.replaceAll("<sup> </sup>", "");
+		xml_str = xml_str.replaceAll("<sub> </sub>", "");		
+		xml_str = xml_str.replaceAll("<p> <i>", "<p><i>");
+		xml_str = xml_str.replaceAll("</p> </td>", "</p></td>");
+		xml_str = xml_str.replaceAll("<p> </p>", "<p></p>");  // MUST be improved, the space is not a real space!!
+		xml_str = xml_str.replaceAll("·", "- ");		// Remove "middot" &middot; = &#183;
+		xml_str = xml_str.replaceAll("<br />", "");
+		xml_str = xml_str.replaceAll("<i><i>", "<i>").replaceAll("</i></i>", "</i>");
+		xml_str = xml_str.replaceAll("(?m)^[ \t]*\r?\n", "");
+
+		// Remove multiple instances of <p></p>
+		Scanner scanner = new Scanner(xml_str);
+		String new_xml_str = "";
+		int counter = 0;
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			if (line.trim().equals("<p></p>")) {
+				counter++;
+			} else 
+				counter = 0;
+			if (counter<3)
+				new_xml_str += line;
+		}	
+		scanner.close();
+
+		return new_xml_str;
+	}	
+	
+	String addHeaderToXml(String xml_str) {
+		Document mDoc = Jsoup.parse("<kompendium>\n" + xml_str + "</kompendium>");
+		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
+		mDoc.outputSettings().prettyPrint(true);
+		mDoc.outputSettings().indentAmount(4);
+
+		// Add date
+		Date df = new Date();
+		String date_str = df.toString();
+		mDoc.select("kompendium").first().prependElement("date");
+		mDoc.select("date").first().text(date_str);
+		// Add language
+		mDoc.select("date").after("<lang></lang>");
+		if (mLanguage.equals("de"))
+			mDoc.select("lang").first().text("DE");
+		else if (mLanguage.equals("fr"))
+			mDoc.select("lang").first().text("FR");
+		else
+			return "";
+		
+		// Fool jsoup.parse which seems to have its own "life"
+		mDoc.select("tbody").unwrap();
+		Elements img_elems = mDoc.select("img");
+		for (Element img_e : img_elems) {
+			if (!img_e.hasAttr("src"))
+				img_e.unwrap();
+		}
+		mDoc.select("img").tagName("image");
+
+		String final_xml_str = mDoc.select("kompendium").first().outerHtml();
+
+		return final_xml_str;
+	}	
 }
 

@@ -40,7 +40,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -50,6 +49,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -96,10 +96,12 @@ public class Aips2Sqlite {
 	private static boolean SHOW_ERRORS = false;
 	private static boolean SHOW_LOGS = true;
 	private static boolean DOWNLOAD_ALL = true;
-	private static boolean ZIP_SQL = false;
+	private static boolean XML_FILE = false;
+	private static boolean ZIP_BIG_FILES = false;
 	private static boolean GENERATE_REPORT = false;
 	private static boolean INDICATIONS_REPORT = false;
 	private static String OPT_MED_TITLE = "";
+	private static String OPT_MED_REGNR = "";
 	
 	// Other global variables or constants
 	private static String DB_VERSION = "1.2.7";
@@ -122,6 +124,8 @@ public class Aips2Sqlite {
 	// ****** Parse reports (DE != FR) ******
 	private static final String FILE_REPORT_BASE = "./output/parse_report";
 	private static final String FILE_INDICATIONS_REPORT = "./output/indications_report";
+	// ****** XML file ******
+	private static final String FILE_XML_BASE = "./output/fis/";
 	// ****** Stop words (DE != FR) ******
 	private static final String FILE_STOP_WORDS_DE = "./input/german_stop_words.txt";
 	private static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";
@@ -187,10 +191,16 @@ public class Aips2Sqlite {
 				SHOW_LOGS = false;
 			}
 			if (cmd.hasOption("zip")) {
-				ZIP_SQL = true;
+				ZIP_BIG_FILES = true;
 			}
 			if (cmd.hasOption("alpha")) {
 				OPT_MED_TITLE = cmd.getOptionValue("alpha");
+			}
+			if (cmd.hasOption("regnr")) {
+				OPT_MED_REGNR = cmd.getOptionValue("regnr");
+			}
+			if (cmd.hasOption("xml")) {
+				XML_FILE = true;
 			}
 			if (cmd.hasOption("nodown")) {
 				DOWNLOAD_ALL = false;
@@ -212,10 +222,12 @@ public class Aips2Sqlite {
 		addOption(options, "version", "print the version information and exit",	false, false);
 		addOption(options, "quiet", "be extra quiet", false, false);
 		addOption(options, "verbose", "be extra verbose", false, false);
+		addOption(options, "nodown", "no download, parse only", false, false);		
 		addOption(options, "lang", "use given language", true, false);		
-		addOption(options, "zip", "generate zip file", false, false);
 		addOption(options, "alpha",	"only include titles which start with option value", true, false);
-		addOption(options, "nodown", "no download, parse only", false, false);
+		addOption(options, "regnr", "only include medications which start with option value", true, false);
+		addOption(options, "xml", "generate xml file", false, false);	
+		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "report", "generates error report", false, false);
 		addOption(options, "indications", "generates section indications keyword report", false, false);
 
@@ -366,7 +378,8 @@ public class Aips2Sqlite {
 			int missing_pack_info = 0;
 			int missing_atc_code = 0;
 			int errors = 0;
-			
+			String fi_complete_xml = "";
+					
 			// First pass is always with DB_LANGUAGE set to German! (most complete information)
 			// The file dumped in ./reports is fed to AllDown.java to generate a multilingual ATC code / ATC class file, e.g. German - French
 			Set<String> atccode_set = new TreeSet<String>();
@@ -385,28 +398,33 @@ public class Aips2Sqlite {
 							titles_str += (s.getTitle() + ";");
 						}						
 						
-						if (m.getTitle().startsWith(OPT_MED_TITLE)) {
-							Document doc = Jsoup.parse(m.getContent());
-							doc.outputSettings().escapeMode(EscapeMode.xhtml);				
-							
-							html_utils = new HtmlUtils(m.getContent());
-							html_utils.clean();
-	
-							// Extract registration number (swissmedic no5)
-							String regnr_str = "";
-							if (DB_LANGUAGE.equals("de"))
-								regnr_str = html_utils.extractRegNrDE(m.getTitle());
-							else if (DB_LANGUAGE.equals("fr"))
-								regnr_str = html_utils.extractRegNrFR(m.getTitle());
+						Document doc = Jsoup.parse(m.getContent());
+						doc.outputSettings().escapeMode(EscapeMode.xhtml);				
+						
+						html_utils = new HtmlUtils(m.getContent());
+						html_utils.setLanguage(DB_LANGUAGE);
+						html_utils.clean();
+
+						// Extract registration number (swissmedic no5)
+						String regnr_str = "";
+						if (DB_LANGUAGE.equals("de"))
+							regnr_str = html_utils.extractRegNrDE(m.getTitle());
+						else if (DB_LANGUAGE.equals("fr"))
+							regnr_str = html_utils.extractRegNrFR(m.getTitle());
+						
+						// Pattern matcher for regnr command line option
+						Pattern regnr_pattern = Pattern.compile("(?s).*\\b" + OPT_MED_REGNR);						
+
+						if (m.getTitle().startsWith(OPT_MED_TITLE) && regnr_pattern.matcher(regnr_str).find()) {																							
+							System.out.println(counter_de + " - " + m.getTitle() + ": " + regnr_str);							
+						
 							if (regnr_str.isEmpty()) {							
 								errors++;
 								if (GENERATE_REPORT==true) 
 									bw.write("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");							
-								// System.err.println(">> ERROR: " + counter_de + " - regnr  string is empty - " + m.getTitle());
 								missing_regnr_str++;
-							}			
-														
-							System.out.println(counter_de + " - " + m.getTitle() + ": " + regnr_str);							
+								regnr_str = "";
+							}							
 							
 							// Associate ATC classes and subclasses (atc_map)					
 							String atc_class_str = "";
@@ -566,6 +584,33 @@ public class Aips2Sqlite {
 							// Correct formatting error introduced by Swissmedic
 							m.setAuthHolder(m.getAuthHolder().replaceAll("&#038;","&"));
 							
+							// Check if substances str has a '$a' and change it to '&alpha'
+							if( m.getSubstances()!=null )
+								m.setSubstances( m.getSubstances().replaceAll("\\$a","&alpha;") );							
+							
+							if (XML_FILE==true) {
+								String xml_str = html_utils.convertHtmlToXml(m.getTitle(), mContent_str, regnr_str);
+								if (DB_LANGUAGE.equals("de")) {
+									if (!regnr_str.isEmpty()) {
+										String name = m.getTitle();
+										// Replace all "Sonderzeichen"
+										name = name.replaceAll("[/%:]", "_");
+										writeToFile(mContent_str, FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
+										writeToFile(xml_str, FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
+										fi_complete_xml += (xml_str + "\n");
+									}
+								} else if (DB_LANGUAGE.equals("fr")) {
+									if (!regnr_str.isEmpty()) {
+										String name = m.getTitle();
+										// Replace all "Sonderzeichen"
+										name = name.replaceAll("[/%:]", "_");
+										writeToFile(mContent_str, FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
+										writeToFile(xml_str, FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+										fi_complete_xml += (xml_str + "\n");	
+									}
+								}								
+							}
+							
 							// System.out.println(">> TIndex: (1) " + mTyIndex_list.get(0) + " (2) " + mTyIndex_list.get(1));	
 							// Check if mPackSection_str is empty
 							if (mPackSection_str.isEmpty()) {	
@@ -595,10 +640,6 @@ public class Aips2Sqlite {
 								}
 							}
 							
-							// Check if substances str has a '$a' and change it to '&alpha'
-							if( m.getSubstances()!=null )
-								m.setSubstances( m.getSubstances().replaceAll("\\$a","&alpha;") );
-							
 			    			// Add medis, titles and ids to database
 							sql_db.addDB( m, style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
 									mPackSection_str, orggen_str, customer_id, mTyIndex_list, section_indications );
@@ -620,7 +661,22 @@ public class Aips2Sqlite {
 			System.out.println("Number of German medis (Fach Info) : " + counter_de);
 			System.out.println("Number of French medis (Fach Info) : " + counter_fr);
 			
-			if (GENERATE_REPORT) {
+			if (XML_FILE==true) {
+				fi_complete_xml = html_utils.addHeaderToXml(fi_complete_xml);
+				// Dump to file
+				if (DB_LANGUAGE.equals("de")) {
+					writeToFile(fi_complete_xml, FILE_XML_BASE, "fi_de.xml");
+					if (ZIP_BIG_FILES)
+						zipToFile(FILE_XML_BASE, "fi_de.xml");
+				}
+				else if (DB_LANGUAGE.equals("fr")) {
+					writeToFile(fi_complete_xml, FILE_XML_BASE, "fi_fr.xml");
+					if (ZIP_BIG_FILES)
+						zipToFile(FILE_XML_BASE, "fi_fr.xml");				
+				}				
+			}
+			
+			if (GENERATE_REPORT==true) {
 				bw.write("<br/>");
 				bw.write("<p>Number of German medications : " + counter_de + "</p>");
 				bw.write("<p>Number of French medications : " + counter_fr + "</p>");
@@ -633,7 +689,7 @@ public class Aips2Sqlite {
 				bw.close();
 			}
 			
-			if (INDICATIONS_REPORT) {
+			if (INDICATIONS_REPORT==true) {
 				// Dump everything to file
 				bw_indications.write("Total number of words: " + tm_indications.size() + "\n\n");
 				for (Map.Entry<String, String> entry : tm_indications.entrySet()) {
@@ -723,7 +779,7 @@ public class Aips2Sqlite {
 					if (row.getCell(12) != null)
 						package_unit = row.getCell(12).getStringCellValue();	// Einheit
 					if (row.getCell(13) != null)
-						swissmedic_cat = row.getCell(13).getStringCellValue();	// Abgabekategorie								
+						swissmedic_cat = row.getCell(13).getStringCellValue();	// Abgabekategorie	
 					if (row.getCell(16) != null)
 						application_area = row.getCell(16).getStringCellValue();	// Anwendungsgebiet				
 					if (row.getCell(10) != null) {							
@@ -1059,74 +1115,6 @@ public class Aips2Sqlite {
 
 		return med_list;
 	}
-
-	static String[] extractHtmlSection(MedicalInformations.MedicalInformation m) {
-		Document doc = Jsoup.parse(m.getContent());
-		doc.outputSettings().escapeMode(EscapeMode.xhtml);
-
-		// Clean html code
-		HtmlUtils html_utils = new HtmlUtils(m.getContent());
-		html_utils.clean();
-
-		// Extract registration number (swissmedic no5)
-		String regnr_str = "";
-		if (DB_LANGUAGE.equals("de"))
-			regnr_str = html_utils.extractRegNrDE(m.getTitle());
-		else if (DB_LANGUAGE.equals("fr"))
-			regnr_str = html_utils.extractRegNrFR(m.getTitle());
-
-		// Sanitize html
-		String html_sanitized = "";
-		// First check for bad boys (version=1! but actually version>1!)
-		if (!m.getVersion().equals("1")	|| m.getContent().substring(0, 20).contains("xml")) {
-			for (int i = 1; i < 22; ++i) {
-				html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), DB_LANGUAGE);
-			}
-			html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>";
-		} else {
-			html_sanitized = m.getContent();
-		}
-		
-		// Update "Packungen" section and extract therapeutisches index
-		List<String> mTyIndex_list = new ArrayList<String>();
-		String mContent_str = updateSectionPackungen(m.getTitle(), 
-				package_info, regnr_str, html_sanitized, mTyIndex_list);
-
-		// Add meta-tag and link
-		/*
-		 * mContent_str = mContent_str.replaceAll("<head>", "<head>" +
-		 * "<link href=\"amiko_stylesheet.css\" rel=\"stylesheet\" type=\"text/css\" />"
-		 * +
-		 * "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />"
-		 * );
-		 */
-		// TODO: Needs to be OPTIMIZED!!
-		String amiko_css_str = readFromFile("./css/amiko_stylesheet.css");
-		mContent_str = mContent_str.replaceAll("<head>", "<head>" + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />"
-								+ "<style>" + amiko_css_str + "</style>");
-
-		m.setContent(mContent_str);
-
-		// Fix problem with wrong div class in original Swissmedic file
-		if (DB_LANGUAGE.equals("de")) {
-			m.setStyle(m.getStyle().replaceAll("untertitel", "untertitle"));
-			m.setStyle(m.getStyle().replaceAll("untertitel1", "untertitle1"));
-		}
-
-		// Correct formatting error introduced by Swissmedic
-		m.setAuthHolder(m.getAuthHolder().replaceAll("&#038;", "&"));
-
-		// Extracts only *first* registration number
-		/*
-		 * List<String> swissmedicno5_list =
-		 * Arrays.asList(regnr_str.split("\\s*,\\s*")); String[]
-		 * swno5_content_map = {swissmedicno5_list.get(0), mContent_str};
-		 */
-		// Extract *all* registration numbers
-		String[] swno5_content_map = { regnr_str, mContent_str };
-
-		return swno5_content_map; // mContent_str;
-	}
 	
 	static String updateSectionPackungen(String title, Map<String, ArrayList<String>> pack_info, 
 			String regnr_str, String content_str, List<String> tIndex_list) {
@@ -1246,175 +1234,6 @@ public class Aips2Sqlite {
 		}
 
 		return doc.html();
-	}
-
-	static String convertHtmlToXml(String med_title, String html_str, String regnr_str) {
-		Document mDoc = Jsoup.parse(html_str);
-		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
-		mDoc.outputSettings().prettyPrint(true);
-		mDoc.outputSettings().indentAmount(4);
-
-		// <div id="monographie"> -> <fi>
-		mDoc.select("div[id=monographie]").tagName("fi").removeAttr("id");
-		// <div class="MonTitle"> -> <title>
-		mDoc.select("div[class=MonTitle]").tagName("title").removeAttr("class").removeAttr("id");
-		// Beautify the title to the best of my possibilities ... still not good enough!
-		String title_str = mDoc.select("title").text().trim().replaceAll("<br />", "").replaceAll("(\\t|\\r?\\n)+", "");
-		if (!title_str.equals(med_title))
-			if (SHOW_ERRORS)
-				System.err.println(med_title + " differs from " + title_str);
-		// Fallback solution: use title from the header AIPS.xml file - the
-		// titles look all pretty good!
-		mDoc.select("title").first().text(med_title);
-		// <div class="ownerCompany"> -> <owner>
-		Element owner_elem = mDoc.select("div[class=ownerCompany]").first();
-		if (owner_elem != null) {
-			owner_elem.tagName("owner").removeAttr("class");
-			String owner_str = mDoc.select("owner").text();
-			mDoc.select("owner").first().text(owner_str);
-		} else {
-			mDoc.select("title").after("<owner></owner>");
-			if (DB_LANGUAGE.equals("de"))
-				mDoc.select("owner").first().text("k.A.");
-			else if (DB_LANGUAGE.equals("fr"))
-				mDoc.select("owner").first().text("n.s.");
-		}
-
-		// <div class="paragraph"> -> <paragraph>
-		mDoc.select("div[class=paragraph]").tagName("paragraph").removeAttr("class").removeAttr("id");
-		// <div class="absTitle"> -> <paragraphTitle>
-		mDoc.select("div[class=absTitle]").tagName("paragraphtitle").removeAttr("class");
-		// <div class="untertitle1"> -> <paragraphSubTitle>
-		mDoc.select("div[class=untertitle1]").tagName("paragraphsubtitle").removeAttr("class");
-		// <div class="untertitle"> -> <paragraphSubTitle>
-		mDoc.select("div[class=untertitle]").tagName("paragraphsubtitle").removeAttr("class");
-		// <div class="shortCharacteristic"> -> <characteristic>
-		mDoc.select("div[class=shortCharacteristic]").tagName("characteristic").removeAttr("class");
-		// <div class="image">
-		mDoc.select("div[class=image]").tagName("image").removeAttr("class");
-
-		// <p class="spacing1"> -> <p> / <p class="noSpacing"> -> <p>
-		mDoc.select("p[class]").tagName("p").removeAttr("class");
-		// <span style="font-style:italic"> -> <i>
-		mDoc.select("span").tagName("i").removeAttr("style");
-		// <i class="indention1"> -> <i> / <i class="indention2"> -> <b-i>
-		mDoc.select("i[class=indention1]").tagName("i").removeAttr("class");
-		mDoc.select("i[class=indention2]").tagName("i").removeAttr("class");
-		// mDoc.select("p").select("i").tagName("i");
-		// mDoc.select("paragraphtitle").select("i").tagName("para-i");
-		// mDoc.select("paragraphsubtitle").select("i").tagName("parasub-i");
-		Elements elems = mDoc.select("paragraphtitle");
-		for (Element e : elems) {
-			if (!e.text().isEmpty())
-				e.text(e.text());
-		}
-		elems = mDoc.select("paragraphsubtitle");
-		for (Element e : elems) {
-			if (!e.text().isEmpty())
-				e.text(e.text());
-		}
-
-		// Here we take care of tables
-		// <table class="s21"> -> <table>
-		mDoc.select("table[class]").removeAttr("class");
-		mDoc.select("table").removeAttr("cellspacing").removeAttr("cellpadding").removeAttr("border");
-		mDoc.select("colgroup").remove();
-		mDoc.select("td").removeAttr("class").removeAttr("colspan").removeAttr("rowspan");
-		mDoc.select("tr").removeAttr("class");
-		elems = mDoc.select("div[class]");
-		for (Element e : elems) {
-			if (e.text().isEmpty())
-				e.remove();
-		}
-
-		mDoc.select("tbody").unwrap();
-		// Remove nested table (a nasty table-in-a-table
-		Elements nested_table = mDoc.select("table").select("tr").select("td").select("table");
-		if (!nested_table.isEmpty()) {
-			nested_table.select("table").unwrap();
-		}
-
-		// Here we take care of the images
-		mDoc.select("img").removeAttr("align").removeAttr("border");
-
-		// Subs and sups
-		mDoc.select("sub[class]").tagName("sub").removeAttr("class");
-		mDoc.select("sup[class]").tagName("sup").removeAttr("class");
-		mDoc.select("td").select("sub").tagName("td-sub");
-		mDoc.select("td").select("sup").tagName("td-sup");
-		// Remove floating <td-sup> tags
-		mDoc.select("p").select("td-sup").tagName("sup");
-		mDoc.select("p").select("td-sub").tagName("sub");
-
-		// Box
-		mDoc.select("div[class=box]").tagName("box").removeAttr("class");
-
-		// Insert swissmedicno5 after <owner> tag
-		mDoc.select("owner").after("<swissmedicno5></swissmedicno5");
-		mDoc.select("swissmedicno5").first().text(regnr_str);
-
-		// Remove html, head and body tags
-		String xml_str = mDoc.select("body").first().html();
-
-		// xml_str = xml_str.replaceAll("<tbody>", "").replaceAll("</tbody>",
-		// "");
-		xml_str = xml_str.replaceAll("<sup> </sup>", "");
-		xml_str = xml_str.replaceAll("<sub> </sub>", "");
-		xml_str = xml_str.replaceAll("<p> <i>", "<p><i>");
-		xml_str = xml_str.replaceAll("</p> </td>", "</p></td>");
-		xml_str = xml_str.replaceAll("<p> </p>", "<p></p>"); // MUST be improved, the space is not a real space!!
-		xml_str = xml_str.replaceAll("�", "- ");
-		xml_str = xml_str.replaceAll("<br />", "");
-		xml_str = xml_str.replaceAll("(?m)^[ \t]*\r?\n", "");
-
-		// Remove multiple instances of <p></p>
-		Scanner scanner = new Scanner(xml_str);
-		String new_xml_str = "";
-		int counter = 0;
-		while (scanner.hasNextLine()) {
-			String line = scanner.nextLine();
-			if (line.trim().equals("<p></p>")) {
-				counter++;
-			} else
-				counter = 0;
-			if (counter < 3)
-				new_xml_str += line;
-		}
-		scanner.close();
-
-		return new_xml_str;
-	}
-
-	static String addHeaderToXml(String xml_str) {
-		Document mDoc = Jsoup.parse("<kompendium>\n" + xml_str + "</kompendium>");
-		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
-		mDoc.outputSettings().prettyPrint(true);
-		mDoc.outputSettings().indentAmount(4);
-
-		// Add date
-		Date df = new Date();
-		String date_str = df.toString();
-		mDoc.select("kompendium").first().prependElement("date");
-		mDoc.select("date").first().text(date_str);
-		// Add language
-		mDoc.select("date").after("<lang></lang>");
-		if (DB_LANGUAGE.equals("de"))
-			mDoc.select("lang").first().text("DE");
-		else if (DB_LANGUAGE.equals("fr"))
-			mDoc.select("lang").first().text("FR");
-
-		// Fool jsoup.parse which seems to have its own "life"
-		mDoc.select("tbody").unwrap();
-		Elements img_elems = mDoc.select("img");
-		for (Element img_e : img_elems) {
-			if (!img_e.hasAttr("src"))
-				img_e.unwrap();
-		}
-		mDoc.select("img").tagName("image");
-
-		String final_xml_str = mDoc.select("kompendium").first().outerHtml();
-
-		return final_xml_str;
 	}
 
 	static String prettyFormat(String input) {
