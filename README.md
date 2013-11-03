@@ -16,18 +16,18 @@ On some systems it may be necessary to increase the heap space with the Java opt
 ```
 --alpha <arg> generate database with drugs whose titles start with <arg>
 
---help				    print help
---version		  	  print the version information and exit
---quiet			  	  be extra quiet
---verbose		  	  be extra verbose
---nodown		  	  do not download the aips, swissmedic, bag and refdata files
---lang=<arg>		  generate database with given language, two options are supported: 'de' and 'fr'
---alpha=<char> 		generate sqlite database or xml file for meds whose title starts with 'char'
---regnr=<number>	generate sqlite database or xml file for meds whose registration number starts with 'number'
---xml				      generate xml file 
---zip			        generate zipped versions sqlite database or xml file 
---report		  	  generate parse error report (folder output)
---indications 		generate report about keywords found in section indications (folder output)
+--help            print help
+--version         print the version information and exit
+--quiet           be extra quiet
+--verbose         be extra verbose
+--nodown          do not download the aips, swissmedic, bag and refdata files
+--lang=<arg>      generate database with given language, two options are supported: 'de' and 'fr'
+--alpha=<char>    generate sqlite database or xml file for meds whose title starts with 'char'
+--regnr=<number>  generate sqlite database or xml file for meds whose registration number starts with 'number'
+--xml             generate xml file 
+--zip             generate zipped versions sqlite database or xml file 
+--report          generate parse error report (folder output)
+--indications     generate report about keywords found in section indications (folder output)
 ```
 
 ## Examples
