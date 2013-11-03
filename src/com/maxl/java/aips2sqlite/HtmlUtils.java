@@ -679,8 +679,8 @@ public class HtmlUtils {
 		return new_xml_str;
 	}	
 	
-	String addHeaderToXml(String xml_str) {
-		Document mDoc = Jsoup.parse("<kompendium>\n" + xml_str + "</kompendium>");
+	String addHeaderToXml(String header_str, String xml_str) {
+		Document mDoc = Jsoup.parse("<" + header_str +">\n" + xml_str + "</" + header_str + ">");
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
 		mDoc.outputSettings().prettyPrint(true);
 		mDoc.outputSettings().indentAmount(4);
@@ -688,7 +688,7 @@ public class HtmlUtils {
 		// Add date
 		Date df = new Date();
 		String date_str = df.toString();
-		mDoc.select("kompendium").first().prependElement("date");
+		mDoc.select(header_str).first().prependElement("date");
 		mDoc.select("date").first().text(date_str);
 		// Add language
 		mDoc.select("date").after("<lang></lang>");
@@ -708,7 +708,7 @@ public class HtmlUtils {
 		}
 		mDoc.select("img").tagName("image");
 
-		String final_xml_str = mDoc.select("kompendium").first().outerHtml();
+		String final_xml_str = mDoc.select(header_str).first().outerHtml();
 
 		return final_xml_str;
 	}	

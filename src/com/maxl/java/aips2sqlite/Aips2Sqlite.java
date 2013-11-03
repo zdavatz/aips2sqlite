@@ -74,6 +74,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -300,7 +301,7 @@ public class Aips2Sqlite {
 			sql_db.createDB(DB_LANGUAGE);
 			
 			// Load CSS files
-			String style_v1_str = readCSSfromFile(FILE_STYLE_CSS_BASE + "v1.css");
+			String amiko_style_v1_str = readCSSfromFile(FILE_STYLE_CSS_BASE + "v1.css");
 						
 			// Create error report file
 			BufferedWriter bw = null;
@@ -589,24 +590,28 @@ public class Aips2Sqlite {
 								m.setSubstances( m.getSubstances().replaceAll("\\$a","&alpha;") );							
 							
 							if (XML_FILE==true) {
-								String xml_str = html_utils.convertHtmlToXml(m.getTitle(), mContent_str, regnr_str);
-								if (DB_LANGUAGE.equals("de")) {
-									if (!regnr_str.isEmpty()) {
-										String name = m.getTitle();
-										// Replace all "Sonderzeichen"
-										name = name.replaceAll("[/%:]", "_");
+								if (!regnr_str.isEmpty()) {
+									// Add header to html file
+									mContent_str = mContent_str.replaceAll("<head>", "<head>" + 
+											"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />" +
+											"<style>" + amiko_style_v1_str + "</style>");												
+									m.setContent(mContent_str);
+																		
+									// Add header to xml file
+									String xml_str = html_utils.convertHtmlToXml(m.getTitle(), mContent_str, regnr_str);									
+									xml_str = html_utils.addHeaderToXml("singlefi", xml_str);
+									fi_complete_xml += (xml_str + "\n");
+									
+									// Write to html and xml files to disk
+									String name = m.getTitle();
+									// Replace all "Sonderzeichen"
+									name = name.replaceAll("[/%:]", "_");									
+									if (DB_LANGUAGE.equals("de")) {
 										writeToFile(mContent_str, FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
 										writeToFile(xml_str, FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
-										fi_complete_xml += (xml_str + "\n");
-									}
-								} else if (DB_LANGUAGE.equals("fr")) {
-									if (!regnr_str.isEmpty()) {
-										String name = m.getTitle();
-										// Replace all "Sonderzeichen"
-										name = name.replaceAll("[/%:]", "_");
-										writeToFile(mContent_str, FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
+									} else if (DB_LANGUAGE.equals("fr")) {
+										writeToFile(mContent_str, FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");										
 										writeToFile(xml_str, FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
-										fi_complete_xml += (xml_str + "\n");	
 									}
 								}								
 							}
@@ -641,7 +646,7 @@ public class Aips2Sqlite {
 							}
 							
 			    			// Add medis, titles and ids to database
-							sql_db.addDB( m, style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
+							sql_db.addDB( m, amiko_style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
 									mPackSection_str, orggen_str, customer_id, mTyIndex_list, section_indications );
 						}
 					}
@@ -662,8 +667,8 @@ public class Aips2Sqlite {
 			System.out.println("Number of French medis (Fach Info) : " + counter_fr);
 			
 			if (XML_FILE==true) {
-				fi_complete_xml = html_utils.addHeaderToXml(fi_complete_xml);
-				// Dump to file
+				fi_complete_xml = html_utils.addHeaderToXml("kompendium", fi_complete_xml);
+				// Write kompendium xml file to disk
 				if (DB_LANGUAGE.equals("de")) {
 					writeToFile(fi_complete_xml, FILE_XML_BASE, "fi_de.xml");
 					if (ZIP_BIG_FILES)
@@ -673,6 +678,20 @@ public class Aips2Sqlite {
 					writeToFile(fi_complete_xml, FILE_XML_BASE, "fi_fr.xml");
 					if (ZIP_BIG_FILES)
 						zipToFile(FILE_XML_BASE, "fi_fr.xml");				
+				}
+				// Copy stylesheet file to ./fis/ folders
+				try {
+					File src = new File(FILE_STYLE_CSS_BASE + "v1.css");
+					File dst_de = new File(FILE_XML_BASE + "fi_de_html/");
+					File dst_fr = new File(FILE_XML_BASE + "fi_fr_html/");			
+					if (src.exists() ) {
+						if (dst_de.exists())
+							FileUtils.copyFileToDirectory(src, dst_de);
+						if (dst_fr.exists())
+							FileUtils.copyFileToDirectory(src, dst_fr);
+					}
+				} catch(IOException e) {
+					// TODO: Unhandled!
 				}				
 			}
 			
