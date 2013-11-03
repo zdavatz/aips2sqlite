@@ -101,8 +101,10 @@ public class Aips2Sqlite {
 	private static boolean ZIP_BIG_FILES = false;
 	private static boolean GENERATE_REPORT = false;
 	private static boolean INDICATIONS_REPORT = false;
+	private static boolean NO_PACK=false;
 	private static String OPT_MED_TITLE = "";
 	private static String OPT_MED_REGNR = "";
+	private static String OPT_MED_OWNER = "";
 	
 	// Other global variables or constants
 	private static String DB_VERSION = "1.2.7";
@@ -185,8 +187,10 @@ public class Aips2Sqlite {
 				else if (cmd.getOptionValue("lang").equals("fr"))
 					DB_LANGUAGE = "fr";
 			}
-			if (cmd.hasOption("verbose"))
+			if (cmd.hasOption("verbose")) {
 				SHOW_ERRORS = true;
+				SHOW_LOGS = true;
+			}
 			if (cmd.hasOption("quiet")) {
 				SHOW_ERRORS = false;
 				SHOW_LOGS = false;
@@ -199,6 +203,12 @@ public class Aips2Sqlite {
 			}
 			if (cmd.hasOption("regnr")) {
 				OPT_MED_REGNR = cmd.getOptionValue("regnr");
+			}
+			if (cmd.hasOption("owner")) {
+				OPT_MED_OWNER = cmd.getOptionValue("owner");
+			}
+			if (cmd.hasOption("nopack")) {
+				NO_PACK = true;
 			}
 			if (cmd.hasOption("xml")) {
 				XML_FILE = true;
@@ -227,10 +237,12 @@ public class Aips2Sqlite {
 		addOption(options, "lang", "use given language", true, false);		
 		addOption(options, "alpha",	"only include titles which start with option value", true, false);
 		addOption(options, "regnr", "only include medications which start with option value", true, false);
+		addOption(options, "owner", "only include medications owned by option value", true, false);
+		addOption(options, "nopack", "does not update the package section", false, false);
 		addOption(options, "xml", "generate xml file", false, false);	
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "report", "generates error report", false, false);
-		addOption(options, "indications", "generates section indications keyword report", false, false);
+		addOption(options, "indications", "generates indications section keywords report", false, false);
 
 		// Parse command line options
 		commandLineParse(options, args);
@@ -373,8 +385,8 @@ public class Aips2Sqlite {
 			}			
 			
 			// Initialize counters for different languages
-			int counter_de = 0;
-			int counter_fr = 0;		
+			int med_counter = 0;
+			int tot_med_counter = 0;
 			int missing_regnr_str = 0;
 			int missing_pack_info = 0;
 			int missing_atc_code = 0;
@@ -388,7 +400,7 @@ public class Aips2Sqlite {
 			for( MedicalInformations.MedicalInformation m : med_list ) {
 				if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
 					// Database contains less than 5000 medis - this is a safe upperbound!
-					if (counter_de<5000) {						
+					if (tot_med_counter<5000) {						
 						// Extract section titles and section ids
 						MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
 						List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
@@ -416,8 +428,10 @@ public class Aips2Sqlite {
 						// Pattern matcher for regnr command line option
 						Pattern regnr_pattern = Pattern.compile("(?s).*\\b" + OPT_MED_REGNR);						
 
-						if (m.getTitle().startsWith(OPT_MED_TITLE) && regnr_pattern.matcher(regnr_str).find()) {																							
-							System.out.println(counter_de + " - " + m.getTitle() + ": " + regnr_str);							
+						if (m.getTitle().toLowerCase().startsWith(OPT_MED_TITLE.toLowerCase()) 
+								&& regnr_pattern.matcher(regnr_str).find() 
+								&& m.getAuthHolder().toLowerCase().startsWith(OPT_MED_OWNER.toLowerCase())) {																							
+							System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + regnr_str);							
 						
 							if (regnr_str.isEmpty()) {							
 								errors++;
@@ -463,7 +477,7 @@ public class Aips2Sqlite {
 								errors++;
 								if (GENERATE_REPORT)
 									bw.write("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
-								System.err.println(">> ERROR: " + counter_de + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
+								System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
 								missing_atc_code++;
 							}						
 							
@@ -575,7 +589,16 @@ public class Aips2Sqlite {
 							List<String> mTyIndex_list = new ArrayList<String>();						
 							String mContent_str = updateSectionPackungen(m.getTitle(), package_info, regnr_str, html_sanitized, mTyIndex_list);
 							m.setContent(mContent_str);
-													
+								
+							// Check if mPackSection_str is empty AND command line option NO_PACK is not active
+							if (NO_PACK==false && mPackSection_str.isEmpty()) {	
+								errors++;
+								if (GENERATE_REPORT)
+									bw.write("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+								System.err.println(">> ERROR: " + tot_med_counter + " - SwissmedicNo5 not found in Swissmedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
+								missing_pack_info++;
+							}							
+							
 							// Fix problem with wrong div class in original Swissmedic file
 							if (DB_LANGUAGE.equals("de")) {
 								m.setStyle(m.getStyle().replaceAll("untertitel", "untertitle"));
@@ -615,17 +638,7 @@ public class Aips2Sqlite {
 									}
 								}								
 							}
-							
-							// System.out.println(">> TIndex: (1) " + mTyIndex_list.get(0) + " (2) " + mTyIndex_list.get(1));	
-							// Check if mPackSection_str is empty
-							if (mPackSection_str.isEmpty()) {	
-								errors++;
-								if (GENERATE_REPORT)
-									bw.write("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
-								System.err.println(">> ERROR: " + counter_de + " - SwissmedicNo5 not found in Swissmedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
-								missing_pack_info++;
-							}
-							
+														
 							int customer_id = 0;
 							// Is the customer paying? If yes add customer id
 							// str1.toLowerCase().contains(str2.toLowerCase())
@@ -648,23 +661,21 @@ public class Aips2Sqlite {
 			    			// Add medis, titles and ids to database
 							sql_db.addDB( m, amiko_style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
 									mPackSection_str, orggen_str, customer_id, mTyIndex_list, section_indications );
+							
+							med_counter++;
 						}
 					}
-					counter_de++;				
+					tot_med_counter++;				
 				}
-
-				if( m.getLang().equals("fr") && m.getType().equals("fi") ) {
-					counter_fr++;				
-				}			
 			}
 			System.out.println();			
 			System.out.println("Total number of medis : " + med_list.size());
-			System.out.println("Total number of errors in db : " + errors);
-			System.out.println("Total number of missing reg. nr. (min) : " + missing_regnr_str);
-			System.out.println("Total number of missing pack info : " + missing_pack_info);
-			System.out.println("Total number of missing atc codes : " + missing_atc_code);
-			System.out.println("Number of German medis (Fach Info) : " + counter_de);
-			System.out.println("Number of French medis (Fach Info) : " + counter_fr);
+			System.out.println("Number of medis with package information: " + tot_med_counter);
+			System.out.println("Number of medis in generated database: " + med_counter);
+			System.out.println("Number of errors in db : " + errors);
+			System.out.println("Number of missing reg. nr. (min) : " + missing_regnr_str);
+			System.out.println("Number of missing pack info : " + missing_pack_info);
+			System.out.println("Number of missing atc codes : " + missing_atc_code);
 			
 			if (XML_FILE==true) {
 				fi_complete_xml = html_utils.addHeaderToXml("kompendium", fi_complete_xml);
@@ -697,12 +708,12 @@ public class Aips2Sqlite {
 			
 			if (GENERATE_REPORT==true) {
 				bw.write("<br/>");
-				bw.write("<p>Number of German medications : " + counter_de + "</p>");
-				bw.write("<p>Number of French medications : " + counter_fr + "</p>");
-				bw.write("<p>Total number of errors in db : " + errors + "</p>");
-				bw.write("<p>Total number of missing reg. nr. : " + missing_regnr_str + "</p>");
-				bw.write("<p>Total number of missing pack info : " + missing_pack_info + "</p>");
-				bw.write("<p>Total number of missing atc codes : " + missing_atc_code + "</p>");
+				bw.write("<p>Number of medications with package information: " + tot_med_counter + "</p>");
+				bw.write("<p>Number of medications in generated database: " + med_counter + "</p>");				
+				bw.write("<p>Number of errors in database: " + errors + "</p>");
+				bw.write("<p>Number of missing registration number: " + missing_regnr_str + "</p>");
+				bw.write("<p>Number of missing package info: " + missing_pack_info + "</p>");
+				bw.write("<p>Number of missing atc codes: " + missing_atc_code + "</p>");
 				bw.write("<br/>");				
 				// Close report file
 				bw.close();
@@ -1224,34 +1235,37 @@ public class Aips2Sqlite {
 			tIndex_list.add("");
 			tIndex_list.add("");
 		}
-		// Replace original package information with pinfo_str
-		String p_str = "";
-		mPackSection_str = "";
-		for (String p : pinfo_str) {
-			p_str += p;
-		}
-
-		// Generate a html-deprived string file
-		mPackSection_str = p_str.replaceAll("\\<p.*?\\>", "");
-		mPackSection_str = mPackSection_str.replaceAll("<\\/p\\>", "\n");
-		// Remove last \n
-		if (mPackSection_str.length() > 0)
-			mPackSection_str = mPackSection_str.substring(0, mPackSection_str.length() - 1);
-
-		doc.outputSettings().escapeMode(EscapeMode.xhtml);
-		Element div7800 = doc.select("[id=Section7800]").first();
-		if (div7800 != null) {
-			div7800.html("<div class=\"absTitle\">Packungen</div>" + p_str);
-		} else {
-			Element div18 = doc.select("[id=section18]").first();
-			if (div18 != null) {
-				div18.html("<div class=\"absTitle\">Packungen</div>" + p_str);
+		
+		if (NO_PACK==false) {
+			// Replace original package information with pinfo_str
+			String p_str = "";
+			mPackSection_str = "";
+			for (String p : pinfo_str) {
+				p_str += p;
+			}
+	
+			// Generate a html-deprived string file
+			mPackSection_str = p_str.replaceAll("\\<p.*?\\>", "");
+			mPackSection_str = mPackSection_str.replaceAll("<\\/p\\>", "\n");
+			// Remove last \n
+			if (mPackSection_str.length() > 0)
+				mPackSection_str = mPackSection_str.substring(0, mPackSection_str.length() - 1);
+	
+			doc.outputSettings().escapeMode(EscapeMode.xhtml);
+			Element div7800 = doc.select("[id=Section7800]").first();
+			if (div7800 != null) {
+				div7800.html("<div class=\"absTitle\">Packungen</div>" + p_str);
 			} else {
-				if (SHOW_ERRORS)
-					System.err.println(">> ERROR: elem is null, sections 18/7800 does not exist: " + title);
+				Element div18 = doc.select("[id=section18]").first();
+				if (div18 != null) {
+					div18.html("<div class=\"absTitle\">Packungen</div>" + p_str);
+				} else {
+					if (SHOW_ERRORS)
+						System.err.println(">> ERROR: elem is null, sections 18/7800 does not exist: " + title);
+				}
 			}
 		}
-
+		
 		return doc.html();
 	}
 

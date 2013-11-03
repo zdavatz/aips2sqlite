@@ -22,6 +22,7 @@ On some systems it may be necessary to increase the heap space with the Java opt
 --lang=<arg>      generate database with given language, two options are supported: 'de' and 'fr'
 --alpha=<char>    generate sqlite database or xml file for meds whose title starts with 'char'
 --regnr=<number>  generate sqlite database or xml file for meds whose registration number starts with 'number'
+--owner=<owner>   generate sqlite database or xml file for meds whose holder starts with 'owner'
 --xml             generate xml file 
 --zip             generate zipped versions sqlite database or xml file 
 --report          generate parse error report (folder output)
