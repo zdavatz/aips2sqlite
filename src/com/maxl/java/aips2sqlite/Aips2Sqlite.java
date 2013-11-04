@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -82,7 +83,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
-import org.jsoup.select.Elements;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -99,7 +99,7 @@ public class Aips2Sqlite {
 	private static boolean DOWNLOAD_ALL = true;
 	private static boolean XML_FILE = false;
 	private static boolean ZIP_BIG_FILES = false;
-	private static boolean GENERATE_REPORT = false;
+	private static boolean GENERATE_REPORTS = false;
 	private static boolean INDICATIONS_REPORT = false;
 	private static boolean NO_PACK=false;
 	private static String OPT_MED_TITLE = "";
@@ -125,7 +125,8 @@ public class Aips2Sqlite {
 	// CSS style sheets
 	private static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";	
 	// ****** Parse reports (DE != FR) ******
-	private static final String FILE_REPORT_BASE = "./output/parse_report";
+	private static final String FILE_PARSE_REPORT = "./output/parse_report";
+	private static final String FILE_OWNER_REPORT = "./output/owner_report";
 	private static final String FILE_INDICATIONS_REPORT = "./output/indications_report";
 	// ****** XML file ******
 	private static final String FILE_XML_BASE = "./output/fis/";
@@ -216,8 +217,8 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("nodown")) {
 				DOWNLOAD_ALL = false;
 			}
-			if (cmd.hasOption("report")) {
-				GENERATE_REPORT = true;
+			if (cmd.hasOption("reports")) {
+				GENERATE_REPORTS = true;
 			}
 			if (cmd.hasOption("indications")) {
 				INDICATIONS_REPORT = true;
@@ -241,7 +242,7 @@ public class Aips2Sqlite {
 		addOption(options, "nopack", "does not update the package section", false, false);
 		addOption(options, "xml", "generate xml file", false, false);	
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
-		addOption(options, "report", "generates error report", false, false);
+		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
 
 		// Parse command line options
@@ -316,56 +317,47 @@ public class Aips2Sqlite {
 			String amiko_style_v1_str = readCSSfromFile(FILE_STYLE_CSS_BASE + "v1.css");
 						
 			// Create error report file
-			BufferedWriter bw = null;
-			if (GENERATE_REPORT==true) {
-				DateFormat df = new SimpleDateFormat("ddMMyy");
-				String date_str = df.format(new Date());
-				File report_file = new File(FILE_REPORT_BASE + "_" + date_str + "_" + DB_LANGUAGE + ".html");
-				if (!report_file.exists()) {
-					report_file.getParentFile().mkdirs();
-					report_file.createNewFile();
-				}
-				// FileWriter fw = new FileWriter(report_file.getAbsoluteFile());
-				// bw = new BufferedWriter(fw);
-				bw = new BufferedWriter(new OutputStreamWriter(
-						new FileOutputStream(report_file.getAbsoluteFile()),"UTF-8"));		
+			BufferedWriter bw_parse = null;
+			if (GENERATE_REPORTS==true) {
+				ParseReport parse_errors = new ParseReport(FILE_PARSE_REPORT, DB_LANGUAGE, "html");
+				bw_parse = parse_errors.getBWriter();
 				
 				// Change dateformat
-				df = new SimpleDateFormat("dd.MM.yy");
-				date_str = df.format(new Date());
+				DateFormat df = new SimpleDateFormat("dd.MM.yy");
+				String date_str = df.format(new Date());
 				
 				if (DB_LANGUAGE.equals("de")) {
-					bw.write("<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /></head>");
-					bw.write("<h3>Schweizer Arzneimittel-Kompendium</h3>");
-					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
-					bw.write("<p>Lizenz: GPL v3.0</p>");
-					bw.write("<br/>");
-					bw.write("<p>Konzept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
-					bw.write("<p>Entwicklung: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
-					bw.write("<br/>");
-					bw.write("<p>Verwendete Files:</p>");
-					bw.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (Stand: " + date_str + ")</p>");
-					bw.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (Stand: " + date_str + ")</p>");
-					bw.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (Stand: " + date_str + ")</p>");
-					bw.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
+					bw_parse.write("<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /></head>");
+					bw_parse.write("<h3>Schweizer Arzneimittel-Kompendium</h3>");
+					bw_parse.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
+					bw_parse.write("<p>Lizenz: GPL v3.0</p>");
+					bw_parse.write("<br/>");
+					bw_parse.write("<p>Konzept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
+					bw_parse.write("<p>Entwicklung: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
+					bw_parse.write("<br/>");
+					bw_parse.write("<p>Verwendete Files:</p>");
+					bw_parse.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (Stand: " + date_str + ")</p>");
+					bw_parse.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (Stand: " + date_str + ")</p>");
+					bw_parse.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (Stand: " + date_str + ")</p>");
+					bw_parse.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
 							"Packungen.xls</a> (Stand: " + date_str + ")</p>");
-					bw.write("<br/>");
+					bw_parse.write("<br/>");
 				} else if (DB_LANGUAGE.equals("fr")){
 					// bw.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");					
-					bw.write("<h3>Compendium des Médicaments Suisse</h3>");
-					bw.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
-					bw.write("<p>Licence: GPL v3.0</p>");
-					bw.write("<br/>");
-					bw.write("<p>Concept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
-					bw.write("<p>Développement: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
-					bw.write("<br/>");
-					bw.write("<p>Fichiers utilisés:</p>");
-					bw.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (actualisé: " + date_str + ")</p>");
-					bw.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (actualisé: " + date_str + ")</p>");
-					bw.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (actualisé: " + date_str + ")</p>");
-					bw.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
+					bw_parse.write("<h3>Compendium des Médicaments Suisse</h3>");
+					bw_parse.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
+					bw_parse.write("<p>Licence: GPL v3.0</p>");
+					bw_parse.write("<br/>");
+					bw_parse.write("<p>Concept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
+					bw_parse.write("<p>Développement: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
+					bw_parse.write("<br/>");
+					bw_parse.write("<p>Fichiers utilisés:</p>");
+					bw_parse.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (actualisé: " + date_str + ")</p>");
+					bw_parse.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (actualisé: " + date_str + ")</p>");
+					bw_parse.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (actualisé: " + date_str + ")</p>");
+					bw_parse.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
 							"Packungen.xls</a> (actualisé: " + date_str + ")</p>");
-					bw.write("<br/>");			
+					bw_parse.write("<br/>");			
 				}
 			}
 			
@@ -373,15 +365,8 @@ public class Aips2Sqlite {
 			BufferedWriter bw_indications = null;
 			Map<String, String> tm_indications = new TreeMap<String, String>();
 			if (INDICATIONS_REPORT==true) {
-				DateFormat df = new SimpleDateFormat("ddMMyy");
-				String date_str = df.format(new Date());
-				File report_file = new File(FILE_INDICATIONS_REPORT + "_" + date_str + "_" + DB_LANGUAGE + ".txt");
-				if (!report_file.exists()) {
-					report_file.getParentFile().mkdirs();
-					report_file.createNewFile();
-				}
-				FileWriter fw = new FileWriter(report_file.getAbsoluteFile());
-				bw_indications = new BufferedWriter(fw);				
+				ParseReport indications_report = new ParseReport(FILE_INDICATIONS_REPORT, DB_LANGUAGE, "txt");
+				bw_indications = indications_report.getBWriter();				
 			}			
 			
 			// Initialize counters for different languages
@@ -425,18 +410,19 @@ public class Aips2Sqlite {
 						else if (DB_LANGUAGE.equals("fr"))
 							regnr_str = html_utils.extractRegNrFR(m.getTitle());
 						
-						// Pattern matcher for regnr command line option
+						// Pattern matcher for regnr command line option, (?s) searches across multiple lines
 						Pattern regnr_pattern = Pattern.compile("(?s).*\\b" + OPT_MED_REGNR);						
 
 						if (m.getTitle().toLowerCase().startsWith(OPT_MED_TITLE.toLowerCase()) 
 								&& regnr_pattern.matcher(regnr_str).find() 
-								&& m.getAuthHolder().toLowerCase().startsWith(OPT_MED_OWNER.toLowerCase())) {																							
+								&& m.getAuthHolder().toLowerCase().startsWith(OPT_MED_OWNER.toLowerCase())) {	
+							
 							System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + regnr_str);							
 						
 							if (regnr_str.isEmpty()) {							
 								errors++;
-								if (GENERATE_REPORT==true) 
-									bw.write("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");							
+								if (GENERATE_REPORTS==true) 
+									bw_parse.write("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");							
 								missing_regnr_str++;
 								regnr_str = "";
 							}							
@@ -446,6 +432,7 @@ public class Aips2Sqlite {
 							String atc_description_str = "";	
 							String atc_code_str = m.getAtcCode();								
 							if (atc_code_str!=null) {
+								// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
 								atc_code_str = atc_code_str.replaceAll("\\s","");										
 								// Take "leave" of the tree (most precise classification)
 								String a = atc_map.get(atc_code_str);
@@ -475,8 +462,8 @@ public class Aips2Sqlite {
 								}
 							} else {
 								errors++;
-								if (GENERATE_REPORT)
-									bw.write("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+								if (GENERATE_REPORTS)
+									bw_parse.write("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
 								System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
 								missing_atc_code++;
 							}						
@@ -593,8 +580,8 @@ public class Aips2Sqlite {
 							// Check if mPackSection_str is empty AND command line option NO_PACK is not active
 							if (NO_PACK==false && mPackSection_str.isEmpty()) {	
 								errors++;
-								if (GENERATE_REPORT)
-									bw.write("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+								if (GENERATE_REPORTS)
+									bw_parse.write("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
 								System.err.println(">> ERROR: " + tot_med_counter + " - SwissmedicNo5 not found in Swissmedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
 								missing_pack_info++;
 							}							
@@ -706,17 +693,17 @@ public class Aips2Sqlite {
 				}				
 			}
 			
-			if (GENERATE_REPORT==true) {
-				bw.write("<br/>");
-				bw.write("<p>Number of medications with package information: " + tot_med_counter + "</p>");
-				bw.write("<p>Number of medications in generated database: " + med_counter + "</p>");				
-				bw.write("<p>Number of errors in database: " + errors + "</p>");
-				bw.write("<p>Number of missing registration number: " + missing_regnr_str + "</p>");
-				bw.write("<p>Number of missing package info: " + missing_pack_info + "</p>");
-				bw.write("<p>Number of missing atc codes: " + missing_atc_code + "</p>");
-				bw.write("<br/>");				
+			if (GENERATE_REPORTS==true) {
+				bw_parse.write("<br/>");
+				bw_parse.write("<p>Number of medications with package information: " + tot_med_counter + "</p>");
+				bw_parse.write("<p>Number of medications in generated database: " + med_counter + "</p>");				
+				bw_parse.write("<p>Number of errors in database: " + errors + "</p>");
+				bw_parse.write("<p>Number of missing registration number: " + missing_regnr_str + "</p>");
+				bw_parse.write("<p>Number of missing package info: " + missing_pack_info + "</p>");
+				bw_parse.write("<p>Number of missing atc codes: " + missing_atc_code + "</p>");
+				bw_parse.write("<br/>");				
 				// Close report file
-				bw.close();
+				bw_parse.close();
 			}
 			
 			if (INDICATIONS_REPORT==true) {
