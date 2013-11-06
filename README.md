@@ -33,7 +33,7 @@ On some systems it may be necessary to increase the heap space with the Java opt
 
 Generate German SQLite database including report file:
 
-$ java -jar aips2sqlite.jar --lang=de --verbose --report
+$ java -jar aips2sqlite.jar --lang=de --verbose --reports
 
 Generate French SQLite database, do not download any files and be extra quiet:
 
@@ -41,7 +41,7 @@ $ java -jar aips2sqlite.jar --lang=fr --quiet --nodown
 
 Generate zipped German database for all med titles starting with P including a parse and section indication reports:
 
-$ java -jar aips2sqlite.jar --lang=de --alpha=P --verbose --report --nodown --indications --zip
+$ java -jar aips2sqlite.jar --lang=de --alpha=P --verbose --reports --nodown --indications --zip
 
 Generate zipped French database and xml file for meds with registration number starting with N
 
@@ -49,4 +49,4 @@ $ java -jar aips2sqlite.jar --lang=fr --xml --regnr=N --verbose --nodown --zip
 
 To increase the heap space use the option -Xmx
 
-$ java -jar -Xmx2048m aips2sqlite.jar --lang=de --verbose --report
+$ java -jar -Xmx2048m aips2sqlite.jar --lang=de --verbose --reports
