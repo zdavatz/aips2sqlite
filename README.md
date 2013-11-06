@@ -25,7 +25,7 @@ On some systems it may be necessary to increase the heap space with the Java opt
 --owner=<owner>   generate sqlite database or xml file for meds whose holder starts with 'owner'
 --xml             generate xml file 
 --zip             generate zipped versions sqlite database or xml file 
---report          generate parse error report (folder output)
+--reports         generate parse and owner error reports (folder output)
 --indications     generate report about keywords found in section indications (folder output)
 ```
 
