@@ -110,7 +110,10 @@ public class ParseReport {
 	public String treemapToHtmlTable(TreeMap<String, ArrayList<String>> error_map) {
 		StringBuilder html = new StringBuilder();
 		html.append("<table>");
-		html.append("<tr><th>Owner</th><th>Swissmedic-No5 Error</th><th>ATC Code Error</th><th>Reg. Nr. Error</th></th>");
+		html.append("<tr><th>Owner</th>" +
+				"<th>Swissmedic-No5 fehlt im Packungen.xls von Swissmedic</th>" +
+				"<th>ATC-Code fehlt im AIPS-XML</th>" +
+				"<th>Reg. Nr. fehlerhaft im AIPS-XML</th></th>");
 		String med_author = "";
 		String med_title = "";
 		int td_counter = 0;
