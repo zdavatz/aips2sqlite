@@ -35,12 +35,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -123,7 +119,8 @@ public class Aips2Sqlite {
 	private static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";
 	private static final String FILE_ATC_MULTI_LINGUAL_TXT = "./input/atc_codes_multi_lingual.txt";
 	// CSS style sheets
-	private static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";	
+	private static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";
+	private static final String FILE_REPORT_CSS_BASE = "./css/report_stylesheet";
 	// ****** Parse reports (DE != FR) ******
 	private static final String FILE_PARSE_REPORT = "./output/parse_report";
 	private static final String FILE_OWNER_REPORT = "./output/owner_report";
@@ -317,48 +314,13 @@ public class Aips2Sqlite {
 			String amiko_style_v1_str = readCSSfromFile(FILE_STYLE_CSS_BASE + "v1.css");
 						
 			// Create error report file
-			BufferedWriter bw_parse = null;
+			ParseReport parse_errors = null;
 			if (GENERATE_REPORTS==true) {
-				ParseReport parse_errors = new ParseReport(FILE_PARSE_REPORT, DB_LANGUAGE, "html");
-				bw_parse = parse_errors.getBWriter();
-				
-				// Change dateformat
-				DateFormat df = new SimpleDateFormat("dd.MM.yy");
-				String date_str = df.format(new Date());
-				
-				if (DB_LANGUAGE.equals("de")) {
-					bw_parse.write("<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /></head>");
-					bw_parse.write("<h3>Schweizer Arzneimittel-Kompendium</h3>");
-					bw_parse.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
-					bw_parse.write("<p>Lizenz: GPL v3.0</p>");
-					bw_parse.write("<br/>");
-					bw_parse.write("<p>Konzept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
-					bw_parse.write("<p>Entwicklung: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
-					bw_parse.write("<br/>");
-					bw_parse.write("<p>Verwendete Files:</p>");
-					bw_parse.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (Stand: " + date_str + ")</p>");
-					bw_parse.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (Stand: " + date_str + ")</p>");
-					bw_parse.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (Stand: " + date_str + ")</p>");
-					bw_parse.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
-							"Packungen.xls</a> (Stand: " + date_str + ")</p>");
-					bw_parse.write("<br/>");
-				} else if (DB_LANGUAGE.equals("fr")){
-					// bw.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");					
-					bw_parse.write("<h3>Compendium des Médicaments Suisse</h3>");
-					bw_parse.write("<p>Version " + DB_VERSION + " - " + date_str + "</p>");
-					bw_parse.write("<p>Licence: GPL v3.0</p>");
-					bw_parse.write("<br/>");
-					bw_parse.write("<p>Concept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
-					bw_parse.write("<p>Développement: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
-					bw_parse.write("<br/>");
-					bw_parse.write("<p>Fichiers utilisés:</p>");
-					bw_parse.write("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (actualisé: " + date_str + ")</p>");
-					bw_parse.write("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (actualisé: " + date_str + ")</p>");
-					bw_parse.write("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (actualisé: " + date_str + ")</p>");
-					bw_parse.write("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
-							"Packungen.xls</a> (actualisé: " + date_str + ")</p>");
-					bw_parse.write("<br/>");			
-				}
+				parse_errors = new ParseReport(FILE_PARSE_REPORT, DB_LANGUAGE, "html");
+				if (DB_LANGUAGE.equals("de"))
+					parse_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", DB_VERSION);
+				else if (DB_LANGUAGE.equals("fr"))
+					parse_errors.addHtmlHeader("Compendium des Médicaments Suisse", DB_VERSION);
 			}
 			
 			// Create indications report file
@@ -381,6 +343,9 @@ public class Aips2Sqlite {
 			// First pass is always with DB_LANGUAGE set to German! (most complete information)
 			// The file dumped in ./reports is fed to AllDown.java to generate a multilingual ATC code / ATC class file, e.g. German - French
 			Set<String> atccode_set = new TreeSet<String>();
+			
+			// Treemap for owner error report (sorted by key)
+			TreeMap<String, ArrayList<String>> tm_owner_error = new TreeMap<String, ArrayList<String>>();
 			
 			for( MedicalInformations.MedicalInformation m : med_list ) {
 				if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
@@ -421,8 +386,15 @@ public class Aips2Sqlite {
 						
 							if (regnr_str.isEmpty()) {							
 								errors++;
-								if (GENERATE_REPORTS==true) 
-									bw_parse.write("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");							
+								if (GENERATE_REPORTS==true) {
+									parse_errors.append("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+									// Add to owner errors
+									ArrayList<String> error = tm_owner_error.get(m.getAuthHolder());
+									if (error==null)
+										error = new ArrayList<String>();
+									error.add(m.getTitle()+";regnr");
+									tm_owner_error.put(m.getAuthHolder(), error);									
+								}
 								missing_regnr_str++;
 								regnr_str = "";
 							}							
@@ -462,8 +434,15 @@ public class Aips2Sqlite {
 								}
 							} else {
 								errors++;
-								if (GENERATE_REPORTS)
-									bw_parse.write("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+								if (GENERATE_REPORTS) {
+									parse_errors.append("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+									// Add to owner errors
+									ArrayList<String> error = tm_owner_error.get(m.getAuthHolder());
+									if (error==null)
+										error = new ArrayList<String>();
+									error.add(m.getTitle()+";atccode");
+									tm_owner_error.put(m.getAuthHolder(), error);									
+								}
 								System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
 								missing_atc_code++;
 							}						
@@ -580,8 +559,15 @@ public class Aips2Sqlite {
 							// Check if mPackSection_str is empty AND command line option NO_PACK is not active
 							if (NO_PACK==false && mPackSection_str.isEmpty()) {	
 								errors++;
-								if (GENERATE_REPORTS)
-									bw_parse.write("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+								if (GENERATE_REPORTS) {
+									parse_errors.append("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+									// Add to owner errors
+									ArrayList<String> error = tm_owner_error.get(m.getAuthHolder());
+									if (error==null)
+										error = new ArrayList<String>();
+									error.add(m.getTitle()+";swissmedic5");
+									tm_owner_error.put(m.getAuthHolder(), error);	
+								}
 								System.err.println(">> ERROR: " + tot_med_counter + " - SwissmedicNo5 not found in Swissmedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
 								missing_pack_info++;
 							}							
@@ -694,16 +680,37 @@ public class Aips2Sqlite {
 			}
 			
 			if (GENERATE_REPORTS==true) {
-				bw_parse.write("<br/>");
-				bw_parse.write("<p>Number of medications with package information: " + tot_med_counter + "</p>");
-				bw_parse.write("<p>Number of medications in generated database: " + med_counter + "</p>");				
-				bw_parse.write("<p>Number of errors in database: " + errors + "</p>");
-				bw_parse.write("<p>Number of missing registration number: " + missing_regnr_str + "</p>");
-				bw_parse.write("<p>Number of missing package info: " + missing_pack_info + "</p>");
-				bw_parse.write("<p>Number of missing atc codes: " + missing_atc_code + "</p>");
-				bw_parse.write("<br/>");				
-				// Close report file
-				bw_parse.close();
+				parse_errors.append("<br/>");
+				parse_errors.append("<p>Number of medications with package information: " + tot_med_counter + "</p>");
+				parse_errors.append("<p>Number of medications in generated database: " + med_counter + "</p>");				
+				parse_errors.append("<p>Number of errors in database: " + errors + "</p>");
+				parse_errors.append("<p>Number of missing registration number: " + missing_regnr_str + "</p>");
+				parse_errors.append("<p>Number of missing package info: " + missing_pack_info + "</p>");
+				parse_errors.append("<p>Number of missing atc codes: " + missing_atc_code + "</p>");
+				parse_errors.append("<br/>");				
+				// Write and close report file
+				parse_errors.writeHtmlToFile();
+				parse_errors.getBWriter().close();					
+
+				// Write owner error report to file
+				ParseReport owner_errors = new ParseReport(FILE_OWNER_REPORT, DB_LANGUAGE, "html");
+				String report_style_str = readCSSfromFile(FILE_REPORT_CSS_BASE + ".css");
+				owner_errors.addStyleSheet(report_style_str);
+				if (DB_LANGUAGE.equals("de"))
+					owner_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", DB_VERSION);
+				else if (DB_LANGUAGE.equals("fr"))
+					owner_errors.addHtmlHeader("Compendium des Médicaments Suisse", DB_VERSION);
+				owner_errors.append(owner_errors.treemapToHtmlTable(tm_owner_error));
+				owner_errors.writeHtmlToFile();
+				owner_errors.getBWriter().close();	
+				// Dump to console...
+				for (Map.Entry<String, ArrayList<String>> entry : tm_owner_error.entrySet()) {
+					String author = entry.getKey();
+					ArrayList<String> list = entry.getValue();
+					for (String error : list)
+						System.out.println(author + " -> " + error);
+				}
+				
 			}
 			
 			if (INDICATIONS_REPORT==true) {
