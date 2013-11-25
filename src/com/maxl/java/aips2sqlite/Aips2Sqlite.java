@@ -458,7 +458,7 @@ public class Aips2Sqlite {
 							// First check for bad boys (version=1! but actually version>1!)
 							if (!m.getVersion().equals("1") || m.getContent().substring(0, 20).contains("xml")) {
 								for (int i=1; i<22; ++i) {
-									html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), DB_LANGUAGE);
+									html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), m.getAuthHolder(), DB_LANGUAGE);
 								}
 								html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>" ;
 							} else {

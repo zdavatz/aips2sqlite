@@ -391,7 +391,7 @@ public class HtmlUtils {
 	 * @param language
 	 * @return
 	 */
-	public String sanitizeSection(int sectionX, String med_title, String language) {
+	public String sanitizeSection(int sectionX, String med_title, String med_author, String language) {
 		mDoc = Jsoup.parse(mHtmlStr);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);		
 		mDoc.outputSettings().charset("UTF-8");
@@ -501,6 +501,10 @@ public class HtmlUtils {
 			else if (language.equals("fr"))
 				clean_title = med_title;
 			newDoc.html("<div class=\"MonTitle\" id=\"section"+sectionX+"\">"+clean_title+"</div>");
+			// Add med holder (author, owner)
+			newDoc.append("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+med_author+"</div></div>");
+			
+			/* Old solution too brittle --> could be improved
 			Element elem = null;
 			if (language.equals("de"))
 				elem = mDoc.select("p:contains(Zulassungsinhaberin)").first();
@@ -513,6 +517,7 @@ public class HtmlUtils {
 						newDoc.append("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+company_str.get(0)+"</div></div>");
 				}
 			}
+			*/
 		}	
 				
 		// Fools the jsoup-parser
