@@ -650,6 +650,10 @@ public class Aips2Sqlite {
 			System.out.println("Number of missing pack info : " + missing_pack_info);
 			System.out.println("Number of missing atc codes : " + missing_atc_code);
 			
+			if (ZIP_BIG_FILES) {
+				zipToFile("./output/", "amiko_db_full_idx_" + DB_LANGUAGE + ".db");
+			}
+			
 			if (XML_FILE==true) {
 				fi_complete_xml = html_utils.addHeaderToXml("kompendium", fi_complete_xml);
 				// Write kompendium xml file to disk
@@ -710,7 +714,6 @@ public class Aips2Sqlite {
 					for (String error : list)
 						System.out.println(author + " -> " + error);
 				}
-				
 			}
 			
 			if (INDICATIONS_REPORT==true) {
@@ -741,7 +744,7 @@ public class Aips2Sqlite {
 				bwriter.close();
 			}
 
-			System.out.println( "" );
+			System.out.println("");
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -1362,8 +1365,7 @@ public class Aips2Sqlite {
 		byte[] buffer = new byte[1024];
 
 		try {
-			FileOutputStream fos = new FileOutputStream(dir_name
-					+ changeExtension(file_name, "zip"));
+			FileOutputStream fos = new FileOutputStream(dir_name + changeExtension(file_name, "zip"));
 			ZipOutputStream zos = new ZipOutputStream(fos);
 			ZipEntry ze = new ZipEntry(file_name);
 			zos.putNextEntry(ze);

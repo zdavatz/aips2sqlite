@@ -31,9 +31,14 @@ import java.util.List;
 
 public class SqlDatabase {
 
+	private File m_db_file;
 	private Connection conn;
 	private Statement stat;
 	private PreparedStatement prep;
+	
+	public String getDBFile() {
+		return m_db_file.getAbsolutePath();
+	}
 	
 	public void createDB(String db_lang) throws ClassNotFoundException, SQLException {		
 		// Initializes org.sqlite.JDBC driver
@@ -47,6 +52,7 @@ public class SqlDatabase {
 				db_file.getParentFile().mkdirs();
 				db_file.createNewFile();
 			}
+			m_db_file = db_file;
 			// Creates connection
 			conn = DriverManager.getConnection("jdbc:sqlite:" + db_url);		
 			stat = conn.createStatement();
