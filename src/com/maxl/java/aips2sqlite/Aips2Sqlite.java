@@ -958,7 +958,7 @@ public class Aips2Sqlite {
 
 			startTime = System.currentTimeMillis();
 			if (SHOW_LOGS)
-				System.out.print("- Processing preparations xml... ");
+				System.out.println("- Processing preparations xml... ");
 
 			context = JAXBContext.newInstance(Preparations.class);
 			um = context.createUnmarshaller();
@@ -1020,7 +1020,9 @@ public class Aips2Sqlite {
 					for (Preparation.Packs.Pack pack : pack_list) {
 						// Get SwissmedicNo8 and used it as a key to extract all the relevant package info
 						String swissMedicNo8 = pack.getSwissmedicNo8();
-						ArrayList<String> pi_row = package_info	.get(swissMedicNo8);
+						ArrayList<String> pi_row = null;
+						if (swissMedicNo8 != null)
+							pi_row = package_info.get(swissMedicNo8);
 						// Preparation also in BAG xml file (we have a price)
 						if (pi_row != null) {
 							// Update Swissmedic catory if necessary ("N->A", Y->"A+")
@@ -1063,6 +1065,10 @@ public class Aips2Sqlite {
 											pi_row.set(11, ", SL");
 										else if (DB_LANGUAGE.equals("fr"))
 											pi_row.set(11, ", LS");
+									} catch (NullPointerException e) {
+										if (SHOW_ERRORS)
+											System.err.println("Null pointer exception (public price): " + swissMedicNo8 
+													+ " (" + public_price.size() + ")");										
 									} catch (NumberFormatException e) {
 										if (SHOW_ERRORS)
 											System.err.println("Number format exception (public price): " + swissMedicNo8 
