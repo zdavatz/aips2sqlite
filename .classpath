@@ -4,6 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/commons-cli-1.2.jar"/>
 	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/jsoup-1.7.2.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/poi-ooxml-3.9.jar"/>
 	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/poi-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/poi-scratchpad-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/htmlunit-2.12/commons-codec-1.7.jar"/>
@@ -29,5 +30,13 @@
 	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/htmlunit-2.12/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/simple-xml-2.6.9.jar"/>
 	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/sqlite-jdbc-3.7.2.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/xmlbeans-2.6.0/jsr173_1.0_api.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/xmlbeans-2.6.0/resolver.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/xmlbeans-2.6.0/xbean.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/xmlbeans-2.6.0/xbean_xpath.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/xmlbeans-2.6.0/xmlbeans-qname.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/xmlbeans-2.6.0/xmlpublic.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/poi-ooxml-schemas-3.9.jar"/>
+	<classpathentry kind="lib" path="E:/Projects/Pharmax/Aips2Sqlite/libs/dom4j-1.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

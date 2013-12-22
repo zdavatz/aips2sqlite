@@ -75,6 +75,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -110,6 +112,7 @@ public class Aips2Sqlite {
 	private static final String FILE_MEDICAL_INFOS_XSD = "./downloads/aips_xsd.xsd";
 	// Excel file to be parsed (DE = FR)
 	private static final String FILE_PACKAGES_XLS = "./downloads/swissmedic_packages_xls.xls";
+	private static final String FILE_PACKAGES_XLSX = "./downloads/swissmedic_packages_xlsx.xlsx";
 	// ****** Refdata xml file to be parsed (DE != FR) ******
 	private static final String FILE_REFDATA_PHARMA_DE_XML = "./downloads/refdata_pharma_de_xml.xml";
 	private static final String FILE_REFDATA_PHARMA_FR_XML = "./downloads/refdata_pharma_fr_xml.xml";
@@ -292,7 +295,8 @@ public class Aips2Sqlite {
 		AllDown a = new AllDown();
 
 		a.downAipsXls(FILE_MEDICAL_INFOS_XSD, FILE_MEDICAL_INFOS_XML);
-		a.downPackungenXls(FILE_PACKAGES_XLS);
+		// a.downPackungenXls(FILE_PACKAGES_XLS);
+		a.downPackungenXls(FILE_PACKAGES_XLSX);
 		a.downSwissindexXml("DE", FILE_REFDATA_PHARMA_DE_XML);
 		a.downSwissindexXml("FR", FILE_REFDATA_PHARMA_FR_XML);
 		a.downPreparationsXml(FILE_PREPARATIONS_XML);
@@ -759,13 +763,24 @@ public class Aips2Sqlite {
 		try {
 			long startTime = System.currentTimeMillis();
 			if (SHOW_LOGS)
+				System.out.print("- Processing packages xlsx... ");
+			// Load Swissmedic xls file			
+			FileInputStream packages_file = new FileInputStream(FILE_PACKAGES_XLSX);
+			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
+			XSSFWorkbook packages_workbook = new XSSFWorkbook(packages_file);
+			// Get first sheet from workbook
+			XSSFSheet packages_sheet = packages_workbook.getSheetAt(0);
+
+			/*
+			if (SHOW_LOGS)
 				System.out.print("- Processing packages xls... ");
-			// Load Swissmedic xls file
+			// Load Swissmedic xls file			
 			FileInputStream packages_file = new FileInputStream(FILE_PACKAGES_XLS);
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 			HSSFWorkbook packages_workbook = new HSSFWorkbook(packages_file);
 			// Get first sheet from workbook
 			HSSFSheet packages_sheet = packages_workbook.getSheetAt(0);
+			*/
 			// Iterate through all rows of first sheet
 			Iterator<Row> rowIterator = packages_sheet.iterator();
 
