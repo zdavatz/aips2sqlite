@@ -61,7 +61,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 public class AllDown {
 	
-	public void downAipsXls(String file_medical_infos_xsd, String file_medical_infos_xml) {
+	public void downAipsXml(String file_medical_infos_xsd, String file_medical_infos_xml) {
 		// http://download.swissmedicinfo.ch/
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();
@@ -79,9 +79,12 @@ public class AllDown {
 			}
 			
 			WebClient webClient = new WebClient();
+			// Get Swissmedic webpage
 			HtmlPage currentPage = webClient.getPage("http://download.swissmedicinfo.ch/");
-			HtmlSubmitInput acceptBtn = currentPage.getElementByName("ctl00$MainContent$btnOK");
+			// Simulate button click on "OK" button
+			HtmlSubmitInput acceptBtn = currentPage.getElementByName("ctl00$MainContent$btnOK");			
 			currentPage = acceptBtn.click();
+			// Simulate button click on "Yes" button
 			acceptBtn = currentPage.getElementByName("ctl00$MainContent$BtnYes");	
 
 			InputStream is = acceptBtn.click().getWebResponse().getContentAsStream();
@@ -120,8 +123,12 @@ public class AllDown {
 		
 	        // Delete folder ./tmp
 	        FileUtils.deleteDirectory(new File("./xml/tmp"));	     			
-		} catch(IOException e) {
-			//
+		} catch(Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downAipsXml'");
+			e.printStackTrace();
+			return;
 		}		
 	}
 	
@@ -148,7 +155,10 @@ public class AllDown {
 				pb.stopp();
 			long stopTime = System.currentTimeMillis();		
 			System.out.println("\r- Downloading Packungen file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
-		} catch (IOException e) {
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downPackungenXls'");
 			e.printStackTrace();
 		}		
 	}
@@ -212,6 +222,9 @@ public class AllDown {
 			connection.close();			
 			
 		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downSwissindexXml'");
 			e.printStackTrace();
 		}		
 	}
@@ -249,7 +262,10 @@ public class AllDown {
 
 	        // Delete folder ./tmp
 	        FileUtils.deleteDirectory(new File("./downloads/tmp"));	        
-		} catch (IOException e) {
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downPreparationsXml'");
 			e.printStackTrace();
 		}			
 	}
