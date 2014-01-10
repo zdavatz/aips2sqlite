@@ -37,6 +37,8 @@ import java.nio.charset.CodingErrorAction;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1175,16 +1177,16 @@ public class Aips2Sqlite {
 		for (String s : swissmedicno5_list) {
 			// Extract original / generika info + Selbstbehalt info from
 			// "add_info_map"
-			String orggen_str = "";
-			String flagsb_str = "";
+			String orggen_str = "";		// O=Original, G=Generika
+			String flagsb_str = "";		// SB=Selbstbehalt 
 			String addinfo_str = add_info_map.get(s);
 			if (addinfo_str != null) {
 				List<String> ai_list = Arrays.asList(addinfo_str.split("\\s*;\\s*"));
 				if (ai_list != null) {
 					if (!ai_list.get(0).isEmpty())
-						orggen_str = ", " + ai_list.get(0);
+						orggen_str = ", " + ai_list.get(0);		// O + G
 					if (!ai_list.get(1).isEmpty())
-						flagsb_str = ", " + ai_list.get(1);
+						flagsb_str = ", " + ai_list.get(1);		// SB
 				}
 			}
 			// Now generate many swissmedicno8 = swissmedicno5 + ***, check if they're keys and retrieve package info
@@ -1206,19 +1208,32 @@ public class Aips2Sqlite {
 							withdrawn_str = ", " + pi_row.get(10);
 						// --> Add public price information
 						if (pi_row.get(7).length() > 0) {
-							// Remove double spaces in title
+							// Remove double spaces in title and capitalize
 							String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
 							// Remove [QAP?] -> not an easy one!
 							medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");
-							pinfo_str.add("<p class=\"spacing1\">" + medtitle
-									+ ", " + pi_row.get(7) + withdrawn_str
-									+ " [" + pi_row.get(5) + pi_row.get(11)
-									+ pi_row.get(12) + flagsb_str + orggen_str + "]</p>");
+							// Generate package info string
+							pinfo_str.add("<p class=\"spacing1\">" 
+									+ medtitle + ", " + pi_row.get(7) 
+									+ withdrawn_str + " [" + pi_row.get(5) 
+									+ pi_row.get(11) + pi_row.get(12) 
+									+ flagsb_str + orggen_str + "]</p>");
 						} else {
-							// Remove double spaces in title
+							//
+							// @maxl (10.01.2014): Price for swissmedicNo8 pack is not listed in bag_preparations.xml!!
+							//
+							// Remove double spaces in title and capitalize
 							String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
 							// Remove [QAP?] -> not an easy one!
 							medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");
+							if (DB_LANGUAGE.equals("de")) {
+								pinfo_str.add("<p class=\"spacing1\">"
+										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>");
+							} else if (DB_LANGUAGE.equals("fr")) {
+								pinfo_str.add("<p class=\"spacing1\">"
+										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>");
+							
+							/*
 							if (DB_LANGUAGE.equals("de")) {
 								pinfo_str.add("<p class=\"spacing1\">"
 										+ medtitle + ", " + "k.A."
@@ -1231,6 +1246,7 @@ public class Aips2Sqlite {
 										+ withdrawn_str + " [" + pi_row.get(5)
 										+ pi_row.get(11) + pi_row.get(12)
 										+ flagsb_str + orggen_str + "]</p>");
+							*/
 							}
 						}
 						// --> Add "tindex_str" and "application_str" (see
@@ -1243,6 +1259,16 @@ public class Aips2Sqlite {
 					}
 				}
 			}
+		}
+		// Re-order the string alphabetically
+		if (!pinfo_str.isEmpty()) {		
+			// Sort list of packages
+			Collections.sort(pinfo_str, new Comparator<String>() {
+				@Override
+				public int compare(final String m1, final String m2) {
+					return m1.compareTo(m2);
+				}
+			});
 		}
 		// In case the pinfo_str is empty due to malformed XML
 		/*
