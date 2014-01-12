@@ -1297,12 +1297,17 @@ public class Aips2Sqlite {
 	
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);
 			Element div7800 = doc.select("[id=Section7800]").first();
+			
+			String packages = "Packungen";	
+			if (DB_LANGUAGE.equals("fr"))
+				packages = "Présentation";
+			
 			if (div7800 != null) {
-				div7800.html("<div class=\"absTitle\">Packungen</div>" + p_str);
+				div7800.html("<div class=\"absTitle\">" + packages + "</div>" + p_str);
 			} else {
 				Element div18 = doc.select("[id=section18]").first();
 				if (div18 != null) {
-					div18.html("<div class=\"absTitle\">Packungen</div>" + p_str);
+					div18.html("<div class=\"absTitle\">" + packages + "</div>" + p_str);
 				} else {
 					if (SHOW_ERRORS)
 						System.err.println(">> ERROR: elem is null, sections 18/7800 does not exist: " + title);
