@@ -38,7 +38,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -975,7 +974,7 @@ public class Aips2Sqlite {
 
 			startTime = System.currentTimeMillis();
 			if (SHOW_LOGS)
-				System.out.println("- Processing preparations xml... ");
+				System.out.print("- Processing preparations xml... ");
 
 			context = JAXBContext.newInstance(Preparations.class);
 			um = context.createUnmarshaller();
@@ -1054,8 +1053,7 @@ public class Aips2Sqlite {
 										pi_row.set(12, ", LIM" + plimits_list.get(0).getPoints() + "");
 							}
 							// Extract exfactory and public prices
-							List<Preparations.Preparation.Packs.Pack.Prices> price_list = pack
-									.getPrices();
+							List<Preparations.Preparation.Packs.Pack.Prices> price_list = pack.getPrices();
 							for (Preparations.Preparation.Packs.Pack.Prices price : price_list) {
 								List<Preparations.Preparation.Packs.Pack.Prices.PublicPrice> public_price = price
 										.getPublicPrice();
@@ -1169,7 +1167,13 @@ public class Aips2Sqlite {
 	static String updateSectionPackungen(String title, Map<String, ArrayList<String>> pack_info, 
 			String regnr_str, String content_str, List<String> tIndex_list) {
 		Document doc = Jsoup.parse(content_str, "UTF-16");
+		// package info string for original
+		List<String> pinfo_originals_str = new ArrayList<String>();
+		// package info string for generika
+		List<String> pinfo_generics_str = new ArrayList<String>();
+		// package info string for the rest
 		List<String> pinfo_str = new ArrayList<String>();
+		
 		int index = 0;
 
 		// Extract swissmedicno5 registration numbers
@@ -1202,52 +1206,35 @@ public class Aips2Sqlite {
 				if (pack_info.containsKey(swissmedicno8_key)) {
 					ArrayList<String> pi_row = package_info.get(swissmedicno8_key);
 					if (pi_row != null) {
+						// Remove double spaces in title and capitalize
+						String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
+						// Remove [QAP?] -> not an easy one!
+						medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");						
 						// --> Add "ausser Handel" information
 						String withdrawn_str = "";
 						if (pi_row.get(10).length() > 0)
 							withdrawn_str = ", " + pi_row.get(10);
 						// --> Add public price information
 						if (pi_row.get(7).length() > 0) {
-							// Remove double spaces in title and capitalize
-							String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
-							// Remove [QAP?] -> not an easy one!
-							medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");
-							// Generate package info string
-							pinfo_str.add("<p class=\"spacing1\">" 
-									+ medtitle + ", " + pi_row.get(7) 
+							// The rest of the package information
+							String append_str = ", " + pi_row.get(7) 
 									+ withdrawn_str + " [" + pi_row.get(5) 
 									+ pi_row.get(11) + pi_row.get(12) 
-									+ flagsb_str + orggen_str + "]</p>");
+									+ flagsb_str + orggen_str + "]";
+							// Generate package info string
+							if (orggen_str.equals(", O"))
+								pinfo_originals_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
+							else if (orggen_str.equals(", G"))
+								pinfo_generics_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
+							else
+								pinfo_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
+								
 						} else {
 							//
 							// @maxl (10.01.2014): Price for swissmedicNo8 pack is not listed in bag_preparations.xml!!
 							//
-							// Remove double spaces in title and capitalize
-							String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
-							// Remove [QAP?] -> not an easy one!
-							medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");
-							if (DB_LANGUAGE.equals("de")) {
-								pinfo_str.add("<p class=\"spacing1\">"
+							pinfo_str.add("<p class=\"spacing1\">"
 										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>");
-							} else if (DB_LANGUAGE.equals("fr")) {
-								pinfo_str.add("<p class=\"spacing1\">"
-										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>");
-							
-							/*
-							if (DB_LANGUAGE.equals("de")) {
-								pinfo_str.add("<p class=\"spacing1\">"
-										+ medtitle + ", " + "k.A."
-										+ withdrawn_str + " [" + pi_row.get(5)
-										+ pi_row.get(11) + pi_row.get(12)
-										+ flagsb_str + orggen_str + "]</p>");
-							} else if (DB_LANGUAGE.equals("fr")) {
-								pinfo_str.add("<p class=\"spacing1\">"
-										+ medtitle + ", " + "prix n.s."
-										+ withdrawn_str + " [" + pi_row.get(5)
-										+ pi_row.get(11) + pi_row.get(12)
-										+ flagsb_str + orggen_str + "]</p>");
-							*/
-							}
 						}
 						// --> Add "tindex_str" and "application_str" (see
 						// SqlDatabase.java)
@@ -1261,15 +1248,21 @@ public class Aips2Sqlite {
 			}
 		}
 		// Re-order the string alphabetically
-		if (!pinfo_str.isEmpty()) {		
-			// Sort list of packages
-			Collections.sort(pinfo_str, new Comparator<String>() {
-				@Override
-				public int compare(final String m1, final String m2) {
-					return m1.compareTo(m2);
-				}
-			});
+		if (!pinfo_originals_str.isEmpty()) {		
+			Collections.sort(pinfo_originals_str, new AlphanumComp()); 
+		}	
+		if (!pinfo_generics_str.isEmpty()) {		
+			Collections.sort(pinfo_generics_str, new AlphanumComp());
 		}
+		if (!pinfo_str.isEmpty()) {		
+			Collections.sort(pinfo_str, new AlphanumComp());
+		}		
+		// Concatenate lists...
+		pinfo_originals_str.addAll(pinfo_generics_str);
+		pinfo_originals_str.addAll(pinfo_str);
+		// Put everything in pinfo_str
+		pinfo_str = pinfo_originals_str;
+		
 		// In case the pinfo_str is empty due to malformed XML
 		/*
 		 * if (pinfo_str.isEmpty()) html_utils.extractPackSection();
