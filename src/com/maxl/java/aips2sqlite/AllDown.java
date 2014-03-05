@@ -270,6 +270,36 @@ public class AllDown {
 		}			
 	}
 	
+	public void downSwissDRGXlsx(String file_swiss_drg_xlsx) {
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+		
+		try {
+			// Start timer 
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading Swiss DRG file ... ");	
+			else {
+				pb.init("- Downloading Swiss DRG file ... ");
+				pb.start();	
+			}
+				
+			URL url = new URL("http://swissdrg.org/assets/Excel/131118_SwissDRG-Version_3.0_Fallpauschalenkatalog2014_d_geprueft_CHOP2014.xlsx");
+			File destination = new File(file_swiss_drg_xlsx);			
+			FileUtils.copyURLToFile(url, destination);
+
+			if (!disp)
+				pb.stopp();
+			long stopTime = System.currentTimeMillis();		
+			System.out.println("\r- Downloading Swiss DRG file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downSwissDRGXls'");
+			e.printStackTrace();
+		}
+	}
+	
 	private void unzipToTemp(File dst) {
 		try {
 			ZipInputStream zin = new ZipInputStream(new FileInputStream(dst));

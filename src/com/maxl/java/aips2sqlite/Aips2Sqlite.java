@@ -75,6 +75,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -100,13 +101,13 @@ public class Aips2Sqlite {
 	private static boolean ZIP_BIG_FILES = false;
 	private static boolean GENERATE_REPORTS = false;
 	private static boolean INDICATIONS_REPORT = false;
-	private static boolean NO_PACK=false;
+	private static boolean NO_PACK = false;
 	private static String OPT_MED_TITLE = "";
 	private static String OPT_MED_REGNR = "";
 	private static String OPT_MED_OWNER = "";
 	
 	// Other global variables or constants
-	private static String DB_VERSION = "1.2.7";
+	private static String DB_VERSION = "1.2.8";
 	
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
 	private static final String FILE_MEDICAL_INFOS_XML = "./downloads/aips_xml.xml";
@@ -119,6 +120,8 @@ public class Aips2Sqlite {
 	private static final String FILE_REFDATA_PHARMA_FR_XML = "./downloads/refdata_pharma_fr_xml.xml";
 	// BAG xml file to be parsed (contains DE and FR)
 	private static final String FILE_PREPARATIONS_XML = "./downloads/bag_preparations_xml.xml";
+	// Swiss DRG xlsx file to be parsed 
+	private static final String FILE_SWISS_DRG_XLSX = "./downloads/swiss_drg_xlsx.xlsx";
 	// ****** ATC class xls file (DE != FR) ******
 	private static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";
 	private static final String FILE_ATC_MULTI_LINGUAL_TXT = "./input/atc_codes_multi_lingual.txt";
@@ -139,6 +142,10 @@ public class Aips2Sqlite {
 	// HashMap is faster, but TreeMap is sort by the key :)
 	private static Map<String, ArrayList<String>> package_info = new TreeMap<String, ArrayList<String>>();
 
+	// Map to Swiss DRG: atc code -> (dosage class, price)
+	private static Map<String, ArrayList<String>> swiss_drg_info = new TreeMap<String, ArrayList<String>>();
+	private static Map<String, String> swiss_drg_footnote = new TreeMap<String, String>();
+	
 	// Map to String of atc classes, key is the ATC-code or any of its
 	// substrings
 	private static Map<String, String> atc_map = new TreeMap<String, String>();
@@ -301,12 +308,16 @@ public class Aips2Sqlite {
 		a.downSwissindexXml("DE", FILE_REFDATA_PHARMA_DE_XML);
 		a.downSwissindexXml("FR", FILE_REFDATA_PHARMA_FR_XML);
 		a.downPreparationsXml(FILE_PREPARATIONS_XML);
+		a.downSwissDRGXlsx(FILE_SWISS_DRG_XLSX);
 	}
 
 	static void generateSQLiteDB() {				
 		try {
 			// Extract package information (this is the heavy-duty bit)
-			extractPackageInfo();			
+			extractPackageInfo();
+			
+			// Extract Swiss DRG information
+			extractSwissDRGInfo();
 			
 			// Read Aips file			
 			List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
@@ -437,6 +448,12 @@ public class Aips2Sqlite {
 										}
 									}
 								}
+								
+								// If DRG medication, add to atc_description_str
+								ArrayList<String> drg = swiss_drg_info.get(atc_code_str);
+								if (drg!=null) {
+									atc_description_str += (";DRG");
+								}
 							} else {
 								errors++;
 								if (GENERATE_REPORTS) {
@@ -556,9 +573,11 @@ public class Aips2Sqlite {
 								}								
 							}
 						
-							// Update "Packungen" section and extract therapeutisches index
+							/*
+							 * Update "Packungen" section and extract therapeutisches index
+							 */
 							List<String> mTyIndex_list = new ArrayList<String>();						
-							String mContent_str = updateSectionPackungen(m.getTitle(), package_info, regnr_str, html_sanitized, mTyIndex_list);
+							String mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), package_info, regnr_str, html_sanitized, mTyIndex_list);
 							m.setContent(mContent_str);
 								
 							// Check if mPackSection_str is empty AND command line option NO_PACK is not active
@@ -576,7 +595,7 @@ public class Aips2Sqlite {
 								System.err.println(">> ERROR: " + tot_med_counter + " - SwissmedicNo5 not found in Swissmedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
 								missing_pack_info++;
 							}							
-							
+														
 							// Fix problem with wrong div class in original Swissmedic file
 							if (DB_LANGUAGE.equals("de")) {
 								m.setStyle(m.getStyle().replaceAll("untertitel", "untertitle"));
@@ -1122,6 +1141,95 @@ public class Aips2Sqlite {
 		}
 	}
 
+	static String getCellValue(Cell part) {
+		if (part!=null) {
+		    switch (part.getCellType()) {
+		        case Cell.CELL_TYPE_BOOLEAN: return part.getBooleanCellValue() + "";
+		        case Cell.CELL_TYPE_NUMERIC: return String.format("%.2f", part.getNumericCellValue());
+		        case Cell.CELL_TYPE_STRING:	return part.getStringCellValue() + "";
+		        case Cell.CELL_TYPE_BLANK: return "BLANK";
+		        case Cell.CELL_TYPE_ERROR: return "ERROR";
+		        case Cell.CELL_TYPE_FORMULA: return "FORMEL";
+		    }
+		}
+		return "";
+	}	
+	
+	static void extractSwissDRGInfo() {
+		try {
+			long startTime = System.currentTimeMillis();
+			if (SHOW_LOGS)
+				System.out.print("- Processing Swiss DRG xlsx... ");
+			// Load Swiss DRG file	
+			FileInputStream swiss_drg_file = new FileInputStream(FILE_SWISS_DRG_XLSX);
+			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
+			XSSFWorkbook swiss_drg_workbook = new XSSFWorkbook(swiss_drg_file);
+			// Get first sheet from workbook
+			XSSFSheet swiss_drg_sheet = swiss_drg_workbook.getSheetAt(4);
+			// System.out.println("sheet name = " + swiss_drg_sheet.getSheetName()); // "Anlage 2"
+	
+			// Iterate through all rows of first sheet
+			Iterator<Row> rowIterator = swiss_drg_sheet.iterator();
+	
+			String zusatz_entgelt = "";
+			String atc_code = "";
+			String dosage_class = "";
+			String price = "";
+			
+			int num_rows = 0;
+			String current_footnote = "";
+			
+			while (rowIterator.hasNext()) {
+				if (num_rows>84) {
+					Row row = rowIterator.next();
+					if (row.getCell(0)!=null)
+						zusatz_entgelt = getCellValue(row.getCell(0));	// Zusatzentgelt						
+					if (row.getCell(2)!= null)
+						atc_code = getCellValue(row.getCell(2)); 	 	// ATC Code
+					if (row.getCell(3)!=null)
+						dosage_class = getCellValue(row.getCell(3)); 	// Dosage class
+					if (row.getCell(4)!=null)
+						price = getCellValue(row.getCell(4));			// Price
+						
+					if (!zusatz_entgelt.isEmpty() && !dosage_class.isEmpty() && !price.isEmpty() && 
+							!atc_code.contains(".") &&
+							!zusatz_entgelt.isEmpty() && !dosage_class.equals("BLANK") && !price.equals("BLANK")) {
+						String swiss_drg_str = zusatz_entgelt + ", Dosierung " + dosage_class + ", CHF " + price;
+						// Get list of dosages for a particular atc code
+						ArrayList<String> dosages = swiss_drg_info.get(atc_code);
+						// If there is no list, create a new one
+						if (dosages==null)
+							dosages = new ArrayList<String>();
+						dosages.add(swiss_drg_str);
+						// Update global swiss drg list
+						swiss_drg_info.put(atc_code, dosages);	
+						// Update footnote map
+						swiss_drg_footnote.put(atc_code, current_footnote);						
+					} else if (!zusatz_entgelt.isEmpty() && dosage_class.equals("BLANK") && price.equals("BLANK")) {
+						if (zusatz_entgelt.contains(" ")) {
+							String[] sub_script = zusatz_entgelt.split(" ");
+							if (sub_script.length>1 && sub_script[0].contains("ZE")) {
+								// Update atc code to footnote map
+								current_footnote = sub_script[1];
+							}
+						}
+					}
+				}
+				num_rows++;
+			}
+		
+			long stopTime = System.currentTimeMillis();
+			if (SHOW_LOGS) {
+				System.out.println(num_rows + " packages in "
+						+ (stopTime - startTime) / 1000.0f + " sec");
+			}						
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}	
+	
 	static List<MedicalInformations.MedicalInformation> readAipsFile() {
 		List<MedicalInformations.MedicalInformation> med_list = null;
 		try {
@@ -1164,7 +1272,7 @@ public class Aips2Sqlite {
 		return med_list;
 	}
 	
-	static String updateSectionPackungen(String title, Map<String, ArrayList<String>> pack_info, 
+	static String updateSectionPackungen(String title, String atc_code, Map<String, ArrayList<String>> pack_info, 
 			String regnr_str, String content_str, List<String> tIndex_list) {
 		Document doc = Jsoup.parse(content_str, "UTF-16");
 		// package info string for original
@@ -1273,6 +1381,9 @@ public class Aips2Sqlite {
 			tIndex_list.add("");
 		}
 		
+		/*
+		* Replace package information
+		*/
 		if (NO_PACK==false) {
 			// Replace original package information with pinfo_str
 			String p_str = "";
@@ -1291,23 +1402,56 @@ public class Aips2Sqlite {
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);
 			Element div7800 = doc.select("[id=Section7800]").first();
 			
-			String packages = "Packungen";	
+			// Initialize section titles
+			String packages_title = "Packungen";	
 			if (DB_LANGUAGE.equals("fr"))
-				packages = "Présentation";
+				packages_title = "Présentation";			
+			String swiss_drg_title = "Swiss DRG";
+			
+			// Generate html
+			String section_html = "<div class=\"absTitle\">" + packages_title + "</div>" + p_str;
+			// Loop through list of dosages for a particular atc code and format appropriately
+			if (atc_code!=null) {		
+				// Update footnote super scripts
+				String footnotes = "1";				
+				String fn = swiss_drg_footnote.get(atc_code);
+				if (fn!=null)
+					footnotes += (", " + fn);
+				// Generate Swiss DRG string
+				String drg_str = "";
+				ArrayList<String> dosages = swiss_drg_info.get(atc_code);
+				// For most atc codes, there are no special drg sanctioned dosages...
+				if (dosages!=null) {
+					System.out.println(title);
+					for (String drg : dosages)
+						drg_str += "<p class=\"spacing1\">" + drg + "</p>";
+					if (!drg_str.isEmpty()) {
+							section_html += ("<p class=\"paragraph\"></p><div class=\"absTitle\">" + swiss_drg_title 
+									+ "<sup>" + footnotes + "</sup></div>" + drg_str);
+					}
+					section_html += "<p class=\"noSpacing\"></p>";
+					section_html += "<p class=\"spacing1\"><sup>1</sup> Alle Spitäler müssen im Rahmen der jährlichen Datenerhebung (Detaillieferung) die SwissDRG AG zwingend über die Höhe der in Rechnung gestellten Zusatzentgelte informieren.</p>";
+					section_html += "<p class=\"spacing1\"><sup>2</sup> Eine zusätzliche Abrechnung ist im Zusammenhang mit einer Fallpauschale der Basis-DRGs L60 oder L71 nicht möglich.</p>";
+					section_html += "<p class=\"spacing1\"><sup>3</sup> Eine Abrechnung des Zusatzentgeltes ist nur über die in der Anlage zum Fallpauschalenkatalog aufgeführten Dosisklassen möglich.</p>";
+					section_html += "<p class=\"spacing1\"><sup>4</sup> Dieses Zusatzentgelt ist nur abrechenbar für Patienten mit einem Alter < 15 Jahre.</p>";
+					section_html += "<p class=\"spacing1\"><sup>5</sup> Dieses Zusatzentgelt darf nicht zusätzlich zur DRG A91Z abgerechnet werden, da in dieser DRG Apheresen die Hauptleistung darstellen. " +
+							"Die Verfahrenskosten der  Apheresen sind in dieser DRG bereits vollumfänglich enthalten.</p>";
+				}
+			}
 			
 			if (div7800 != null) {
-				div7800.html("<div class=\"absTitle\">" + packages + "</div>" + p_str);
+				div7800.html(section_html);
 			} else {
 				Element div18 = doc.select("[id=section18]").first();
 				if (div18 != null) {
-					div18.html("<div class=\"absTitle\">" + packages + "</div>" + p_str);
+					div18.html(section_html);
 				} else {
 					if (SHOW_ERRORS)
 						System.err.println(">> ERROR: elem is null, sections 18/7800 does not exist: " + title);
 				}
 			}
 		}
-		
+			
 		return doc.html();
 	}
 
