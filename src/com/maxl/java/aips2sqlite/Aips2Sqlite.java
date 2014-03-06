@@ -115,13 +115,14 @@ public class Aips2Sqlite {
 	// Excel file to be parsed (DE = FR)
 	private static final String FILE_PACKAGES_XLS = "./downloads/swissmedic_packages_xls.xls";
 	private static final String FILE_PACKAGES_XLSX = "./downloads/swissmedic_packages_xlsx.xlsx";
-	// ****** Refdata xml file to be parsed (DE != FR) ******
+	// Refdata xml file to be parsed (DE != FR)
 	private static final String FILE_REFDATA_PHARMA_DE_XML = "./downloads/refdata_pharma_de_xml.xml";
 	private static final String FILE_REFDATA_PHARMA_FR_XML = "./downloads/refdata_pharma_fr_xml.xml";
 	// BAG xml file to be parsed (contains DE and FR)
 	private static final String FILE_PREPARATIONS_XML = "./downloads/bag_preparations_xml.xml";
-	// Swiss DRG xlsx file to be parsed 
-	private static final String FILE_SWISS_DRG_XLSX = "./downloads/swiss_drg_xlsx.xlsx";
+	// Swiss DRG xlsx file to be parsed (DE != FR)
+	private static final String FILE_SWISS_DRG_DE_XLSX = "./downloads/swiss_drg_de_xlsx.xlsx";
+	private static final String FILE_SWISS_DRG_FR_XLSX = "./downloads/swiss_drg_fr_xlsx.xlsx";
 	// ****** ATC class xls file (DE != FR) ******
 	private static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";
 	private static final String FILE_ATC_MULTI_LINGUAL_TXT = "./input/atc_codes_multi_lingual.txt";
@@ -308,7 +309,8 @@ public class Aips2Sqlite {
 		a.downSwissindexXml("DE", FILE_REFDATA_PHARMA_DE_XML);
 		a.downSwissindexXml("FR", FILE_REFDATA_PHARMA_FR_XML);
 		a.downPreparationsXml(FILE_PREPARATIONS_XML);
-		a.downSwissDRGXlsx(FILE_SWISS_DRG_XLSX);
+		a.downSwissDRGXlsx("DE", FILE_SWISS_DRG_DE_XLSX);
+		a.downSwissDRGXlsx("FR", FILE_SWISS_DRG_FR_XLSX);
 	}
 
 	static void generateSQLiteDB() {				
@@ -1161,66 +1163,84 @@ public class Aips2Sqlite {
 			if (SHOW_LOGS)
 				System.out.print("- Processing Swiss DRG xlsx... ");
 			// Load Swiss DRG file	
-			FileInputStream swiss_drg_file = new FileInputStream(FILE_SWISS_DRG_XLSX);
+			FileInputStream swiss_drg_file = null;			
+			if (DB_LANGUAGE.equals("de"))
+				swiss_drg_file = new FileInputStream(FILE_SWISS_DRG_DE_XLSX);
+			else if (DB_LANGUAGE.equals("fr"))
+				swiss_drg_file = new FileInputStream(FILE_SWISS_DRG_FR_XLSX);
+			else
+				swiss_drg_file = new FileInputStream(FILE_SWISS_DRG_DE_XLSX);
+			
 			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
 			XSSFWorkbook swiss_drg_workbook = new XSSFWorkbook(swiss_drg_file);
-			// Get first sheet from workbook
-			XSSFSheet swiss_drg_sheet = swiss_drg_workbook.getSheetAt(4);
-			// System.out.println("sheet name = " + swiss_drg_sheet.getSheetName()); // "Anlage 2"
-	
-			// Iterate through all rows of first sheet
-			Iterator<Row> rowIterator = swiss_drg_sheet.iterator();
-	
+			
+			// Get "Anlage 2 und Anlage 3" 				
 			String zusatz_entgelt = "";
 			String atc_code = "";
 			String dosage_class = "";
 			String price = "";
 			
-			int num_rows = 0;
-			String current_footnote = "";
-			
-			while (rowIterator.hasNext()) {
-				if (num_rows>84) {
-					Row row = rowIterator.next();
-					if (row.getCell(0)!=null)
-						zusatz_entgelt = getCellValue(row.getCell(0));	// Zusatzentgelt						
-					if (row.getCell(2)!= null)
-						atc_code = getCellValue(row.getCell(2)); 	 	// ATC Code
-					if (row.getCell(3)!=null)
-						dosage_class = getCellValue(row.getCell(3)); 	// Dosage class
-					if (row.getCell(4)!=null)
-						price = getCellValue(row.getCell(4));			// Price
-						
-					if (!zusatz_entgelt.isEmpty() && !dosage_class.isEmpty() && !price.isEmpty() && 
-							!atc_code.contains(".") &&
-							!zusatz_entgelt.isEmpty() && !dosage_class.equals("BLANK") && !price.equals("BLANK")) {
-						String swiss_drg_str = zusatz_entgelt + ", Dosierung " + dosage_class + ", CHF " + price;
-						// Get list of dosages for a particular atc code
-						ArrayList<String> dosages = swiss_drg_info.get(atc_code);
-						// If there is no list, create a new one
-						if (dosages==null)
-							dosages = new ArrayList<String>();
-						dosages.add(swiss_drg_str);
-						// Update global swiss drg list
-						swiss_drg_info.put(atc_code, dosages);	
-						// Update footnote map
-						swiss_drg_footnote.put(atc_code, current_footnote);						
-					} else if (!zusatz_entgelt.isEmpty() && dosage_class.equals("BLANK") && price.equals("BLANK")) {
-						if (zusatz_entgelt.contains(" ")) {
-							String[] sub_script = zusatz_entgelt.split(" ");
-							if (sub_script.length>1 && sub_script[0].contains("ZE")) {
-								// Update atc code to footnote map
-								current_footnote = sub_script[1];
+			// TODO: Add code for Anlage 3 (a==5)
+			for (int a=4; a<=4; a++) {
+				int num_rows = 0;
+				String current_footnote = "";				
+				
+				XSSFSheet swiss_drg_sheet = swiss_drg_workbook.getSheetAt(a);
+		
+				// Iterate through all rows of first sheet
+				Iterator<Row> rowIterator = swiss_drg_sheet.iterator();
+				
+				while (rowIterator.hasNext()) {
+					if (num_rows>7) {
+						Row row = rowIterator.next();
+						if (row.getCell(0)!=null)	// Zusatzentgelt
+							zusatz_entgelt = getCellValue(row.getCell(0));					
+						if (row.getCell(2)!= null)	// ATC Code
+							atc_code = getCellValue(row.getCell(2)).replaceAll("[^A-Za-z0-9.]", ""); 
+						if (row.getCell(3)!=null)	// Dosage class
+							dosage_class = getCellValue(row.getCell(3));
+						if (row.getCell(4)!=null) 	// Price
+							price = getCellValue(row.getCell(4));
+					
+						if (!zusatz_entgelt.isEmpty() && !dosage_class.isEmpty() && !price.isEmpty() && 
+								!atc_code.contains(".") && !dosage_class.equals("BLANK") && !price.equals("BLANK")) {
+							String swiss_drg_str = "";
+							if (a==4) {
+								if (DB_LANGUAGE.equals("de"))
+									swiss_drg_str = zusatz_entgelt + ", Dosierung " + dosage_class + ", CHF " + price;
+								else if (DB_LANGUAGE.equals("fr"))
+									swiss_drg_str = zusatz_entgelt + ", dosage " + dosage_class + ", CHF " + price;
+							}
+							else if (a==5)
+								swiss_drg_str = zusatz_entgelt + ", " + price;
+								
+							// Get list of dosages for a particular atc code
+							ArrayList<String> dosages = swiss_drg_info.get(atc_code);
+							// If there is no list, create a new one
+							if (dosages==null)
+								dosages = new ArrayList<String>();
+							dosages.add(swiss_drg_str);
+							// Update global swiss drg list
+							swiss_drg_info.put(atc_code, dosages);	
+							// Update footnote map
+							swiss_drg_footnote.put(atc_code, current_footnote);						
+						} else if (!zusatz_entgelt.isEmpty() && dosage_class.equals("BLANK") && price.equals("BLANK")) {
+							if (zusatz_entgelt.contains(" ")) {
+								String[] sub_script = zusatz_entgelt.split(" ");
+								if (sub_script.length>1 && sub_script[0].contains("ZE")) {
+									// Update atc code to footnote map
+									current_footnote = sub_script[1];
+								}
 							}
 						}
 					}
+					num_rows++;
 				}
-				num_rows++;
 			}
-		
+			
 			long stopTime = System.currentTimeMillis();
 			if (SHOW_LOGS) {
-				System.out.println(num_rows + " packages in "
+				System.out.println("processed all Swiss DRG packages in "
 						+ (stopTime - startTime) / 1000.0f + " sec");
 			}						
 		} catch (FileNotFoundException e) {
@@ -1429,13 +1449,23 @@ public class Aips2Sqlite {
 							section_html += ("<p class=\"paragraph\"></p><div class=\"absTitle\">" + swiss_drg_title 
 									+ "<sup>" + footnotes + "</sup></div>" + drg_str);
 					}
-					section_html += "<p class=\"noSpacing\"></p>";
-					section_html += "<p class=\"spacing1\"><sup>1</sup> Alle Spitäler müssen im Rahmen der jährlichen Datenerhebung (Detaillieferung) die SwissDRG AG zwingend über die Höhe der in Rechnung gestellten Zusatzentgelte informieren.</p>";
-					section_html += "<p class=\"spacing1\"><sup>2</sup> Eine zusätzliche Abrechnung ist im Zusammenhang mit einer Fallpauschale der Basis-DRGs L60 oder L71 nicht möglich.</p>";
-					section_html += "<p class=\"spacing1\"><sup>3</sup> Eine Abrechnung des Zusatzentgeltes ist nur über die in der Anlage zum Fallpauschalenkatalog aufgeführten Dosisklassen möglich.</p>";
-					section_html += "<p class=\"spacing1\"><sup>4</sup> Dieses Zusatzentgelt ist nur abrechenbar für Patienten mit einem Alter < 15 Jahre.</p>";
-					section_html += "<p class=\"spacing1\"><sup>5</sup> Dieses Zusatzentgelt darf nicht zusätzlich zur DRG A91Z abgerechnet werden, da in dieser DRG Apheresen die Hauptleistung darstellen. " +
-							"Die Verfahrenskosten der  Apheresen sind in dieser DRG bereits vollumfänglich enthalten.</p>";
+					
+					section_html += "<p class=\"noSpacing\"></p>";					
+					if (DB_LANGUAGE.equals("de")) {
+						section_html += "<p class=\"spacing1\"><sup>1</sup> Alle Spitäler müssen im Rahmen der jährlichen Datenerhebung (Detaillieferung) die SwissDRG AG zwingend über die Höhe der in Rechnung gestellten Zusatzentgelte informieren.</p>";
+						section_html += "<p class=\"spacing1\"><sup>2</sup> Eine zusätzliche Abrechnung ist im Zusammenhang mit einer Fallpauschale der Basis-DRGs L60 oder L71 nicht möglich.</p>";
+						section_html += "<p class=\"spacing1\"><sup>3</sup> Eine Abrechnung des Zusatzentgeltes ist nur über die in der Anlage zum Fallpauschalenkatalog aufgeführten Dosisklassen möglich.</p>";
+						section_html += "<p class=\"spacing1\"><sup>4</sup> Dieses Zusatzentgelt ist nur abrechenbar für Patienten mit einem Alter < 15 Jahre.</p>";
+						section_html += "<p class=\"spacing1\"><sup>5</sup> Dieses Zusatzentgelt darf nicht zusätzlich zur DRG A91Z abgerechnet werden, da in dieser DRG Apheresen die Hauptleistung darstellen. " +
+								"Die Verfahrenskosten der  Apheresen sind in dieser DRG bereits vollumfänglich enthalten.</p>";
+					} else if (DB_LANGUAGE.equals("fr")) {
+						section_html += "<p class=\"spacing1\"><sup>1</sup> Tous les hôpitaux doivent impérativement informer SwissDRG SA lors du relevé (relevé détaillé) sur le montant des rémunérations supplémentaires facturées.</p>";
+						section_html += "<p class=\"spacing1\"><sup>2</sup> Une facturation supplémentaire aux forfaits par cas des DRG de base L60 ou L71 n’est pas possible.</p>";
+						section_html += "<p class=\"spacing1\"><sup>3</sup> Une facturation des rémunération supplémentaires n'est possible que pour les classes de dosage définies dans cette annexe.</p>";
+						section_html += "<p class=\"spacing1\"><sup>4</sup> Cette rémunération supplémentaire n'est facturable que pour les patients âgés de moins de 15 ans.</p>";
+						section_html += "<p class=\"spacing1\"><sup>5</sup> Cette rémunération supplémentaire ne peut pas être facturée en plus du DRG A91Z, la prestation principale de ce DRG étant l'aphérèse. " +
+								"Les coûts du traitement par aphérèse sont déjà intégralement compris dans le DRG.</p>";
+					}
 				}
 			}
 			

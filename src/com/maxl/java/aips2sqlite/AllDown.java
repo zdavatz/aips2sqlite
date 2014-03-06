@@ -270,7 +270,7 @@ public class AllDown {
 		}			
 	}
 	
-	public void downSwissDRGXlsx(String file_swiss_drg_xlsx) {
+	public void downSwissDRGXlsx(String language, String file_swiss_drg_xlsx) {
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();
 		
@@ -284,14 +284,20 @@ public class AllDown {
 				pb.start();	
 			}
 				
-			URL url = new URL("http://swissdrg.org/assets/Excel/131118_SwissDRG-Version_3.0_Fallpauschalenkatalog2014_d_geprueft_CHOP2014.xlsx");
-			File destination = new File(file_swiss_drg_xlsx);			
-			FileUtils.copyURLToFile(url, destination);
-
-			if (!disp)
-				pb.stopp();
-			long stopTime = System.currentTimeMillis();		
-			System.out.println("\r- Downloading Swiss DRG file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			URL url = null;
+			if (language.equals("DE"))
+				url = new URL("http://www.swissdrg.org/assets/Excel/131118_SwissDRG-Version_3.0_Fallpauschalenkatalog2014_d_geprueft_CHOP2014.xlsx");
+			else if (language.equals("FR"))
+				url = new URL("http://www.swissdrg.org/assets/Excel/131118_SwissDRG-Version_3.0_Fallpauschalenkatalog2014_f_geprueft_CHOP2014_erratum.xlsx");
+				
+			if (url!=null) {
+				File destination = new File(file_swiss_drg_xlsx);			
+				FileUtils.copyURLToFile(url, destination);		
+				if (!disp)
+					pb.stopp();
+				long stopTime = System.currentTimeMillis();		
+				System.out.println("\r- Downloading Swiss DRG file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			}
 		} catch (Exception e) {
 			if (!disp)
 				pb.stopp();			
