@@ -102,6 +102,7 @@ public class Aips2Sqlite {
 	private static boolean GENERATE_REPORTS = false;
 	private static boolean INDICATIONS_REPORT = false;
 	private static boolean NO_PACK = false;
+	private static boolean ADD_PSEUDO_FI = false;
 	private static String OPT_MED_TITLE = "";
 	private static String OPT_MED_REGNR = "";
 	private static String OPT_MED_OWNER = "";
@@ -220,6 +221,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("nopack")) {
 				NO_PACK = true;
 			}
+			if (cmd.hasOption("pseudo")) {
+				ADD_PSEUDO_FI = true;
+			}
 			if (cmd.hasOption("xml")) {
 				XML_FILE = true;
 			}
@@ -249,6 +253,7 @@ public class Aips2Sqlite {
 		addOption(options, "regnr", "only include medications which start with option value", true, false);
 		addOption(options, "owner", "only include medications owned by option value", true, false);
 		addOption(options, "nopack", "does not update the package section", false, false);
+		addOption(options, "pseudo", "adds pseudo expert infos to db", false, false);
 		addOption(options, "xml", "generate xml file", false, false);	
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
@@ -676,7 +681,18 @@ public class Aips2Sqlite {
 			System.out.println("Number of missing pack info : " + missing_pack_info);
 			System.out.println("Number of missing atc codes : " + missing_atc_code);
 			
-			if (ZIP_BIG_FILES) {
+			/*
+			 * Add pseudo Fachinfos to SQLite database
+			 */
+			if (ADD_PSEUDO_FI==true) {
+				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo();
+				// Process
+				pseudo_fi.process();
+				// Add to DB
+				pseudo_fi.addToDB(sql_db, amiko_style_v1_str);
+			}
+			
+			if (ZIP_BIG_FILES==true) {
 				zipToFile("./output/", "amiko_db_full_idx_" + DB_LANGUAGE + ".db");
 			}
 			
