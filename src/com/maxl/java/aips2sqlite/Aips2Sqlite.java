@@ -685,11 +685,9 @@ public class Aips2Sqlite {
 			 * Add pseudo Fachinfos to SQLite database
 			 */
 			if (ADD_PSEUDO_FI==true) {
-				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo();
+				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, amiko_style_v1_str);
 				// Process
 				pseudo_fi.process();
-				// Add to DB
-				pseudo_fi.addToDB(sql_db, amiko_style_v1_str);
 			}
 			
 			if (ZIP_BIG_FILES==true) {

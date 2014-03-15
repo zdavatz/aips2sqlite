@@ -1,5 +1,25 @@
+/*
+Copyright (c) 2014 Max Lungarella
+
+This file is part of Aips2SQLite.
+
+Aips2SQLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package com.maxl.java.aips2sqlite;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,24 +37,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Entities.EscapeMode;
 
-/*
- * Relevant SQLite DB columns (the rest is empty)
- * id, title, auth, regnrs, customer id, pack_info_str, add_info_str, ids_str, title_str, content, style_str
- */
-
 public class PseudoExpertInfo {
 
-	private static final String FILE_PSEUDO_INFO_DOCX = "./input/pseudo/Sinovial_0.8_FR.docx";
-	
-	private static String SectionTitle_DE[] = {"Zusammensetzung", "Indikationen/Anwendungsmöglichkeiten", "Dosierung/Anwendung", 
-		"Kontraindikationen", "Warnhinweise und Vorsichtsmassnahmen", "Interaktionen", "Unerwünschte Wirkungen",
-		"Eigenschaften/Wirkungen", "Sonstige Hinweise", "Packungen", "Herstellerin", "Vertriebsfirma", "Stand der Information", "nil"};
-	private static String SectionTitle_FR[] = {
-		"Composition", "Indications/Possibilités d'emploi", "Posologie/Mode d'emploi", "Contre-indications", 
-		"Mises en garde et précautions", "Interactions", "Effets indésirables", "Propriétés/Effets", 
-		"Remarques particulières", "Présentation", "Fabricant", "Distributeur", "Mise à jour de l'information", "nil"};
+	// This is the location of the directory with the pseudo "Fachinfos"
+	private static final String FILE_PSEUDO_INFO_DIR = "./input/pseudo/";
+
+	private SqlDatabase mSqlDB = null;
+	private String mAmikoCSS_str = "";
 	
 	private ArrayList<String> mSectionContent;
+	private ArrayList<String> mSectionTitles;
 	private MedicalInformations.MedicalInformation mMedi;
 	private String mEanCodes_str = "";
 	private String mSectionIds_str = "";
@@ -42,83 +54,125 @@ public class PseudoExpertInfo {
 	private String mSectionPackungen_str = "";
 	private int mCustomerId;
 	
-	public PseudoExpertInfo() {
-		mSectionContent = new ArrayList<String>();
-		for (int i=0; i<SectionTitle_DE.length; ++i)
-			mSectionContent.add(i, "");
-		
-		mMedi = new MedicalInformations.MedicalInformation();
-		
+	public PseudoExpertInfo(SqlDatabase sqlDB, String amikoCSS_str) {		
+		mSqlDB = sqlDB;
+		mAmikoCSS_str = amikoCSS_str;
 		// This sets the customer id (as of yet unused)
 		mCustomerId = 2;
-	}
-	
-	private void setup() {
-		
 	}
 	
 	public void download() {
 		// TODO: Life connection to OneDrive
 	}
 	
+	/*
+	 * 	Loads all filenames from directory into a list
+	 */
 	public void process() {
+		try {
+			File[] files = new File(FILE_PSEUDO_INFO_DIR).listFiles();
+			// Loop through list
+			System.out.println("\nFound " + files.length + " pseudo Fachinfos");
+			int idxPseudo = 1;
+			for (File pseudo : files) {
+				FileInputStream pseudoInfoFile = new FileInputStream(pseudo.getAbsoluteFile());
+				extractInfo(idxPseudo++, pseudoInfoFile);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Extracts all the important information from the pseudo "Fachinfo" file
+	 * @param pseudo_info_file
+	 */
+	public void extractInfo(int idx, FileInputStream pseudo_info_file) {
+		mMedi = new MedicalInformations.MedicalInformation();
+		
+		mSectionContent = new ArrayList<String>();
+		mSectionTitles = new ArrayList<String>();
+		
 		String mediTitle = "";
 		String mediAuthor = "";
+		String mediPseudoTag = "";
 		String mediHtmlContent = "";
+		
 		StringBuilder content = new StringBuilder();
 
 		try {
 			// Read in docx file
-			FileInputStream pseudo_info_file = new FileInputStream(FILE_PSEUDO_INFO_DOCX);		
-			XWPFDocument docx = new XWPFDocument(pseudo_info_file);						
-			// Loop through it, identifying medication title, author, section titles and corresponding titles
-			String prevParaText = "";
+			XWPFDocument docx = new XWPFDocument(pseudo_info_file);
+			// Get iterator through all paragraphs
 			Iterator<XWPFParagraph> para = docx.getParagraphsIterator();
 
+			// Pre-process input stream to extract paragraph titles
+			boolean goodToGo = false;
 			while (para.hasNext()) {				
 				List<XWPFRun> runs = para.next().getRuns();
 				if (!runs.isEmpty()) {
 					for (XWPFRun r : runs) {
-						if (r.isBold())							
-							System.out.println(r.getParagraph().getText());
+						// bold and italics identifies section title!
+						if (r.isBold())	{ // && r.isItalic()) {
+							String pText = r.getParagraph().getText();
+							// These are the first chapter titles (DE and FR)
+							if (pText.equals("Zusammensetzung") || pText.equals("Composition"))
+								goodToGo = true;
+							if (goodToGo==true)
+								mSectionTitles.add(pText);
+						}
 					}
 				}
 			}
+			// Add "nil" at the end
+			mSectionTitles.add("nil");
 			
-			System.out.println("----------------------------");
+			// Reset iterator
+			para = docx.getParagraphsIterator();
+			
+			// Init list for section content 
+			for (int i=0; i<mSectionTitles.size(); ++i)
+				mSectionContent.add(i, "");
 			
 			// Get title
 			if (para.hasNext())
 				mediTitle = para.next().getParagraphText();
-			// Get author
+			// Get author while using "Medizinprodukt" as tag
+			String prevParaText = "";			
 			while (para.hasNext()) {
 				String paraText = para.next().getParagraphText();
-				if (paraText.equals("Medizinprodukt")) {
+				// If this word is not found, then no pseudo FI will be produced
+				if (paraText.equals("Medizinprodukt") || paraText.equals("Dispositif médical")) {
+					mediPseudoTag = paraText;
 					mediAuthor = prevParaText;
 					break;
 				}
 				prevParaText = paraText;
 			}
+		
 			// Get section titles + sections + ean codes
 			boolean isSectionPackungen = false;
 			int numSection = 0;
 			// Init with section1 and title
 			String sectionId_str = "";
 			String sectionTitle_str = "";
+			mEanCodes_str = "";
 			mSectionIds_str = "section1,";
 			mSectionTitles_str = mediTitle + ",";
+			mSectionPackungen_str = "";
 			// This is the EAN code pattern
 			Pattern pattern = Pattern.compile("^[0-9]{13}");			
-			// Loop through all paragraphs...
+			// Loop through it, identifying medication title, author, section titles and corresponding titles
 			while (para.hasNext()) {
-				String paraText = para.next().getParagraphText();
-				if (paraText.equals(SectionTitle_DE[numSection])) {		
+				String paraText = para.next().getParagraphText();			
+				if (paraText.equals(mSectionTitles.get(numSection))) {		
+					// ->> Get section title
 					isSectionPackungen = false;
 					// Get section title
-					if (numSection<SectionTitle_DE.length)
+					if (numSection<mSectionTitles.size())
 						numSection++;
 					// Section "Packungen" is special
-					if (paraText.equals("Packungen")) {
+					if (paraText.equals("Packungen") || paraText.equals("Présentation")) {
 						isSectionPackungen = true;
 					}
 					// Close previous div
@@ -126,7 +180,7 @@ public class PseudoExpertInfo {
 						content.append("</div>");					
 					// Create html
 					sectionId_str = "section" + (numSection+1);	// section1 is reserved for the MonTitle
-					sectionTitle_str = SectionTitle_DE[numSection-1];
+					sectionTitle_str = mSectionTitles.get(numSection-1);
 					content.append("<div class=\"paragraph\" id=\"" + sectionId_str + "\">");
 					content.append("<div class=\"absTitle\">" + sectionTitle_str + "</div>");
 					// Generate section id string
@@ -134,24 +188,23 @@ public class PseudoExpertInfo {
 					// Generate titles string
 					mSectionTitles_str += (sectionTitle_str + ";");
 				} else {
-					// Get section content
+					// ->> Get section content
 					String s = mSectionContent.get(numSection-1);
 					mSectionContent.set(numSection-1, s+paraText+" ");
 					// Create html
 					content.append("<p class=\"spacing1\">" + paraText + "</p>");
 					// Extract EAN codes and start positions
 					Matcher matcher = pattern.matcher(paraText);
-					while (matcher.find()) {
+					while (matcher.find())
 						mEanCodes_str += (matcher.group() + ", ");
-					}					
-					if (isSectionPackungen) {
-						mSectionPackungen_str += (paraText + '\n');
-					}
+					// Generate section Packungen for search result
+					if (isSectionPackungen)
+						mSectionPackungen_str += (paraText + "\n");
 				}
 			}			
 			// Remove last comma from mEanCodes_str
 			if (!mEanCodes_str.isEmpty())
-				mEanCodes_str = mEanCodes_str.substring(0, mEanCodes_str.length()-1);	
+				mEanCodes_str = mEanCodes_str.substring(0, mEanCodes_str.length()-2);	
 			// Remove last \n from mSectionPackungen_str
 			if (!mSectionPackungen_str.isEmpty())
 				mSectionPackungen_str = mSectionPackungen_str.substring(0, mSectionPackungen_str.length()-1);
@@ -159,16 +212,21 @@ public class PseudoExpertInfo {
 			// Set title, autor
 			mMedi.setTitle(mediTitle);
 			mMedi.setAuthHolder(mediAuthor);
-			mMedi.setAtcCode("");
-			mMedi.setSubstances("");
+			mMedi.setAtcCode("PSEUDO");
+			mMedi.setSubstances(mediTitle);
+			
+			System.out.println(idx + " - " + mediTitle + ": " + mEanCodes_str);
 			
 			// Close previous div + monographie div
 			content.append("</div></div>");
 			String title = "<div class=\"MonTitle\" id=\"section1\">" + mediTitle + "</div>";
 			String author = "<div class=\"ownerCompany\"><div style=\"text-align: right;\">" + mediAuthor + "</div></div>";
+			// Set "Medizinprodukt" label
+			String pseudo = "<p class=\"spacing1\">" + mediPseudoTag + "</p>";
 			// Set medi content			
-			mediHtmlContent = "<html><head></head><body><div id=\"monographie\">" + title + author + content.toString() + "</div></body></html>";
+			mediHtmlContent = "<html><head></head><body><div id=\"monographie\">" + title + author + pseudo + content.toString() + "</div></body></html>";
 			
+			// Generate clean html file
 			Document doc = Jsoup.parse(mediHtmlContent);
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);		
 			doc.outputSettings().charset("UTF-8");
@@ -178,20 +236,21 @@ public class PseudoExpertInfo {
 			
 			// Set html content
 			mMedi.setContent(mediHtmlContent);				
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			
+			// Add to DB
+			addToDB();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void addToDB(SqlDatabase sqlDB, String amikoCSS_str) {
+	private void addToDB() {
 		// orggen_str = "P" (=pseudo)
 		List<String> emptyList = new ArrayList<String>();
-		emptyList.add("");
-		emptyList.add("");
+		emptyList.add("PSEUDO");
+		emptyList.add("PSEUDO");
 		try {
-			sqlDB.addDB(mMedi, amikoCSS_str, mEanCodes_str, mSectionIds_str, mSectionTitles_str, "", "", 
+			mSqlDB.addDB(mMedi, mAmikoCSS_str, mEanCodes_str, mSectionIds_str, mSectionTitles_str, mEanCodes_str, "", 
 					mSectionPackungen_str, "P", mCustomerId, emptyList, "");
 		} catch (SQLException e ) {
 			System.out.println("SQLException!");
