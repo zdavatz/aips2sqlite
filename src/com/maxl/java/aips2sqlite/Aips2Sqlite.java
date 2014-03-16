@@ -354,6 +354,20 @@ public class Aips2Sqlite {
 				bw_indications = indications_report.getBWriter();				
 			}			
 			
+			/*
+			 * Add pseudo Fachinfos to SQLite database
+			 */
+			int tot_pseudo_counter = 0;
+			if (ADD_PSEUDO_FI==true) {
+				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, amiko_style_v1_str);
+				// Process
+				tot_pseudo_counter = pseudo_fi.process();
+				System.out.println("");
+			}			
+			
+			/*
+			 * Add real Fachinfos to SQLite database
+			 */
 			// Initialize counters for different languages
 			int med_counter = 0;
 			int tot_med_counter = 0;
@@ -369,6 +383,8 @@ public class Aips2Sqlite {
 			
 			// Treemap for owner error report (sorted by key)
 			TreeMap<String, ArrayList<String>> tm_owner_error = new TreeMap<String, ArrayList<String>>();
+			
+			System.out.println("Processing real Fachinfos...");
 			
 			for( MedicalInformations.MedicalInformation m : med_list ) {
 				if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
@@ -672,23 +688,18 @@ public class Aips2Sqlite {
 					tot_med_counter++;				
 				}
 			}
-			System.out.println();			
-			System.out.println("Total number of medis : " + med_list.size());
-			System.out.println("Number of medis with package information: " + tot_med_counter);
-			System.out.println("Number of medis in generated database: " + med_counter);
-			System.out.println("Number of errors in db : " + errors);
-			System.out.println("Number of missing reg. nr. (min) : " + missing_regnr_str);
-			System.out.println("Number of missing pack info : " + missing_pack_info);
-			System.out.println("Number of missing atc codes : " + missing_atc_code);
-			
-			/*
-			 * Add pseudo Fachinfos to SQLite database
-			 */
-			if (ADD_PSEUDO_FI==true) {
-				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, amiko_style_v1_str);
-				// Process
-				pseudo_fi.process();
-			}
+			System.out.println();
+			System.out.println("--------------------------------------------");
+			System.out.println("Total number of real Fachinfos: " + med_list.size());
+			System.out.println("Number of FI with package information: " + tot_med_counter);
+			System.out.println("Number of FI in generated database: " + med_counter);
+			System.out.println("Number of errors in db: " + errors);
+			System.out.println("Number of missing reg. nr. (min): " + missing_regnr_str);
+			System.out.println("Number of missing pack info: " + missing_pack_info);
+			System.out.println("Number of missing atc codes: " + missing_atc_code);
+			System.out.println("--------------------------------------------");
+			System.out.println("Total number of pseudo Fachinfos: " + tot_pseudo_counter);
+			System.out.println("--------------------------------------------");
 			
 			if (ZIP_BIG_FILES==true) {
 				zipToFile("./output/", "amiko_db_full_idx_" + DB_LANGUAGE + ".db");

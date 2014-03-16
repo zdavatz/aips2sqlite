@@ -68,24 +68,29 @@ public class PseudoExpertInfo {
 	/*
 	 * 	Loads all filenames from directory into a list
 	 */
-	public void process() {
+	public int process() {
 		try {
 			File dir = new File(FILE_PSEUDO_INFO_DIR);
 			if (dir!=null && dir.isDirectory()) {
 				File[] files = dir.listFiles();
 				// Loop through list
 				if (files!=null) {
-					System.out.println("\nFound " + files.length + " pseudo Fachinfos");
+					System.out.println("\nProcessing " + files.length + " pseudo Fachinfos...");
 					int idxPseudo = 1;
 					for (File pseudo : files) {
-						FileInputStream pseudoInfoFile = new FileInputStream(pseudo.getAbsoluteFile());
-						extractInfo(idxPseudo++, pseudoInfoFile);
+						if (pseudo.isFile()) {
+							FileInputStream pseudoInfoFile = new FileInputStream(pseudo.getAbsoluteFile());
+							extractInfo(idxPseudo++, pseudoInfoFile);
+						}
 					}
+					return files.length;
 				}
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return 0;
 		}
+		return 0;
 	}
 	
 	/**
