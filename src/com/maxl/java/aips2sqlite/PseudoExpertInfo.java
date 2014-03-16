@@ -70,13 +70,18 @@ public class PseudoExpertInfo {
 	 */
 	public void process() {
 		try {
-			File[] files = new File(FILE_PSEUDO_INFO_DIR).listFiles();
-			// Loop through list
-			System.out.println("\nFound " + files.length + " pseudo Fachinfos");
-			int idxPseudo = 1;
-			for (File pseudo : files) {
-				FileInputStream pseudoInfoFile = new FileInputStream(pseudo.getAbsoluteFile());
-				extractInfo(idxPseudo++, pseudoInfoFile);
+			File dir = new File(FILE_PSEUDO_INFO_DIR);
+			if (dir!=null && dir.isDirectory()) {
+				File[] files = dir.listFiles();
+				// Loop through list
+				if (files!=null) {
+					System.out.println("\nFound " + files.length + " pseudo Fachinfos");
+					int idxPseudo = 1;
+					for (File pseudo : files) {
+						FileInputStream pseudoInfoFile = new FileInputStream(pseudo.getAbsoluteFile());
+						extractInfo(idxPseudo++, pseudoInfoFile);
+					}
+				}
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
