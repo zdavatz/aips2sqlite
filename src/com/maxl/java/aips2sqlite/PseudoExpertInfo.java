@@ -25,11 +25,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -40,7 +44,7 @@ import org.jsoup.nodes.Entities.EscapeMode;
 public class PseudoExpertInfo {
 
 	// This is the location of the directory with the pseudo "Fachinfos"
-	private static final String FILE_PSEUDO_INFO_DIR = "./input/pseudo/";
+	private static final String FILE_PSEUDO_INFO_DIR = "input/pseudo/";
 
 	private SqlDatabase mSqlDB = null;
 	private String mAmikoCSS_str = "";
@@ -71,11 +75,10 @@ public class PseudoExpertInfo {
 	public int process() {
 		try {
 			File dir = new File(FILE_PSEUDO_INFO_DIR);
-			if (dir!=null && dir.isDirectory()) {
-				File[] files = dir.listFiles();
-				// Loop through list
+			if (dir!=null && dir.isDirectory()) {				
+				Collection<File> files = FileUtils.listFiles(dir, FileFilterUtils.suffixFileFilter(".docx"), TrueFileFilter.INSTANCE);
 				if (files!=null) {
-					System.out.println("\nProcessing " + files.length + " pseudo Fachinfos...");
+					System.out.println("\nProcessing " + files.size() + " pseudo Fachinfos...");
 					int idxPseudo = 1;
 					for (File pseudo : files) {
 						if (pseudo.isFile()) {
@@ -83,7 +86,7 @@ public class PseudoExpertInfo {
 							extractInfo(idxPseudo++, pseudoInfoFile);
 						}
 					}
-					return files.length;
+					return files.size();
 				}
 			}
 		} catch (FileNotFoundException e) {
