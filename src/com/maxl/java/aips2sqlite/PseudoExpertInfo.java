@@ -44,7 +44,7 @@ import org.jsoup.nodes.Entities.EscapeMode;
 public class PseudoExpertInfo {
 
 	// This is the location of the directory with the pseudo "Fachinfos"
-	private static final String FILE_PSEUDO_INFO_DIR = "input/pseudo/";
+	private static final String FILE_PSEUDO_INFO_DIR = "./input/pseudo/";
 
 	private SqlDatabase mSqlDB = null;
 	private String mAmikoCSS_str = "";
@@ -75,7 +75,7 @@ public class PseudoExpertInfo {
 	public int process() {
 		try {
 			File dir = new File(FILE_PSEUDO_INFO_DIR);
-			// if (dir!=null && dir.isDirectory()) {				
+			if (dir!=null && dir.isDirectory()) {				
 				Collection<File> files = FileUtils.listFiles(dir, FileFilterUtils.suffixFileFilter(".docx"), TrueFileFilter.INSTANCE);
 				if (files!=null) {
 					System.out.println("\nProcessing " + files.size() + " pseudo Fachinfos...");
@@ -88,7 +88,9 @@ public class PseudoExpertInfo {
 					}
 					return files.size();
 				}
-			// }
+			} else {
+				System.out.println("Directory with pseudo FIs not found!");
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return 0;
