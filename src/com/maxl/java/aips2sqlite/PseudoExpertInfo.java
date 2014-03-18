@@ -85,10 +85,8 @@ public class PseudoExpertInfo {
 					for (File pseudo : files) {
 						if (pseudo.isFile()) {
 							FileInputStream pseudoInfoFile = new FileInputStream(pseudo.getAbsoluteFile());
-							if (mLanguage.endsWith("de") && pseudo.getName().endsWith("_DE.docx"))
-								extractInfo(idxPseudo++, pseudoInfoFile);
-							else if (mLanguage.equals("fr") && pseudo.getName().endsWith("_FR.docx"))
-								extractInfo(idxPseudo++, pseudoInfoFile);
+							if (extractInfo(idxPseudo, pseudoInfoFile))
+								idxPseudo++;
 						}
 					}
 					return idxPseudo-1;
@@ -107,7 +105,7 @@ public class PseudoExpertInfo {
 	 * Extracts all the important information from the pseudo "Fachinfo" file
 	 * @param pseudo_info_file
 	 */
-	public void extractInfo(int idx, FileInputStream pseudo_info_file) {
+	public boolean extractInfo(int idx, FileInputStream pseudo_info_file) {
 		mMedi = new MedicalInformations.MedicalInformation();
 		
 		mSectionContent = new ArrayList<String>();
@@ -146,6 +144,11 @@ public class PseudoExpertInfo {
 			}
 			// Add "nil" at the end
 			mSectionTitles.add("nil");
+			
+			if (mLanguage.equals("de") && !mSectionTitles.get(0).equals("Zusammensetzung"))
+				return false;
+			if (mLanguage.equals("fr") && !mSectionTitles.get(0).equals("Composition"))
+				return false;
 			
 			// Reset iterator
 			para = docx.getParagraphsIterator();
@@ -259,8 +262,11 @@ public class PseudoExpertInfo {
 			
 			// Add to DB
 			addToDB();
+			
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 	
