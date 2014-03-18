@@ -359,7 +359,7 @@ public class Aips2Sqlite {
 			 */
 			int tot_pseudo_counter = 0;
 			if (ADD_PSEUDO_FI==true) {
-				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, amiko_style_v1_str);
+				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, DB_LANGUAGE, amiko_style_v1_str);
 				// Process
 				tot_pseudo_counter = pseudo_fi.process();
 				System.out.println("");

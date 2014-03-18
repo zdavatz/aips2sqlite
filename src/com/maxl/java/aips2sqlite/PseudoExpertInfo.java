@@ -47,6 +47,7 @@ public class PseudoExpertInfo {
 	private static final String FILE_PSEUDO_INFO_DIR = "./input/pseudo/";
 
 	private SqlDatabase mSqlDB = null;
+	private String mLanguage = "";
 	private String mAmikoCSS_str = "";
 	
 	private ArrayList<String> mSectionContent;
@@ -58,8 +59,9 @@ public class PseudoExpertInfo {
 	private String mSectionPackungen_str = "";
 	private int mCustomerId;
 	
-	public PseudoExpertInfo(SqlDatabase sqlDB, String amikoCSS_str) {		
+	public PseudoExpertInfo(SqlDatabase sqlDB, String language, String amikoCSS_str) {		
 		mSqlDB = sqlDB;
+		mLanguage = language;
 		mAmikoCSS_str = amikoCSS_str;
 		// This sets the customer id (as of yet unused)
 		mCustomerId = 2;
@@ -78,15 +80,18 @@ public class PseudoExpertInfo {
 			if (dir!=null && dir.isDirectory()) {				
 				Collection<File> files = FileUtils.listFiles(dir, FileFilterUtils.suffixFileFilter(".docx"), TrueFileFilter.INSTANCE);
 				if (files!=null) {
-					System.out.println("\nProcessing " + files.size() + " pseudo Fachinfos...");
+					System.out.println("\nProcessing total of " + files.size() + " pseudo Fachinfos...");
 					int idxPseudo = 1;
 					for (File pseudo : files) {
 						if (pseudo.isFile()) {
 							FileInputStream pseudoInfoFile = new FileInputStream(pseudo.getAbsoluteFile());
-							extractInfo(idxPseudo++, pseudoInfoFile);
+							if (mLanguage.endsWith("de") && pseudo.getName().endsWith("_DE.docx"))
+								extractInfo(idxPseudo++, pseudoInfoFile);
+							else if (mLanguage.equals("fr") && pseudo.getName().endsWith("_FR.docx"))
+								extractInfo(idxPseudo++, pseudoInfoFile);
 						}
 					}
-					return files.size();
+					return idxPseudo-1;
 				}
 			} else {
 				System.out.println("Directory with pseudo FIs not found!");
