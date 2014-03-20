@@ -149,21 +149,20 @@ public class SqlDatabase {
         stat.executeUpdate("CREATE TABLE amikodb_ordered " + table());     
 		stat.executeUpdate("INSERT INTO amikodb_ordered (" + AllRows + ") "
 				+ "SELECT " + AllRows + " FROM amikodb ORDER BY " 
-				// + "title COLLATE NOCASE;");
+				+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
 				+ "REPLACE(REPLACE(REPLACE(REPLACE("
 				+ "REPLACE(REPLACE(REPLACE(REPLACE("
 				+ "REPLACE(REPLACE(REPLACE(REPLACE("
 				+ "REPLACE(REPLACE(REPLACE(REPLACE("
-				+ "REPLACE(REPLACE(REPLACE("
 				+ "title,"
-				+ "'é','e'),'à','a'),'è','e'),'ê','e'),"
-				+ "'î','i'),'ç','c'),'ä','a'),'ö','o'),"
+				+ "'é','e'),'à','a'),'è','e'),'ê','e'),'É','E'),"
+				+ "'î','i'),'ç','c'),'ä','a'),'ö','o'),'Ä','A'),"
 				+ "'ü','u'),'0','{0'),'1','{1'),'2','{2'),"
 				+ "'3','{3'),'4','{4'),'5','{5'),'6','{6'),"
-				+ "'7','{7'),'8','{8'),'9','{9')"
-				+ " COLLATE NOCASE;");
-        stat.executeUpdate("DROP TABLE amikodb;");
+				+ "'7','{7'),'8','{8'),'9','{9');");
+        stat.executeUpdate("DROP TABLE IF EXISTS amikodb;");
         stat.executeUpdate("ALTER TABLE amikodb_ordered RENAME TO amikodb;");
+        stat.executeUpdate("VACUUM;");
 	}
 		
 	public void readDB() throws SQLException { 		

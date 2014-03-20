@@ -417,7 +417,7 @@ public class Aips2Sqlite {
 						// Pattern matcher for regnr command line option, (?s) searches across multiple lines
 						Pattern regnr_pattern = Pattern.compile("(?s).*\\b" + OPT_MED_REGNR);						
 
-						if (m.getTitle().toLowerCase().startsWith(OPT_MED_TITLE.toLowerCase()) 
+						if (m.getTitle().toLowerCase().startsWith(OPT_MED_TITLE.toLowerCase())
 								&& regnr_pattern.matcher(regnr_str).find() 
 								&& m.getAuthHolder().toLowerCase().startsWith(OPT_MED_OWNER.toLowerCase())) {	
 							
