@@ -389,7 +389,7 @@ public class Aips2Sqlite {
 			for( MedicalInformations.MedicalInformation m : med_list ) {
 				if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
 					// Database contains less than 5000 medis - this is a safe upperbound!
-					if (tot_med_counter<5000) {						
+					if (tot_med_counter<50) {						
 						// Extract section titles and section ids
 						MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
 						List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
@@ -700,6 +700,9 @@ public class Aips2Sqlite {
 			System.out.println("--------------------------------------------");
 			System.out.println("Total number of pseudo Fachinfos: " + tot_pseudo_counter);
 			System.out.println("--------------------------------------------");
+			
+			// Reorder DB alphabetically
+			sql_db.reorderAlphaDB();
 			
 			if (ZIP_BIG_FILES==true) {
 				zipToFile("./output/", "amiko_db_full_idx_" + DB_LANGUAGE + ".db");

@@ -31,10 +31,24 @@ import java.util.List;
 
 public class SqlDatabase {
 
+	private String AllRows = "title, auth, atc, substances, regnrs, atc_class, " +
+        		"tindex_str, application_str, indications_str, " +
+        		"customer_id, pack_info_str, " +
+        		"add_info_str, ids_str, titles_str, content, style_str";
+	
+	private String mLanguage;
 	private File m_db_file;
 	private Connection conn;
 	private Statement stat;
 	private PreparedStatement prep;
+	
+	private String table() {
+		return "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, atc_class TEXT, " +
+	        		"tindex_str TEXT, application_str TEXT, indications_str TEXT, " +
+	        		"customer_id INTEGER, pack_info_str TEXT, " + 
+	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, style_str TEXT);";
+	}
 	
 	public String getDBFile() {
 		return m_db_file.getAbsolutePath();
@@ -46,6 +60,7 @@ public class SqlDatabase {
 
 		try {
 			// Touch db file if it does not exist
+			mLanguage = db_lang;
 			String db_url = System.getProperty("user.dir") + "/output/amiko_db_full_idx_" + db_lang + ".db";			
 			File db_file = new File(db_url);
 			if (!db_file.exists()) {
@@ -64,11 +79,7 @@ public class SqlDatabase {
 
 			// Create SQLite database
 	        stat.executeUpdate("DROP TABLE IF EXISTS amikodb;");
-	        stat.executeUpdate("CREATE TABLE amikodb (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, atc_class TEXT, " +
-	        		"tindex_str TEXT, application_str TEXT, indications_str TEXT, " +
-	        		"customer_id INTEGER, pack_info_str TEXT, " + 
-	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, style_str TEXT);");
+	        stat.executeUpdate("CREATE TABLE amikodb " + table());
 	        // Create indices
 	        stat.executeUpdate("CREATE INDEX idx_title ON amikodb(title);");
 	        stat.executeUpdate("CREATE INDEX idx_auth ON amikodb(auth);");
@@ -133,8 +144,30 @@ public class SqlDatabase {
 		}			
 	}	
 	
+	public void reorderAlphaDB() throws SQLException {
+        stat.executeUpdate("DROP TABLE IF EXISTS amikodb_ordered;");
+        stat.executeUpdate("CREATE TABLE amikodb_ordered " + table());     
+		stat.executeUpdate("INSERT INTO amikodb_ordered (" + AllRows + ") "
+				+ "SELECT " + AllRows + " FROM amikodb ORDER BY " 
+				// + "title COLLATE NOCASE;");
+				+ "REPLACE(REPLACE(REPLACE(REPLACE("
+				+ "REPLACE(REPLACE(REPLACE(REPLACE("
+				+ "REPLACE(REPLACE(REPLACE(REPLACE("
+				+ "REPLACE(REPLACE(REPLACE(REPLACE("
+				+ "REPLACE(REPLACE(REPLACE("
+				+ "title,"
+				+ "'é','e'),'à','a'),'è','e'),'ê','e'),"
+				+ "'î','i'),'ç','c'),'ä','a'),'ö','o'),"
+				+ "'ü','u'),'0','{0'),'1','{1'),'2','{2'),"
+				+ "'3','{3'),'4','{4'),'5','{5'),'6','{6'),"
+				+ "'7','{7'),'8','{8'),'9','{9')"
+				+ " COLLATE NOCASE;");
+        stat.executeUpdate("DROP TABLE amikodb;");
+        stat.executeUpdate("ALTER TABLE amikodb_ordered RENAME TO amikodb;");
+	}
+		
 	public void readDB() throws SQLException { 		
-		ResultSet rs = stat.executeQuery("select * from amikodb;");
+		ResultSet rs = stat.executeQuery("SELECT * FROM amikodb;");
         while (rs.next()) {
             System.out.println("title = " + rs.getString("title"));
             System.out.println("auth = " + rs.getString("auth"));
