@@ -389,7 +389,7 @@ public class Aips2Sqlite {
 			for( MedicalInformations.MedicalInformation m : med_list ) {
 				if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
 					// Database contains less than 5000 medis - this is a safe upperbound!
-					if (tot_med_counter<50) {						
+					if (tot_med_counter<5000) {						
 						// Extract section titles and section ids
 						MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
 						List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
