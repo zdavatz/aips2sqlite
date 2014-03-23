@@ -268,7 +268,7 @@ public class Aips2Sqlite {
 			System.out.println("");
 			allDown();
 		}
-
+		
 		System.out.println("");
 		if (!DB_LANGUAGE.isEmpty()) {
 			if (SHOW_LOGS) {
@@ -809,6 +809,23 @@ public class Aips2Sqlite {
 		}
 	}	
 	
+	static String calcEAN13Checksum(String ean12_str) {
+		// Sum of all uneven digits
+		int unevenSum = 0;
+		for (int i=0; i<ean12_str.length(); i+=2) {
+			unevenSum += Character.getNumericValue(ean12_str.charAt(i));
+		}		
+		// Sum of all even digits
+		int evenSum = 0;
+		for (int i=1; i<ean12_str.length(); i+=2) {
+			evenSum += Character.getNumericValue(ean12_str.charAt(i));
+		}
+		// Checksum = 90 - total sum
+		String checkSum = String.valueOf(90 - (3*evenSum+unevenSum));
+		
+		return checkSum;
+	}
+	
 	static void extractPackageInfo() {
 		try {
 			long startTime = System.currentTimeMillis();
@@ -854,6 +871,7 @@ public class Aips2Sqlite {
 					String speciality_str = "";
 					String plimitation_str = "";
 					String add_info_str = ""; 	// Contains additional information separated by ;
+					String ean_code_str = "";
 
 					// 0: Zulassungsnummer, 1: Sequenz, 2: Sequenzname, 3: Zulassunginhaberin, 4: T-Nummer, 5: ATC-Code, 6: Heilmittelcode
 					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Verpackung, 11: Packungsgrösse
@@ -896,7 +914,10 @@ public class Aips2Sqlite {
 						pack.add(speciality_str); 	// 11
 						pack.add(plimitation_str); 	// 12
 						pack.add(add_info_str); 	// 13
-
+						// 22.03.2014: EAN-13 barcodes - initialization
+						ean_code_str = "7680" + swissmedic_no8;
+						pack.add(ean_code_str); 	// 14
+						
 						package_info.put(swissmedic_no8, pack);
 					}
 				}
@@ -985,7 +1006,7 @@ public class Aips2Sqlite {
 				String ean_code = pharma.getGtin();
 				if (ean_code.length() == 13) {
 					smno8 = ean_code.substring(4, 12);
-					// Extract pharma corresponding to swissmedicno8
+					// Extract pharma corresponding to swissmedicno8 (source: swissmedic package file)
 					ArrayList<String> pi_row = package_info.get(smno8);
 					// Replace sequence_name
 					if (pi_row != null) {
@@ -999,10 +1020,13 @@ public class Aips2Sqlite {
 							else if (DB_LANGUAGE.equals("fr"))
 								pi_row.set(10, "p.c.");
 						}
+						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
+						pi_row.set(14, ean_code);
 					} else {
-						if (SHOW_ERRORS)
+						if (SHOW_ERRORS) {
 							System.err.println(">> Does not exist in BAG xls: " + smno8 
 									+ " (" + pharma.getDscr() + ", " + pharma.getAddscr() + ")");
+						}
 					}
 				} else if (ean_code.length() < 13) {
 					if (SHOW_ERRORS)
@@ -1329,6 +1353,8 @@ public class Aips2Sqlite {
 		List<String> pinfo_generics_str = new ArrayList<String>();
 		// package info string for the rest
 		List<String> pinfo_str = new ArrayList<String>();
+		// String containg all barcodes
+		List<String> barcode_list = new ArrayList<String>();
 		
 		int index = 0;
 
@@ -1351,10 +1377,10 @@ public class Aips2Sqlite {
 			}
 			// Now generate many swissmedicno8 = swissmedicno5 + ***, check if they're keys and retrieve package info
 			String swissmedicno8_key = "";
-			for (int n = 0; n < 1000; ++n) {
-				if (n < 10)
+			for (int n=0; n<1000; ++n) {
+				if (n<10)
 					swissmedicno8_key = s + String.valueOf(n).format("00%d", n);
-				else if (n < 100)
+				else if (n<100)
 					swissmedicno8_key = s + String.valueOf(n).format("0%d", n);
 				else
 					swissmedicno8_key = s + String.valueOf(n).format("%d", n);
@@ -1392,6 +1418,20 @@ public class Aips2Sqlite {
 							pinfo_str.add("<p class=\"spacing1\">"
 										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>");
 						}
+						
+						// --> Extract EAN-13 and generate barcodes
+						try {
+							String ean = pi_row.get(14);
+							System.out.println("  -> " + ean);
+							if (!ean.isEmpty()) {
+								BarCode bc = new BarCode();								
+								String barcodeImg64 = bc.encode(ean);
+								barcode_list.add("<p class=\"spacing1\">" + barcodeImg64 + "</p>");
+							}
+						} catch(IOException e) {
+							e.printStackTrace();
+						}
+						
 						// --> Add "tindex_str" and "application_str" (see
 						// SqlDatabase.java)
 						if (index == 0) {
@@ -1435,11 +1475,16 @@ public class Aips2Sqlite {
 		if (NO_PACK==false) {
 			// Replace original package information with pinfo_str
 			String p_str = "";
-			mPackSection_str = "";
+			// Transform lists into strings
 			for (String p : pinfo_str) {
 				p_str += p;
+			}			
+			String bc_str = "";
+			for (String bc : barcode_list) {
+				bc_str += bc;
 			}
-	
+
+			mPackSection_str = "";
 			// Generate a html-deprived string file
 			mPackSection_str = p_str.replaceAll("\\<p.*?\\>", "");
 			mPackSection_str = mPackSection_str.replaceAll("<\\/p\\>", "\n");
@@ -1451,16 +1496,25 @@ public class Aips2Sqlite {
 			Element div7800 = doc.select("[id=Section7800]").first();
 			
 			// Initialize section titles
-			String packages_title = "Packungen";	
-			if (DB_LANGUAGE.equals("fr"))
-				packages_title = "Présentation";			
-			String swiss_drg_title = "Swiss DRG";
+			String packages_title = "Packungen";
+			String barcode_title = "Barcodes";
+			String swiss_drg_title = "Swiss DRG";			
+			if (DB_LANGUAGE.equals("fr")) {
+				packages_title = "Présentation";
+				barcode_title = "Barcodes";
+				swiss_drg_title = "Swiss DRG";
+			}
 			
-			// Generate html
+			// Generate html for chapter "Packagungen" and subchapters "Barcodes" and "Swiss DRGs"
+			// ** Chapter "Packungen"
 			String section_html = "<div class=\"absTitle\">" + packages_title + "</div>" + p_str;
+			// ** Subchapter "Barcodes"
+			section_html += ("<p class=\"paragraph\"></p><div class=\"absTitle\">" + barcode_title + "</div>");
+			section_html += bc_str;			
+			// ** Subchapter "Swiss DRGs"
 			// Loop through list of dosages for a particular atc code and format appropriately
 			if (atc_code!=null) {		
-				// Update footnote super scripts
+				// Update DRG footnote super scripts
 				String footnotes = "1";				
 				String fn = swiss_drg_footnote.get(atc_code);
 				if (fn!=null)
@@ -1468,7 +1522,7 @@ public class Aips2Sqlite {
 				// Generate Swiss DRG string
 				String drg_str = "";
 				ArrayList<String> dosages = swiss_drg_info.get(atc_code);
-				// For most atc codes, there are no special drg sanctioned dosages...
+				// For most atc codes, there are NO special DRG sanctioned dosages...
 				if (dosages!=null) {
 					System.out.println(title);
 					for (String drg : dosages)

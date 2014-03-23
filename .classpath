@@ -38,5 +38,6 @@
 	<classpathentry kind="lib" path="libs/xmlbeans-2.6.0/xbean.jar"/>
 	<classpathentry kind="lib" path="libs/xmlbeans-2.6.0/xmlbeans-qname.jar"/>
 	<classpathentry kind="lib" path="libs/xmlbeans-2.6.0/xmlpublic.jar"/>
+	<classpathentry kind="lib" path="libs/barcode4j-2.1.0/barcode4j.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

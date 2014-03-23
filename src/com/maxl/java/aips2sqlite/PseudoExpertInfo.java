@@ -52,6 +52,7 @@ public class PseudoExpertInfo {
 	
 	private ArrayList<String> mSectionContent;
 	private ArrayList<String> mSectionTitles;
+	private ArrayList<String> mBarCodes = new ArrayList<String>();	
 	private MedicalInformations.MedicalInformation mMedi;
 	private String mEanCodes_str = "";
 	private String mSectionIds_str = "";
@@ -110,6 +111,8 @@ public class PseudoExpertInfo {
 		
 		mSectionContent = new ArrayList<String>();
 		mSectionTitles = new ArrayList<String>();
+		mBarCodes = new ArrayList<String>();
+		List<String> barcode_list = new ArrayList<String>();
 		
 		String mediTitle = "";
 		String mediAuthor = "";
@@ -218,13 +221,25 @@ public class PseudoExpertInfo {
 					content.append("<p class=\"spacing1\">" + paraText + "</p>");
 					// Extract EAN codes and start positions
 					Matcher matcher = pattern.matcher(paraText);
-					while (matcher.find())
-						mEanCodes_str += (matcher.group() + ", ");
+					while (matcher.find()) {
+						String eanCode = matcher.group();
+						mEanCodes_str += (eanCode + ", ");
+						if (!eanCode.isEmpty()) {
+							BarCode bc = new BarCode();								
+							String barcodeImg64 = bc.encode(eanCode);
+							mBarCodes.add("<p class=\"spacing1\">" + barcodeImg64 + "</p>");
+						}
+					}
 					// Generate section Packungen for search result
 					if (isSectionPackungen)
 						mSectionPackungen_str += (paraText + "\n");
 				}
-			}			
+			}						
+			// Add chapter "Barcodes"
+			content.append("<p class=\"paragraph\"></p><div class=\"absTitle\">" + "Barcodes" + "</div>");
+			for (String bcode : mBarCodes)
+				content.append(bcode);
+			
 			// Remove last comma from mEanCodes_str
 			if (!mEanCodes_str.isEmpty())
 				mEanCodes_str = mEanCodes_str.substring(0, mEanCodes_str.length()-2);	
