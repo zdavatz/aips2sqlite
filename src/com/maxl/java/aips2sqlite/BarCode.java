@@ -77,8 +77,8 @@ public class BarCode {
             // Set dot-per-inch (150 is pretty low-res)
             final int dpi = 150;            
             // Configure barcode generator
-            bean.setModuleWidth(UnitConv.in2mm(3.0f/dpi)); // Makes narrow bar width exactly one pixel
-            bean.setBarHeight(6.0);		// Bar code height in mm		
+            bean.setModuleWidth(UnitConv.in2mm(2.0f/dpi)); //3.0f/dpi // Makes narrow bar width exactly one pixel -> sets width
+            bean.setBarHeight(10.0);	// 6.0 // Bar code height in mm -> sets height		
             bean.doQuietZone(true);		// Set to "true" to visualize first digit
             bean.setQuietZone(5.0);		// Set size of quite zone
             bean.setFontName("Helvetica");
@@ -100,14 +100,13 @@ public class BarCode {
         return generateHtmlString(barcodeBase64);                    
 	}
 		
-    public String generateHtmlString(String b) {
-    	
-		return ("<img src=\"data:image/png;base64," + b + "\"/>");
+    public String generateHtmlString(String b) {  	
+		return ("<img src=\"data:image/png;base64," + b + "\" style=\"margin:0px 0px 15px 0px;\" width=\"320\" >");
     }
     
 	public String generateHtmlPage(String b) {
 		String base64Str = "<!DOCTYPE html><html><body>" +
-				"<img src=\"data:image/png;base64," + b + "\"/>" +
+				"<img style=\"max-width:100%25; width:auto; height:auto;\" src=\"data:image/png;base64," + b + "\"/>" +
 				"</body></html>";
 
 		saveHtmlToFile(base64Str, "picb64.html");
