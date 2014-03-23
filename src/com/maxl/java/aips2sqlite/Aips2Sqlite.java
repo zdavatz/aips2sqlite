@@ -1387,7 +1387,22 @@ public class Aips2Sqlite {
 				// Check if swissmedicno8_key is a key of the map
 				if (pack_info.containsKey(swissmedicno8_key)) {
 					ArrayList<String> pi_row = package_info.get(swissmedicno8_key);
-					if (pi_row != null) {
+					if (pi_row != null) {						
+						// --> Extract EAN-13 and generate barcodes
+						String barcode_html = "";
+						try {
+							String ean = pi_row.get(14);
+							// System.out.println("  -> " + ean);
+							if (!ean.isEmpty()) {
+								BarCode bc = new BarCode();								
+								String barcodeImg64 = bc.encode(ean);
+								barcode_html = "<p class=\"spacing1\">" + barcodeImg64 + "</p>";
+								barcode_list.add(barcode_html);
+							}
+						} catch(IOException e) {
+							e.printStackTrace();
+						}						
+						
 						// Remove double spaces in title and capitalize
 						String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
 						// Remove [QAP?] -> not an easy one!
@@ -1405,31 +1420,17 @@ public class Aips2Sqlite {
 									+ flagsb_str + orggen_str + "]";
 							// Generate package info string
 							if (orggen_str.equals(", O"))
-								pinfo_originals_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
+								pinfo_originals_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>" + barcode_html);
 							else if (orggen_str.equals(", G"))
-								pinfo_generics_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
+								pinfo_generics_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>" + barcode_html);
 							else
-								pinfo_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
-								
+								pinfo_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>" + barcode_html);								
 						} else {
 							//
 							// @maxl (10.01.2014): Price for swissmedicNo8 pack is not listed in bag_preparations.xml!!
 							//
 							pinfo_str.add("<p class=\"spacing1\">"
-										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>");
-						}
-						
-						// --> Extract EAN-13 and generate barcodes
-						try {
-							String ean = pi_row.get(14);
-							System.out.println("  -> " + ean);
-							if (!ean.isEmpty()) {
-								BarCode bc = new BarCode();								
-								String barcodeImg64 = bc.encode(ean);
-								barcode_list.add("<p class=\"spacing1\">" + barcodeImg64 + "</p>");
-							}
-						} catch(IOException e) {
-							e.printStackTrace();
+										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>" + barcode_html);
 						}
 						
 						// --> Add "tindex_str" and "application_str" (see
@@ -1473,21 +1474,17 @@ public class Aips2Sqlite {
 		* Replace package information
 		*/
 		if (NO_PACK==false) {
-			// Replace original package information with pinfo_str
+			// Replace original package information with pinfo_str	
 			String p_str = "";
-			// Transform lists into strings
 			for (String p : pinfo_str) {
 				p_str += p;
-			}			
-			String bc_str = "";
-			for (String bc : barcode_list) {
-				bc_str += bc;
-			}
-
-			mPackSection_str = "";
+			}				
+			
 			// Generate a html-deprived string file
-			mPackSection_str = p_str.replaceAll("\\<p.*?\\>", "");
+			mPackSection_str = p_str.replaceAll("<p class=\"spacing1\">[<](/)?img[^>]*[>]</p>", ""); 		
+			mPackSection_str = mPackSection_str.replaceAll("\\<p.*?\\>", "");
 			mPackSection_str = mPackSection_str.replaceAll("<\\/p\\>", "\n");
+					
 			// Remove last \n
 			if (mPackSection_str.length() > 0)
 				mPackSection_str = mPackSection_str.substring(0, mPackSection_str.length() - 1);
@@ -1497,20 +1494,15 @@ public class Aips2Sqlite {
 			
 			// Initialize section titles
 			String packages_title = "Packungen";
-			String barcode_title = "Barcodes";
 			String swiss_drg_title = "Swiss DRG";			
 			if (DB_LANGUAGE.equals("fr")) {
 				packages_title = "Présentation";
-				barcode_title = "Barcodes";
 				swiss_drg_title = "Swiss DRG";
 			}
 			
-			// Generate html for chapter "Packagungen" and subchapters "Barcodes" and "Swiss DRGs"
+			// Generate html for chapter "Packagungen" and subchapter "Swiss DRGs"
 			// ** Chapter "Packungen"
 			String section_html = "<div class=\"absTitle\">" + packages_title + "</div>" + p_str;
-			// ** Subchapter "Barcodes"
-			section_html += ("<p class=\"paragraph\"></p><div class=\"absTitle\">" + barcode_title + "</div>");
-			section_html += bc_str;			
 			// ** Subchapter "Swiss DRGs"
 			// Loop through list of dosages for a particular atc code and format appropriately
 			if (atc_code!=null) {		

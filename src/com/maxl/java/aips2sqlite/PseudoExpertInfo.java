@@ -228,18 +228,20 @@ public class PseudoExpertInfo {
 							BarCode bc = new BarCode();								
 							String barcodeImg64 = bc.encode(eanCode);
 							mBarCodes.add("<p class=\"spacing1\">" + barcodeImg64 + "</p>");
+							content.append(barcodeImg64);
 						}
 					}
 					// Generate section Packungen for search result
 					if (isSectionPackungen)
 						mSectionPackungen_str += (paraText + "\n");
 				}
-			}						
+			}				
+			/*
 			// Add chapter "Barcodes"
 			content.append("<p class=\"paragraph\"></p><div class=\"absTitle\">" + "Barcodes" + "</div>");
 			for (String bcode : mBarCodes)
 				content.append(bcode);
-			
+			*/
 			// Remove last comma from mEanCodes_str
 			if (!mEanCodes_str.isEmpty())
 				mEanCodes_str = mEanCodes_str.substring(0, mEanCodes_str.length()-2);	
