@@ -107,39 +107,6 @@ public class Aips2Sqlite {
 	private static String OPT_MED_REGNR = "";
 	private static String OPT_MED_OWNER = "";
 	
-	// Other global variables or constants
-	private static String DB_VERSION = "1.2.8";
-	
-	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
-	private static final String FILE_MEDICAL_INFOS_XML = "./downloads/aips_xml.xml";
-	private static final String FILE_MEDICAL_INFOS_XSD = "./downloads/aips_xsd.xsd";
-	// Excel file to be parsed (DE = FR)
-	private static final String FILE_PACKAGES_XLS = "./downloads/swissmedic_packages_xls.xls";
-	private static final String FILE_PACKAGES_XLSX = "./downloads/swissmedic_packages_xlsx.xlsx";
-	// Refdata xml file to be parsed (DE != FR)
-	private static final String FILE_REFDATA_PHARMA_DE_XML = "./downloads/refdata_pharma_de_xml.xml";
-	private static final String FILE_REFDATA_PHARMA_FR_XML = "./downloads/refdata_pharma_fr_xml.xml";
-	// BAG xml file to be parsed (contains DE and FR)
-	private static final String FILE_PREPARATIONS_XML = "./downloads/bag_preparations_xml.xml";
-	// Swiss DRG xlsx file to be parsed (DE != FR)
-	private static final String FILE_SWISS_DRG_DE_XLSX = "./downloads/swiss_drg_de_xlsx.xlsx";
-	private static final String FILE_SWISS_DRG_FR_XLSX = "./downloads/swiss_drg_fr_xlsx.xlsx";
-	// ****** ATC class xls file (DE != FR) ******
-	private static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";
-	private static final String FILE_ATC_MULTI_LINGUAL_TXT = "./input/atc_codes_multi_lingual.txt";
-	// CSS style sheets
-	private static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";
-	private static final String FILE_REPORT_CSS_BASE = "./css/report_stylesheet";
-	// ****** Parse reports (DE != FR) ******
-	private static final String FILE_PARSE_REPORT = "./output/parse_report";
-	private static final String FILE_OWNER_REPORT = "./output/owner_report";
-	private static final String FILE_INDICATIONS_REPORT = "./output/indications_report";
-	// ****** XML file ******
-	private static final String FILE_XML_BASE = "./output/fis/";
-	// ****** Stop words (DE != FR) ******
-	private static final String FILE_STOP_WORDS_DE = "./input/german_stop_words.txt";
-	private static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";
-	
 	// Map to list with all the relevant information
 	// HashMap is faster, but TreeMap is sort by the key :)
 	private static Map<String, ArrayList<String>> package_info = new TreeMap<String, ArrayList<String>>();
@@ -148,8 +115,7 @@ public class Aips2Sqlite {
 	private static Map<String, ArrayList<String>> swiss_drg_info = new TreeMap<String, ArrayList<String>>();
 	private static Map<String, String> swiss_drg_footnote = new TreeMap<String, String>();
 	
-	// Map to String of atc classes, key is the ATC-code or any of its
-	// substrings
+	// Map to String of atc classes, key is the ATC-code or any of its substrings
 	private static Map<String, String> atc_map = new TreeMap<String, String>();
 
 	// Map to String of additional info, key is the SwissmedicNo5
@@ -157,7 +123,6 @@ public class Aips2Sqlite {
 
 	// Global variables
 	private static String mPackSection_str = "";
-	private static HtmlUtils html_utils = null;		
 	private static HashSet<String> StopWords_hash = null;
 
 	/**
@@ -279,9 +244,9 @@ public class Aips2Sqlite {
 			// Read stop words as String
 			String stopWords_str = null;
 			if (DB_LANGUAGE.equals("de"))
-				stopWords_str = readFromFile(FILE_STOP_WORDS_DE);
+				stopWords_str = readFromFile(Constants.FILE_STOP_WORDS_DE);
 			else if (DB_LANGUAGE.equals("fr"))
-				stopWords_str = readFromFile(FILE_STOP_WORDS_FR);				
+				stopWords_str = readFromFile(Constants.FILE_STOP_WORDS_FR);				
 			// Create stop word hash set!
 			if (stopWords_str!=null) {
 				List<String> sw = Arrays.asList(stopWords_str.split("\n"));
@@ -308,14 +273,14 @@ public class Aips2Sqlite {
 	static void allDown() {
 		AllDown a = new AllDown();
 
-		a.downAipsXml(FILE_MEDICAL_INFOS_XSD, FILE_MEDICAL_INFOS_XML);
+		a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
 		// a.downPackungenXml(FILE_PACKAGES_XLS);
-		a.downPackungenXls(FILE_PACKAGES_XLSX);
-		a.downSwissindexXml("DE", FILE_REFDATA_PHARMA_DE_XML);
-		a.downSwissindexXml("FR", FILE_REFDATA_PHARMA_FR_XML);
-		a.downPreparationsXml(FILE_PREPARATIONS_XML);
-		a.downSwissDRGXlsx("DE", FILE_SWISS_DRG_DE_XLSX);
-		a.downSwissDRGXlsx("FR", FILE_SWISS_DRG_FR_XLSX);
+		a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
+		a.downSwissindexXml("DE", Constants.FILE_REFDATA_PHARMA_DE_XML);
+		a.downSwissindexXml("FR", Constants.FILE_REFDATA_PHARMA_FR_XML);
+		a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
+		a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
+		a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
 	}
 
 	static void generateSQLiteDB() {				
@@ -334,23 +299,23 @@ public class Aips2Sqlite {
 			sql_db.createDB(DB_LANGUAGE);
 			
 			// Load CSS files
-			String amiko_style_v1_str = readCSSfromFile(FILE_STYLE_CSS_BASE + "v1.css");
+			String amiko_style_v1_str = readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
 						
 			// Create error report file
 			ParseReport parse_errors = null;
 			if (GENERATE_REPORTS==true) {
-				parse_errors = new ParseReport(FILE_PARSE_REPORT, DB_LANGUAGE, "html");
+				parse_errors = new ParseReport(Constants.FILE_PARSE_REPORT, DB_LANGUAGE, "html");
 				if (DB_LANGUAGE.equals("de"))
-					parse_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", DB_VERSION);
+					parse_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", Constants.FI_DB_VERSION);
 				else if (DB_LANGUAGE.equals("fr"))
-					parse_errors.addHtmlHeader("Compendium des Médicaments Suisse", DB_VERSION);
+					parse_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
 			}
 			
 			// Create indications report file
 			BufferedWriter bw_indications = null;
 			Map<String, String> tm_indications = new TreeMap<String, String>();
 			if (INDICATIONS_REPORT==true) {
-				ParseReport indications_report = new ParseReport(FILE_INDICATIONS_REPORT, DB_LANGUAGE, "txt");
+				ParseReport indications_report = new ParseReport(Constants.FILE_INDICATIONS_REPORT, DB_LANGUAGE, "txt");
 				bw_indications = indications_report.getBWriter();				
 			}			
 			
@@ -384,9 +349,12 @@ public class Aips2Sqlite {
 			// Treemap for owner error report (sorted by key)
 			TreeMap<String, ArrayList<String>> tm_owner_error = new TreeMap<String, ArrayList<String>>();
 			
-			System.out.println("Processing real Fachinfos...");
+			HtmlUtils html_utils = null;
+			
+			System.out.println("Processing real Fachinfos...");	
 			
 			for( MedicalInformations.MedicalInformation m : med_list ) {
+				// --> Read FACHINFOS! <--				
 				if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
 					// Database contains less than 5000 medis - this is a safe upperbound!
 					if (tot_med_counter<5000) {						
@@ -650,11 +618,11 @@ public class Aips2Sqlite {
 									// Replace all "Sonderzeichen"
 									name = name.replaceAll("[/%:]", "_");									
 									if (DB_LANGUAGE.equals("de")) {
-										writeToFile(mContent_str, FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
-										writeToFile(xml_str, FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
+										writeToFile(mContent_str, Constants.FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
+										writeToFile(xml_str, Constants.FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
 									} else if (DB_LANGUAGE.equals("fr")) {
-										writeToFile(mContent_str, FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");										
-										writeToFile(xml_str, FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+										writeToFile(mContent_str, Constants.FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");										
+										writeToFile(xml_str, Constants.FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
 									}
 								}								
 							}
@@ -712,20 +680,20 @@ public class Aips2Sqlite {
 				fi_complete_xml = html_utils.addHeaderToXml("kompendium", fi_complete_xml);
 				// Write kompendium xml file to disk
 				if (DB_LANGUAGE.equals("de")) {
-					writeToFile(fi_complete_xml, FILE_XML_BASE, "fi_de.xml");
+					writeToFile(fi_complete_xml, Constants.FILE_XML_BASE, "fi_de.xml");
 					if (ZIP_BIG_FILES)
-						zipToFile(FILE_XML_BASE, "fi_de.xml");
+						zipToFile(Constants.FILE_XML_BASE, "fi_de.xml");
 				}
 				else if (DB_LANGUAGE.equals("fr")) {
-					writeToFile(fi_complete_xml, FILE_XML_BASE, "fi_fr.xml");
+					writeToFile(fi_complete_xml, Constants.FILE_XML_BASE, "fi_fr.xml");
 					if (ZIP_BIG_FILES)
-						zipToFile(FILE_XML_BASE, "fi_fr.xml");				
+						zipToFile(Constants.FILE_XML_BASE, "fi_fr.xml");				
 				}
 				// Copy stylesheet file to ./fis/ folders
 				try {
-					File src = new File(FILE_STYLE_CSS_BASE + "v1.css");
-					File dst_de = new File(FILE_XML_BASE + "fi_de_html/");
-					File dst_fr = new File(FILE_XML_BASE + "fi_fr_html/");			
+					File src = new File(Constants.FILE_STYLE_CSS_BASE + "v1.css");
+					File dst_de = new File(Constants.FILE_XML_BASE + "fi_de_html/");
+					File dst_fr = new File(Constants.FILE_XML_BASE + "fi_fr_html/");			
 					if (src.exists() ) {
 						if (dst_de.exists())
 							FileUtils.copyFileToDirectory(src, dst_de);
@@ -751,13 +719,13 @@ public class Aips2Sqlite {
 				parse_errors.getBWriter().close();					
 
 				// Write owner error report to file
-				ParseReport owner_errors = new ParseReport(FILE_OWNER_REPORT, DB_LANGUAGE, "html");
-				String report_style_str = readCSSfromFile(FILE_REPORT_CSS_BASE + ".css");
+				ParseReport owner_errors = new ParseReport(Constants.FILE_OWNER_REPORT, DB_LANGUAGE, "html");
+				String report_style_str = readCSSfromFile(Constants.FILE_REPORT_CSS_BASE + ".css");
 				owner_errors.addStyleSheet(report_style_str);
 				if (DB_LANGUAGE.equals("de"))
-					owner_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", DB_VERSION);
+					owner_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", Constants.FI_DB_VERSION);
 				else if (DB_LANGUAGE.equals("fr"))
-					owner_errors.addHtmlHeader("Compendium des Médicaments Suisse", DB_VERSION);
+					owner_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
 				owner_errors.append(owner_errors.treemapToHtmlTable(tm_owner_error));
 				owner_errors.writeHtmlToFile();
 				owner_errors.getBWriter().close();	
@@ -832,7 +800,7 @@ public class Aips2Sqlite {
 			if (SHOW_LOGS)
 				System.out.print("- Processing packages xlsx... ");
 			// Load Swissmedic xls file			
-			FileInputStream packages_file = new FileInputStream(FILE_PACKAGES_XLSX);
+			FileInputStream packages_file = new FileInputStream(Constants.FILE_PACKAGES_XLSX);
 			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
 			XSSFWorkbook packages_workbook = new XSSFWorkbook(packages_file);
 			// Get first sheet from workbook
@@ -934,7 +902,7 @@ public class Aips2Sqlite {
 				System.out.print("- Processing atc classes xls... ");
 			if (DB_LANGUAGE.equals("de")) {
 				// Load ATC classes xls file
-				FileInputStream atc_classes_file = new FileInputStream(FILE_ATC_CLASSES_XLS);
+				FileInputStream atc_classes_file = new FileInputStream(Constants.FILE_ATC_CLASSES_XLS);
 				// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 				HSSFWorkbook atc_classes_workbook = new HSSFWorkbook(atc_classes_file);
 				// Get first sheet from workbook
@@ -963,7 +931,7 @@ public class Aips2Sqlite {
 				}
 			} else if (DB_LANGUAGE.equals("fr")) {
 				// Load multilinguagl ATC classes txt file
-				String atc_classes_multi = readFromFile(FILE_ATC_MULTI_LINGUAL_TXT);
+				String atc_classes_multi = readFromFile(Constants.FILE_ATC_MULTI_LINGUAL_TXT);
 				// Loop through all lines
 				Scanner scanner = new Scanner(atc_classes_multi);
 				while (scanner.hasNextLine()) {
@@ -983,9 +951,9 @@ public class Aips2Sqlite {
 			// Load Refdata xml file
 			File refdata_xml_file = null;
 			if (DB_LANGUAGE.equals("de"))
-				refdata_xml_file = new File(FILE_REFDATA_PHARMA_DE_XML);
+				refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_DE_XML);
 			else if (DB_LANGUAGE.equals("fr"))
-				refdata_xml_file = new File(FILE_REFDATA_PHARMA_FR_XML);
+				refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_FR_XML);
 			else {
 				System.err.println("ERROR: DB_LANGUAGE undefined");
 				System.exit(1);
@@ -1042,7 +1010,7 @@ public class Aips2Sqlite {
 				System.out.println(pharma_list.size() + " medis in " + (stopTime - startTime) / 1000.0f + " sec");
 
 			// Load BAG xml file
-			File bag_xml_file = new File(FILE_PREPARATIONS_XML);
+			File bag_xml_file = new File(Constants.FILE_PREPARATIONS_XML);
 			FileInputStream fis_bag = new FileInputStream(bag_xml_file);
 
 			startTime = System.currentTimeMillis();
@@ -1217,11 +1185,11 @@ public class Aips2Sqlite {
 			// Load Swiss DRG file	
 			FileInputStream swiss_drg_file = null;			
 			if (DB_LANGUAGE.equals("de"))
-				swiss_drg_file = new FileInputStream(FILE_SWISS_DRG_DE_XLSX);
+				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_DE_XLSX);
 			else if (DB_LANGUAGE.equals("fr"))
-				swiss_drg_file = new FileInputStream(FILE_SWISS_DRG_FR_XLSX);
+				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_FR_XLSX);
 			else
-				swiss_drg_file = new FileInputStream(FILE_SWISS_DRG_DE_XLSX);
+				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_DE_XLSX);
 			
 			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
 			XSSFWorkbook swiss_drg_workbook = new XSSFWorkbook(swiss_drg_file);
@@ -1309,7 +1277,7 @@ public class Aips2Sqlite {
 
 			// Validation
 			SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Schema schema = sf.newSchema(new File(FILE_MEDICAL_INFOS_XSD));
+			Schema schema = sf.newSchema(new File(Constants.FILE_MEDICAL_INFOS_XSD));
 			Validator validator = schema.newValidator();
 			validator.setErrorHandler(new MyErrorHandler());
 
@@ -1325,9 +1293,9 @@ public class Aips2Sqlite {
 			if (SHOW_LOGS)
 				System.out.print("- Unmarshalling Swissmedic xml... ");
 
-			FileInputStream fis = new FileInputStream(new File(FILE_MEDICAL_INFOS_XML));
+			FileInputStream fis = new FileInputStream(new File(Constants.FILE_MEDICAL_INFOS_XML));
 			Unmarshaller um = context.createUnmarshaller();
-			MedicalInformations med_infos = (MedicalInformations) um.unmarshal(fis);
+			MedicalInformations med_infos = (MedicalInformations)um.unmarshal(fis);
 			med_list = med_infos.getMedicalInformation();
 
 			long stopTime = System.currentTimeMillis();
@@ -1460,10 +1428,6 @@ public class Aips2Sqlite {
 		// Put everything in pinfo_str
 		pinfo_str = pinfo_originals_str;
 		
-		// In case the pinfo_str is empty due to malformed XML
-		/*
-		 * if (pinfo_str.isEmpty()) html_utils.extractPackSection();
-		 */
 		// In case nothing was found
 		if (index == 0) {
 			tIndex_list.add("");
