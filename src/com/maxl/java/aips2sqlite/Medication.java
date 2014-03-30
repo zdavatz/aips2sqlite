@@ -24,8 +24,9 @@ public class Medication {
 	private String title;
 	private String auth;
 	private String atccode;
-	private String substances;
+	private String substances;	
 	private String regnrs;
+	private String authnrs;
 	private String atcclass;
 	private String therapy;
 	private String application;
@@ -85,6 +86,14 @@ public class Medication {
 		this.regnrs = regnrs;
 	}	
 
+	public String getAuthnrs() {
+		return this.authnrs;
+	}
+	
+	public void setAuthnrs(String authnrs) {
+		this.authnrs = authnrs;
+	}		
+	
 	public String getAtcClass() {
 		return this.atcclass;
 	}

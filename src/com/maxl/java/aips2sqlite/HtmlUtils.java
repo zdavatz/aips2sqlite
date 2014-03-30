@@ -19,9 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package com.maxl.java.aips2sqlite;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -545,6 +544,139 @@ public class HtmlUtils {
 		html_str = html_str.replaceAll("<p class=\"spacing1\"> </p>\n</div>", "</div>");
 		html_str = html_str.replaceAll("</div>\n <p class=\"spacing1\"> </p>", "</div>");
 		
+		return html_str;
+	}
+	
+	public String sanitizePatient(String med_title, String med_author, String language) {
+		if (mHtmlStr.isEmpty())
+			return "";
+		
+		// Original html string
+		mDoc = Jsoup.parse(mHtmlStr);
+		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);		
+		mDoc.outputSettings().charset("UTF-8");
+						
+		// Assumption: 20 sections (there are for sure less)
+		String html_str = "";
+		for (int i=1; i<20; ++i) {
+			// Find section[i] 
+			Element section_title = mDoc.select("p[id=section"+i+"]").first();
+			if (section_title!=null) {
+				String title = section_title.text();
+				// Process "Präparat" name!
+				if (med_title.toLowerCase().equals(title.toLowerCase())) {
+					String clean_title = "";
+					// Some med titles have a 'Ò' which on Windows and Android systems is not translated into a '®' (reserved symbol)
+					if (title!=null)
+						clean_title = title.replace("Ò","®");
+					// Some German medications have wrong characters in the titles, this is a fix
+					if (language.equals("de"))
+						clean_title = clean_title.replace("â","®");
+					else if (language.equals("fr"))
+						clean_title = med_title;
+					else if (language.equals("it"))
+						clean_title = med_title;
+					else if (language.equals("en"))
+						clean_title = med_title;
+					html_str += ("<div class=\"MonTitle\" id=\"section"+i+"\">"+clean_title+"</div>");
+					// Add med holder (author, owner)
+					html_str += ("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+med_author+"</div></div>");					
+				} else {
+					// Create brand new div for section with id=sectionN
+					html_str += ("<div class=\"paragraph\" id=\"section"+i+"\">");
+					html_str += ("<div class=\"absTitle\">" + title +"</div>");
+					// Find all information between X and X+1
+					Elements elems = mDoc.select("p[id=section"+i+"] ~ *");			
+					Element elemXp1 = mDoc.select("p[id=section"+(i+1)+"]").first();			
+					
+					// Loop through the content
+					if (elems!=null) {
+						for (Element e : elems) {
+							// Sanitize
+							Element img = null;
+							if (e.tagName().equals("p")) {
+								if (e.select("img[src]")!=null) 
+									img = e.select("img[src]").first();
+								String re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
+								if (language.equals("de")) {
+									for (int k=0; k<ListOfKeywordsDE.length; ++k) {
+										// Exact match through keyword "\\b" for boundary					
+										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+" \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span> ");
+										// Try also versions with ":" or "," or "."
+										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+": \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+":</span> ");
+										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+", \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>, ");
+										// re = re.replaceAll("\\b"+ListOfKeywordsDE[i]+". \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[i]+"</span>. ");
+										// Words at the end of the line
+										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+".$", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>.");									
+										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+"$", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>");	
+										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+"\\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>");
+									}
+								} else if (language.equals("fr")) {
+									for (int k=0; k<ListOfKeywordsFR.length; ++k) {
+										// Exact match through keyword "\\b" for boundary					
+										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+" \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span> ");
+										// Try also versions with ":" or "," or "."
+										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+": \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+":</span> ");
+										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+", \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>, ");
+										// re = re.replaceAll("\\b"+ListOfKeywordsDE[i]+". \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[i]+"</span>. ");
+										// Words at the end of the line
+										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+".$", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>.");									
+										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+"$", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>");								
+										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+"\\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>");									
+									}
+								} else if (language.equals("it")) {
+									// 
+								} else if (language.equals("en")) {
+									// 
+								}
+								// Important step: add the section content!
+								if (img==null)
+									html_str += ("<p class=\"spacing1\">" + re + "</p>");
+								else 
+									html_str += ("<p class=\"spacing1\">" + img + "</p>");
+							}
+								
+							if (e.nextElementSibling()==elemXp1)
+								break;
+						}
+					}
+					html_str += ("</div>");
+				}
+			} else {
+				// html_str = mHtmlStr;
+			}
+		}
+				
+		// Modified (pretty)html string
+		Document newDoc = Jsoup.parse("<div id=\"monographie\">" + html_str + "</div>");
+		newDoc.outputSettings().escapeMode(EscapeMode.xhtml);
+		newDoc.outputSettings().charset("UTF-8");
+		
+		// Fools the jsoup-parser
+		html_str = newDoc.html().replaceAll("&lt; ", "&lt;");
+		// Replaces all supscripted � in the main text with �
+		html_str = html_str.replaceAll(">â</sup>", ">®</sup>");
+
+		// Remove multiple instances of <p class="spacing1"> </p>
+		Scanner scanner = new Scanner(html_str);
+		html_str = "";
+		int counter = 0;
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			// System.out.println(line.trim());
+			if (line.trim().contains("<p class=\"spacing1\"> </p>")) {
+				counter++;
+			} else 
+				counter = 0;
+			if (counter<2)
+				html_str += (line + '\n');
+		}	
+		scanner.close();
+		
+		// Cosmetic upgrades. Use with care!
+		html_str = html_str.replaceAll("<p class=\"spacing1\"> </p>\n</div>", "</div>");
+		html_str = html_str.replaceAll("</div>\n <p class=\"spacing1\"> </p>", "</div>");
+				
 		return html_str;
 	}
 	

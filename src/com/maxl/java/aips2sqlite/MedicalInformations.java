@@ -220,6 +220,7 @@ public class MedicalInformations {
         "authHolder",
         "atcCode",
         "substances",
+        "authNrs",
         "style",
         "content",
         "sections"
@@ -232,6 +233,7 @@ public class MedicalInformations {
         protected String authHolder;
         protected String atcCode;
         protected String substances;
+        protected String authNrs;
         protected String style;
         @XmlElement(required = true)
         protected String content;
@@ -340,6 +342,30 @@ public class MedicalInformations {
             this.substances = value;
         }
 
+        /**
+         * Ruft den Wert der authNrs-Eigenschaft ab.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getAuthNrs() {
+            return authNrs;
+        }
+
+        /**
+         * Legt den Wert der authNrs-Eigenschaft fest.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setAuthNrs(String value) {
+            this.authNrs = value;
+        }
+        
         /**
          * Ruft den Wert der style-Eigenschaft ab.
          * 
