@@ -556,97 +556,161 @@ public class HtmlUtils {
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);		
 		mDoc.outputSettings().charset("UTF-8");
 						
-		// Assumption: 20 sections (there are for sure less)
 		String html_str = "";
-		for (int i=1; i<20; ++i) {
-			// Find section[i] 
-			Element section_title = mDoc.select("p[id=section"+i+"]").first();
-			if (section_title!=null) {
-				String title = section_title.text();
-				// Process "Präparat" name!
-				if (med_title.toLowerCase().equals(title.toLowerCase())) {
-					String clean_title = "";
-					// Some med titles have a 'Ò' which on Windows and Android systems is not translated into a '®' (reserved symbol)
-					if (title!=null)
-						clean_title = title.replace("Ò","®");
-					// Some German medications have wrong characters in the titles, this is a fix
-					if (language.equals("de"))
-						clean_title = clean_title.replace("â","®");
-					else if (language.equals("fr"))
-						clean_title = med_title;
-					else if (language.equals("it"))
-						clean_title = med_title;
-					else if (language.equals("en"))
-						clean_title = med_title;
-					html_str += ("<div class=\"MonTitle\" id=\"section"+i+"\">"+clean_title+"</div>");
-					// Add med holder (author, owner)
-					html_str += ("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+med_author+"</div></div>");					
-				} else {
-					// Create brand new div for section with id=sectionN
-					html_str += ("<div class=\"paragraph\" id=\"section"+i+"\">");
-					html_str += ("<div class=\"absTitle\">" + title +"</div>");
-					// Find all information between X and X+1
-					Elements elems = mDoc.select("p[id=section"+i+"] ~ *");			
-					Element elemXp1 = mDoc.select("p[id=section"+(i+1)+"]").first();			
-					
-					// Loop through the content
-					if (elems!=null) {
-						for (Element e : elems) {
-							// Sanitize
-							Element img = null;
-							if (e.tagName().equals("p")) {
-								if (e.select("img[src]")!=null) 
-									img = e.select("img[src]").first();
-								String re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
-								if (language.equals("de")) {
-									for (int k=0; k<ListOfKeywordsDE.length; ++k) {
-										// Exact match through keyword "\\b" for boundary					
-										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+" \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span> ");
-										// Try also versions with ":" or "," or "."
-										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+": \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+":</span> ");
-										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+", \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>, ");
-										// re = re.replaceAll("\\b"+ListOfKeywordsDE[i]+". \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[i]+"</span>. ");
-										// Words at the end of the line
-										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+".$", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>.");									
-										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+"$", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>");	
-										re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+"\\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>");
-									}
-								} else if (language.equals("fr")) {
-									for (int k=0; k<ListOfKeywordsFR.length; ++k) {
-										// Exact match through keyword "\\b" for boundary					
-										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+" \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span> ");
-										// Try also versions with ":" or "," or "."
-										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+": \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+":</span> ");
-										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+", \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>, ");
-										// re = re.replaceAll("\\b"+ListOfKeywordsDE[i]+". \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[i]+"</span>. ");
-										// Words at the end of the line
-										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+".$", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>.");									
-										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+"$", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>");								
-										re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+"\\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>");									
-									}
-								} else if (language.equals("it")) {
-									// 
-								} else if (language.equals("en")) {
-									// 
-								}
-								// Important step: add the section content!
-								if (img==null)
-									html_str += ("<p class=\"spacing1\">" + re + "</p>");
-								else 
-									html_str += ("<p class=\"spacing1\">" + img + "</p>");
-							}
-								
-							if (e.nextElementSibling()==elemXp1)
-								break;
-						}
-					}
-					html_str += ("</div>");
-				}
-			} else {
-				// html_str = mHtmlStr;
-			}
+		int cnt = 0;
+		boolean fallback1 = false;
+		
+		// List all sections of type p[id=section]
+		Elements section_titles = mDoc.select("p[id^=section]");
+		// 1. Fall back in case previous selector returns nothing
+		if (section_titles.isEmpty()) {
+			section_titles = mDoc.select("div[id^=Section]");
+			// Extract med title and owner
+			String monTitle = mDoc.select("div[class=MonTitle]").text();
+			String ownerCompany = mDoc.select("div[class=ownerCompany]").text();			
+			html_str += ("<div class=\"MonTitle\" id=\"section1\">" + monTitle + "</div>");
+			// Add med holder (author, owner)
+			html_str += ("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+ ownerCompany + "</div></div>");
+			// Increment counter
+			cnt = 1;			
+			fallback1 = true;
 		}
-				
+
+		// System.out.println(mDoc.html());
+
+		if (section_titles.size()>10) {
+			for (; cnt<section_titles.size(); ++cnt) {
+				Element section_title = null;
+				if (fallback1==true) {
+					// What happens with cnt???
+					section_title = section_titles.select("div[class=absTitle]").get(cnt-1);
+					if (cnt==(section_titles.size()-1)) {
+						section_title = section_titles.get(cnt);
+						fallback1 = false;
+					}
+				}
+				else
+					section_title = section_titles.get(cnt);
+				if (section_title!=null) {
+					String title = section_title.text();
+					// Process "Präparat" name!
+					if (med_title.toLowerCase().equals(title.toLowerCase())) {
+						String clean_title = "";
+						// Some med titles have a 'Ò' which on Windows and Android systems is not translated into a '®' (reserved symbol)
+						if (title!=null)
+							clean_title = title.replace("Ò","®");
+						// Some German medications have wrong characters in the titles, this is a fix
+						if (language.equals("de"))
+							clean_title = clean_title.replace("â","®");
+						else if (language.equals("fr"))
+							clean_title = med_title;
+						else if (language.equals("it"))
+							clean_title = med_title;
+						else if (language.equals("en"))
+							clean_title = med_title;
+						html_str += ("<div class=\"MonTitle\" id=\"section"+(cnt+1)+"\">"+clean_title+"</div>");
+						// Add med holder (author, owner)
+						html_str += ("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+med_author+"</div></div>");					
+					} else {
+						// Create brand new div for section with id=sectionN
+						html_str += ("<div class=\"paragraph\" id=\"section"+(cnt+1)+"\">");
+						html_str += ("<div class=\"absTitle\">" + title +"</div>");
+						// Find all information between X and X+1
+						String tag1 = "p[id=section"+cnt+"] ~ *";
+						String tag2 = "p[id=section"+(cnt+1)+"]";
+						Elements elems = null;
+						Element elemXp1 = null;
+						if (fallback1==false) {
+							if (!tag1.isEmpty())
+								elems = mDoc.select(tag1);		
+							if (!tag2.isEmpty())
+								elemXp1 = mDoc.select(tag2).first();			
+						} else {
+							elems = section_title.parent().select("div[class=absTitle] ~ *");
+						}
+						// Loop through the content
+						if (elems!=null) {
+							for (Element e : elems) {
+								// Sanitize
+								Element img = null;
+								if (e.tagName().equals("p") || e.tagName().equals("div")) {
+									String re = "";
+									if (e.select("img[src]")!=null) 
+										img = e.select("img[src]").first();
+									re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
+									if (language.equals("de")) {
+										for (int k=0; k<ListOfKeywordsDE.length; ++k) {
+											// Exact match through keyword "\\b" for boundary					
+											re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+" \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span> ");
+											// Try also versions with ":" or "," or "."
+											re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+": \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+":</span> ");
+											re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+", \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>, ");
+											// re = re.replaceAll("\\b"+ListOfKeywordsDE[i]+". \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[i]+"</span>. ");
+											// Words at the end of the line
+											re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+".$", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>.");									
+											re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+"$", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>");	
+											re = re.replaceAll("\\b"+ListOfKeywordsDE[k]+"\\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[k]+"</span>");
+										}
+									} else if (language.equals("fr")) {
+										for (int k=0; k<ListOfKeywordsFR.length; ++k) {
+											// Exact match through keyword "\\b" for boundary					
+											re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+" \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span> ");
+											// Try also versions with ":" or "," or "."
+											re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+": \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+":</span> ");
+											re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+", \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>, ");
+											// re = re.replaceAll("\\b"+ListOfKeywordsDE[i]+". \\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsDE[i]+"</span>. ");
+											// Words at the end of the line
+											re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+".$", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>.");									
+											re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+"$", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>");								
+											re = re.replaceAll("\\b"+ListOfKeywordsFR[k]+"\\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[k]+"</span>");									
+										}
+									} else if (language.equals("it")) {
+										// 
+									} else if (language.equals("en")) {
+										// 
+									}
+									// Important step: add the section content!
+									if (img==null) {
+										Element untertitle_elem = e.select("div[class=untertitle1], div[class=untertitle]").first();
+										if (untertitle_elem==null)	// business as usual... 
+											html_str += ("<p class=\"spacing1\">" + re + "</p>");
+										else {
+											html_str += "<p class=\"untertitle\">" + untertitle_elem.html() + "</p>";
+										}
+									} else 
+										html_str += ("<p class=\"spacing1\">" + img + "</p>");
+								} else if (e.tagName().equals("table")) {
+									// Important: deal with the tables
+									Elements col_styles = e.select("col[style]");
+									float sum = 0.0f;
+									for (Element cs : col_styles) {
+										String attr_str = (cs.attributes().toString()).replaceAll("[^0-9].[^0-9]+", ""); 
+										sum += Float.valueOf(attr_str);
+									}
+									for (Element cs : col_styles) {
+										String attr_str = (cs.attributes().toString()).replaceAll("[^0-9].[^0-9]+", ""); 	// e.g. style="width:1.75347in"
+										float width = 100.0f*Float.valueOf(attr_str)/sum;
+										// Save new attribute!								
+										attr_str = "width:" + width + "%25;" + "background-color: #EEEEEE; padding-right: 5px; padding-left: 5px"; // "%25;"; 
+										// Set new attribute
+										cs.attr("style", attr_str);
+									}
+									// Change all fonts
+									html_str += e.outerHtml();
+								}
+									
+								if (e.nextElementSibling()==elemXp1)
+									break;
+							}
+						}
+						html_str += ("</div>");
+					}
+				}
+			}
+		} else {
+			// Less than 10 section titles... something's wrong
+			System.out.println("---> Krass!");			
+		}
 		// Modified (pretty)html string
 		Document newDoc = Jsoup.parse("<div id=\"monographie\">" + html_str + "</div>");
 		newDoc.outputSettings().escapeMode(EscapeMode.xhtml);
