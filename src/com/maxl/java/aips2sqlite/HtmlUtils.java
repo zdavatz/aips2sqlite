@@ -20,7 +20,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package com.maxl.java.aips2sqlite;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +35,36 @@ public class HtmlUtils {
 	private String mLanguage;
 	private String mHtmlStr;
 	private Document mDoc;
+	
+	static String whitespace_chars =  ""       /* dummy empty string for homogeneity */
+            + "\\u0009" // CHARACTER TABULATION
+            + "\\u000A" // LINE FEED (LF)
+            + "\\u000B" // LINE TABULATION
+            + "\\u000C" // FORM FEED (FF)
+            + "\\u000D" // CARRIAGE RETURN (CR)
+            + "\\u0020" // SPACE
+            + "\\u0085" // NEXT LINE (NEL) 
+            + "\\u00A0" // NO-BREAK SPACE
+            + "\\u00C2"
+            + "\\u1680" // OGHAM SPACE MARK
+            + "\\u180E" // MONGOLIAN VOWEL SEPARATOR
+            + "\\u2000" // EN QUAD 
+            + "\\u2001" // EM QUAD 
+            + "\\u2002" // EN SPACE
+            + "\\u2003" // EM SPACE
+            + "\\u2004" // THREE-PER-EM SPACE
+            + "\\u2005" // FOUR-PER-EM SPACE
+            + "\\u2006" // SIX-PER-EM SPACE
+            + "\\u2007" // FIGURE SPACE
+            + "\\u2008" // PUNCTUATION SPACE
+            + "\\u2009" // THIN SPACE
+            + "\\u200A" // HAIR SPACE
+            + "\\u2028" // LINE SEPARATOR
+            + "\\u2029" // PARAGRAPH SEPARATOR
+            + "\\u202F" // NARROW NO-BREAK SPACE
+            + "\\u205F" // MEDIUM MATHEMATICAL SPACE
+            + "\\u3000" // IDEOGRAPHIC SPACE
+            ;        
 	
 	static private String ListOfKeywordsDE[] = {"Wirkstoffe","Wirkstoff\\(e\\)","Wirkstoff","Hilfsstoffe","Hilfsstoff\\(e\\)","Hilfsstoff",
 		"Kindern","Kinder","Sonstige Hinweise","Hinweis","Lagerungshinweise","Erwachsene","ATC-Code","Inkompatibilitäten","Haltbarkeit",
@@ -555,76 +584,87 @@ public class HtmlUtils {
 		mDoc = Jsoup.parse(mHtmlStr);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);		
 		mDoc.outputSettings().charset("UTF-8");
-						
+		
+		// Initialize some local variables
 		String html_str = "";
-		int cnt = 0;
+		int section_cnt = 0;
 		boolean fallback1 = false;
 		
+		// Extract med title
+		String clean_title = "";
+		String monTitle = mDoc.select("div[class=MonTitle]").html();
+		if (!monTitle.isEmpty())
+			clean_title = monTitle;
+		else
+			clean_title = med_title;
+		if (clean_title!=null) {
+			clean_title = clean_title.replace("Ò","®");
+			clean_title = clean_title.replace("TM", "<sup>TM</sup>");
+			// Some German medications have wrong characters in the titles, this is a fix
+			if (language.equals("de"))
+				clean_title = clean_title.replace("â","®");			
+		}
+		html_str += ("<div class=\"MonTitle\" id=\"section1\">" + clean_title + "</div>");
+		// Add med holder (owner)
+		String clean_author = "";
+		String ownerCompany = mDoc.select("div[class=ownerCompany]").html();
+		if (!ownerCompany.isEmpty())
+			clean_author = ownerCompany;
+		else
+			clean_author = med_author;
+		html_str += ("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+ clean_author + "</div></div>");		
+			
 		// List all sections of type p[id=section]
 		Elements section_titles = mDoc.select("p[id^=section]");
 		// 1. Fall back in case previous selector returns nothing
 		if (section_titles.isEmpty()) {
-			section_titles = mDoc.select("div[id^=Section]");
-			// Extract med title and owner
-			String monTitle = mDoc.select("div[class=MonTitle]").text();
-			String ownerCompany = mDoc.select("div[class=ownerCompany]").text();			
-			html_str += ("<div class=\"MonTitle\" id=\"section1\">" + monTitle + "</div>");
-			// Add med holder (author, owner)
-			html_str += ("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+ ownerCompany + "</div></div>");
-			// Increment counter
-			cnt = 1;			
+			section_titles = mDoc.select("div[id^=Section]");	
 			fallback1 = true;
-		}
-
+		}		
+		
 		// System.out.println(mDoc.html());
 
+		// 10 section titles is a reasonable lowest number
 		if (section_titles.size()>10) {
-			for (; cnt<section_titles.size(); ++cnt) {
+			for (section_cnt=1; section_cnt<section_titles.size(); ++section_cnt) {
 				Element section_title = null;
+				// Get section title first
 				if (fallback1==true) {
-					// What happens with cnt???
-					section_title = section_titles.select("div[class=absTitle]").get(cnt-1);
-					if (cnt==(section_titles.size()-1)) {
-						section_title = section_titles.get(cnt);
+					// Some meds have pre-formatted xml/html, take care of that...
+					section_title = section_titles.select("div[class=absTitle]").get(section_cnt-1);
+					if (section_cnt==(section_titles.size()-1)) {
+						section_title = section_titles.get(section_cnt);
 						fallback1 = false;
 					}
+				} else {
+					// Works 80%+ of the time
+					section_title = section_titles.get(section_cnt);
 				}
-				else
-					section_title = section_titles.get(cnt);
+				
 				if (section_title!=null) {
-					String title = section_title.text();
-					// Process "Präparat" name!
-					if (med_title.toLowerCase().equals(title.toLowerCase())) {
-						String clean_title = "";
-						// Some med titles have a 'Ò' which on Windows and Android systems is not translated into a '®' (reserved symbol)
-						if (title!=null)
-							clean_title = title.replace("Ò","®");
-						// Some German medications have wrong characters in the titles, this is a fix
-						if (language.equals("de"))
-							clean_title = clean_title.replace("â","®");
-						else if (language.equals("fr"))
-							clean_title = med_title;
-						else if (language.equals("it"))
-							clean_title = med_title;
-						else if (language.equals("en"))
-							clean_title = med_title;
-						html_str += ("<div class=\"MonTitle\" id=\"section"+(cnt+1)+"\">"+clean_title+"</div>");
-						// Add med holder (author, owner)
-						html_str += ("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+med_author+"</div></div>");					
-					} else {
+					String title = section_title.text().replace("Ò","®");
+					// No need to process the med title (see above)
+					if (title.equals("Pflanzliches Arzneimittel") || title.equals("Medicamento fitoterapeutico") 
+							|| title.equals("Médicament phytothérapeutique")) {
+						// These are the special cases, where the para is empty and there is only one title!
+						html_str += ("<div class=\"paragraph\" id=\"section"+(section_cnt+1)+"\">");
+						html_str += ("<div class=\"absTitle\">" + title +"</div>");
+					} else if (!med_title.toLowerCase().equals(title.toLowerCase())) {
 						// Create brand new div for section with id=sectionN
-						html_str += ("<div class=\"paragraph\" id=\"section"+(cnt+1)+"\">");
+						html_str += ("<div class=\"paragraph\" id=\"section"+(section_cnt+1)+"\">");
 						html_str += ("<div class=\"absTitle\">" + title +"</div>");
 						// Find all information between X and X+1
-						String tag1 = "p[id=section"+cnt+"] ~ *";
-						String tag2 = "p[id=section"+(cnt+1)+"]";
+						String tag1 = "p[id=section"+(section_cnt+1)+"] ~ *";
+						String tag2 = "p[id=section"+(section_cnt+2)+"]";
 						Elements elems = null;
 						Element elemXp1 = null;
 						if (fallback1==false) {
-							if (!tag1.isEmpty())
-								elems = mDoc.select(tag1);		
-							if (!tag2.isEmpty())
-								elemXp1 = mDoc.select(tag2).first();			
+							if (!tag1.isEmpty()) {
+								elems = mDoc.select(tag1);
+							}
+							if (!tag2.isEmpty()) {
+								elemXp1 = mDoc.select(tag2).first();
+							}
 						} else {
 							elems = section_title.parent().select("div[class=absTitle] ~ *");
 						}
@@ -632,12 +672,13 @@ public class HtmlUtils {
 						if (elems!=null) {
 							for (Element e : elems) {
 								// Sanitize
-								Element img = null;
+								Element img = null;								
 								if (e.tagName().equals("p") || e.tagName().equals("div")) {
 									String re = "";
 									if (e.select("img[src]")!=null) 
 										img = e.select("img[src]").first();
 									re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
+									
 									if (language.equals("de")) {
 										for (int k=0; k<ListOfKeywordsDE.length; ++k) {
 											// Exact match through keyword "\\b" for boundary					
@@ -699,8 +740,9 @@ public class HtmlUtils {
 									html_str += e.outerHtml();
 								}
 									
-								if (e.nextElementSibling()==elemXp1)
+								if (e.nextElementSibling()==elemXp1 || e==elemXp1) {
 									break;
+								}
 							}
 						}
 						html_str += ("</div>");
@@ -738,9 +780,20 @@ public class HtmlUtils {
 		scanner.close();
 		
 		// Cosmetic upgrades. Use with care!
-		html_str = html_str.replaceAll("<p class=\"spacing1\"> </p>\n</div>", "</div>");
-		html_str = html_str.replaceAll("</div>\n <p class=\"spacing1\"> </p>", "</div>");
-				
+		/*
+		Pattern ptn = Pattern.compile("<p class=\"spacing1\">.*(\\u00c2|\\u00a0).*</p>");
+        Matcher mtch = ptn.matcher(html_str);		
+        while (mtch.find())
+        	System.out.println(mtch.group());
+        */
+		
+		// List items
+		html_str = html_str.replaceAll("<p class=\"spacing1\">(–|·|-|•)", "<p class=\"spacing1\">– ");
+		// Rest
+		html_str = html_str.replaceAll("<p class=\"spacing1\"> </p>", "<p class=\"spacing1\"> </p>");
+		html_str = html_str.replaceAll("<p class=\"spacing1\"> </p>\n(\\s+)</div>", "</div>");
+		html_str = html_str.replaceAll("</div>\n <p class=\"spacing1\"> </p>", "</div>");
+
 		return html_str;
 	}
 	

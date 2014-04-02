@@ -45,7 +45,8 @@ public class Constants {
 	public static final String FILE_OWNER_REPORT = "./output/owner_report";
 	public static final String FILE_INDICATIONS_REPORT = "./output/indications_report";
 	// ****** XML file ******
-	public static final String FILE_XML_BASE = "./output/fis/";
+	public static final String FI_FILE_XML_BASE = "./output/fis/";
+	public static final String PI_FILE_XML_BASE = "./output/pis/";
 	// ****** Stop words (DE != FR) ******
 	public static final String FILE_STOP_WORDS_DE = "./input/german_stop_words.txt";
 	public static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";

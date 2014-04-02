@@ -939,11 +939,11 @@ public class RealExpertInfo {
 									// Replace all "Sonderzeichen"
 									name = name.replaceAll("[/%:]", "_");									
 									if (CmlOptions.DB_LANGUAGE.equals("de")) {
-										FileOps.writeToFile(mContent_str, Constants.FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
-										FileOps.writeToFile(xml_str, Constants.FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
+										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
+										FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
 									} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-										FileOps.writeToFile(mContent_str, Constants.FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");										
-										FileOps.writeToFile(xml_str, Constants.FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");										
+										FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
 									}
 								}								
 							}
@@ -1001,20 +1001,20 @@ public class RealExpertInfo {
 				fi_complete_xml = html_utils.addHeaderToXml("kompendium", fi_complete_xml);
 				// Write kompendium xml file to disk
 				if (CmlOptions.DB_LANGUAGE.equals("de")) {
-					FileOps.writeToFile(fi_complete_xml, Constants.FILE_XML_BASE, "fi_de.xml");
+					FileOps.writeToFile(fi_complete_xml, Constants.FI_FILE_XML_BASE, "fi_de.xml");
 					if (CmlOptions.ZIP_BIG_FILES)
-						FileOps.zipToFile(Constants.FILE_XML_BASE, "fi_de.xml");
+						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_de.xml");
 				}
 				else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-					FileOps.writeToFile(fi_complete_xml, Constants.FILE_XML_BASE, "fi_fr.xml");
+					FileOps.writeToFile(fi_complete_xml, Constants.FI_FILE_XML_BASE, "fi_fr.xml");
 					if (CmlOptions.ZIP_BIG_FILES)
-						FileOps.zipToFile(Constants.FILE_XML_BASE, "fi_fr.xml");				
+						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");				
 				}
 				// Copy stylesheet file to ./fis/ folders
 				try {
 					File src = new File(Constants.FILE_STYLE_CSS_BASE + "v1.css");
-					File dst_de = new File(Constants.FILE_XML_BASE + "fi_de_html/");
-					File dst_fr = new File(Constants.FILE_XML_BASE + "fi_fr_html/");			
+					File dst_de = new File(Constants.FI_FILE_XML_BASE + "fi_de_html/");
+					File dst_fr = new File(Constants.FI_FILE_XML_BASE + "fi_fr_html/");			
 					if (src.exists() ) {
 						if (dst_de.exists())
 							FileUtils.copyFileToDirectory(src, dst_de);
