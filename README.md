@@ -27,6 +27,7 @@ On some systems it may be necessary to increase the heap space with the Java opt
 --zip             generate zipped versions sqlite database or xml file 
 --reports         generate parse and owner error reports (folder output)
 --indications     generate report about keywords found in section indications (folder output)
+--pinfo           generate Patinfo (default is Fachinfo)
 ```
 
 ## Examples
