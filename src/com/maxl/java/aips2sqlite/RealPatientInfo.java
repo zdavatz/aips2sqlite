@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,11 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities.EscapeMode;
+import org.jsoup.select.Elements;
 
 import com.maxl.java.aips2sqlite.Preparations.Preparation;
 
@@ -498,11 +504,9 @@ public class RealPatientInfo {
 						/*
 						 * Update "Packungen" section and extract therapeutisches index
 						 */
-						/*
 						List<String> mTyIndex_list = new ArrayList<String>();						
-						mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, regnr_str, html_sanitized, mTyIndex_list);
-						m.setContent(mContent_str);
-						*/
+						mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, m.getAuthNrs(), html_sanitized, mTyIndex_list);
+					
 						if (CmlOptions.XML_FILE==true) {
 							// Add header to html file							
 							mContent_str = mContent_str.replaceAll("<head>", "<head>" + 
@@ -529,5 +533,146 @@ public class RealPatientInfo {
 				tot_med_counter++;
 			}
 		}	
+	}
+	
+	private String updateSectionPackungen(String title, String atc_code, Map<String, ArrayList<String>> pack_info, 
+			String regnr_str, String content_str, List<String> tIndex_list) {
+		Document doc = Jsoup.parse(content_str, "UTF-16");
+		// package info string for original
+		List<String> pinfo_originals_str = new ArrayList<String>();
+		// package info string for generika
+		List<String> pinfo_generics_str = new ArrayList<String>();
+		// package info string for the rest
+		List<String> pinfo_str = new ArrayList<String>();
+		
+		int index = 0;
+
+		// Extract swissmedicno5 registration numbers
+		List<String> swissmedicno5_list = Arrays.asList(regnr_str.split("\\s*,\\s*"));
+		for (String s : swissmedicno5_list) {
+			// Extract original / generika info + Selbstbehalt info from
+			// "add_info_map"
+			String orggen_str = "";		// O=Original, G=Generika
+			String flagsb_str = "";		// SB=Selbstbehalt 
+			String addinfo_str = m_add_info_map.get(s);
+			if (addinfo_str != null) {
+				List<String> ai_list = Arrays.asList(addinfo_str.split("\\s*;\\s*"));
+				if (ai_list != null) {
+					if (!ai_list.get(0).isEmpty())
+						orggen_str = ", " + ai_list.get(0);		// O + G
+					if (!ai_list.get(1).isEmpty())
+						flagsb_str = ", " + ai_list.get(1);		// SB
+				}
+			}
+			// Now generate many swissmedicno8 = swissmedicno5 + ***, check if they're keys and retrieve package info
+			String swissmedicno8_key = "";
+			for (int n=0; n<1000; ++n) {
+				if (n<10)
+					swissmedicno8_key = s + String.valueOf(n).format("00%d", n);
+				else if (n<100)
+					swissmedicno8_key = s + String.valueOf(n).format("0%d", n);
+				else
+					swissmedicno8_key = s + String.valueOf(n).format("%d", n);
+				// Check if swissmedicno8_key is a key of the map
+				if (pack_info.containsKey(swissmedicno8_key)) {
+					ArrayList<String> pi_row = m_package_info.get(swissmedicno8_key);
+					if (pi_row != null) {										
+						
+						// Remove double spaces in title and capitalize
+						// String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
+						String medtitle = pi_row.get(1).replaceAll("\\s+", " ");
+						// Remove [QAP?] -> not an easy one!
+						medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");						
+						// --> Add "ausser Handel" information
+						String withdrawn_str = "";
+						if (pi_row.get(10).length() > 0)
+							withdrawn_str = ", " + pi_row.get(10);
+						// --> Add public price information
+						if (pi_row.get(7).length() > 0) {
+							// The rest of the package information
+							String append_str = ", " + pi_row.get(7) 
+									+ withdrawn_str + " [" + pi_row.get(5) 
+									+ pi_row.get(11) + pi_row.get(12) 
+									+ flagsb_str + orggen_str + "]";
+							// Generate package info string
+							if (orggen_str.equals(", O"))
+								pinfo_originals_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
+							else if (orggen_str.equals(", G"))
+								pinfo_generics_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
+							else
+								pinfo_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");								
+						} else {
+							//
+							// @maxl (10.01.2014): Price for swissmedicNo8 pack is not listed in bag_preparations.xml!!
+							//
+							pinfo_str.add("<p class=\"spacing1\">"
+										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>");
+						}
+						
+						// --> Add "tindex_str" and "application_str" (see
+						// SqlDatabase.java)
+						if (index == 0) {
+							tIndex_list.add(pi_row.get(9)); // therapeutic index
+							tIndex_list.add(pi_row.get(6)); // application area
+							index++;
+						}
+					}
+				}
+			}
+		}
+		// Re-order the string alphabetically
+		if (!pinfo_originals_str.isEmpty()) {		
+			Collections.sort(pinfo_originals_str, new AlphanumComp()); 
+		}	
+		if (!pinfo_generics_str.isEmpty()) {		
+			Collections.sort(pinfo_generics_str, new AlphanumComp());
+		}
+		if (!pinfo_str.isEmpty()) {		
+			Collections.sort(pinfo_str, new AlphanumComp());
+		}		
+		// Concatenate lists...
+		pinfo_originals_str.addAll(pinfo_generics_str);
+		pinfo_originals_str.addAll(pinfo_str);
+		// Put everything in pinfo_str
+		pinfo_str = pinfo_originals_str;
+		
+		// In case nothing was found
+		if (index == 0) {
+			tIndex_list.add("");
+			tIndex_list.add("");
+		}
+		
+		/*
+		* Replace package information
+		*/
+		if (CmlOptions.NO_PACK==false) {
+			// Replace original package information with pinfo_str	
+			String p_str = "";
+			for (String p : pinfo_str) {
+				p_str += p;
+			}				
+		
+			// Initialize section titles
+			String packages_title = "Packungen";
+			if (CmlOptions.DB_LANGUAGE.equals("fr")) {
+				packages_title = "Présentation";
+			}
+
+			doc.outputSettings().escapeMode(EscapeMode.xhtml);
+			Elements elems = doc.select("div[id^=section]").select("div:contains(Zulassungsinhaberin)");
+			if (elems!=null) {
+				for (Element e : elems) {
+					if (e.previousElementSibling()!=null) {
+						// ** Chapter "Packungen"						
+						e.previousElementSibling().append(p_str);
+						String section_html = "<div class=\"absTitle\">" + packages_title + "</div>" + p_str;
+					}
+				}
+			}			
+		}
+			
+		System.out.println(doc.html());
+		
+		return doc.html();
 	}
 }

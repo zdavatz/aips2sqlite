@@ -576,6 +576,13 @@ public class HtmlUtils {
 		return html_str;
 	}
 	
+	/**¨
+	 * Sanitizes all sections (in one go!)
+	 * @param med_title
+	 * @param med_author
+	 * @param language
+	 * @return
+	 */
 	public String sanitizePatient(String med_title, String med_author, String language) {
 		if (mHtmlStr.isEmpty())
 			return "";
@@ -677,8 +684,9 @@ public class HtmlUtils {
 									String re = "";
 									if (e.select("img[src]")!=null) 
 										img = e.select("img[src]").first();
-									re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
 									
+									re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
+
 									if (language.equals("de")) {
 										for (int k=0; k<ListOfKeywordsDE.length; ++k) {
 											// Exact match through keyword "\\b" for boundary					
