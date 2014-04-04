@@ -84,6 +84,8 @@ public class Aips2Sqlite {
 					CmlOptions.DB_LANGUAGE = "fr";
 				else if (cmd.getOptionValue("lang").equals("it"))
 					CmlOptions.DB_LANGUAGE = "it";
+				else if (cmd.getOptionValue("lang").equals("en"))
+					CmlOptions.DB_LANGUAGE = "en";
 			}
 			if (cmd.hasOption("verbose")) {
 				CmlOptions.SHOW_ERRORS = true;

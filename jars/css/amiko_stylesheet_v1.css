@@ -7,7 +7,7 @@
 #monographie .header{font-size:0.85em;font-weight:normal;color:#999999;text-align:left;margin-bottom:2em;visibility:hidden;display:none;}
 #monographie .footer{font-size:0.85em;font-weight:normal;color:#999999;margin-top:2.0em;border-top:#999999 1px solid;padding-top:0.5em;}
 #monographie div p{font-size:0.9em;}
-#monographie .paragraph{font-weight:normal;font-style:normal;margin-top:0.8em;}.noSpacing{margin-top:0em;margin-bottom:0em;}.spacing1{margin-top:0em;margin-bottom:0.25em;}.spacing2{margin-top:0em;margin-bottom:0.5em;}
+#monographie .paragraph{font-weight:normal;font-style:normal;margin-top:0.8em;}.noSpacing{margin-top:0em;margin-bottom:0em;}.spacing1{margin-top:0em;margin-bottom:0.25em;}.spacing2{margin-top:0em;margin-bottom:0.9em;}
 #monographie .ownerCompany{font-size:1em;font-style:italic;font-weight:bold;text-align:right;margin-bottom:1.0em;border-top:black 1px solid;border-bottom:black 1px solid;padding-top:0.2em;padding-bottom:0.2em;}
 #monographie .titleAdd{font-size:0.9em;font-weight:bold;font-style:italic;}
 #monographie .shortCharacteristic{font-size:1.1em;font-style:italic;}

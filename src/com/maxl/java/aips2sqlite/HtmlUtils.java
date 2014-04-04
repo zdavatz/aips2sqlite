@@ -651,8 +651,8 @@ public class HtmlUtils {
 				if (section_title!=null) {
 					String title = section_title.text().replace("Ò","®");
 					// No need to process the med title (see above)
-					if (title.equals("Pflanzliches Arzneimittel") || title.equals("Medicamento fitoterapeutico") 
-							|| title.equals("Médicament phytothérapeutique")) {
+					if (title.equals("Pflanzliches Arzneimittel") || title.equals("Médicament phytothérapeutique")
+							|| title.equals("Medicamento fitoterapeutico")) {
 						// These are the special cases, where the para is empty and there is only one title!
 						html_str += ("<div class=\"paragraph\" id=\"section"+(section_cnt+1)+"\">");
 						html_str += ("<div class=\"absTitle\">" + title +"</div>");
@@ -759,7 +759,7 @@ public class HtmlUtils {
 			}
 		} else {
 			// Less than 10 section titles... something's wrong
-			System.out.println("---> Krass!");			
+			System.out.println("---> HtmlUtils: Krasser Fehler!");			
 		}
 		// Modified (pretty)html string
 		Document newDoc = Jsoup.parse("<div id=\"monographie\">" + html_str + "</div>");

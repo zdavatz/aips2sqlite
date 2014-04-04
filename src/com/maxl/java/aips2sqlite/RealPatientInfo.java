@@ -238,6 +238,20 @@ public class RealPatientInfo {
 					m_atc_map.put(atc_code, atc_class_french);
 				}
 				scanner.close();
+			} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+				// Load multilinguagl ATC classes txt file
+				String atc_classes_multi = FileOps.readFromFile(Constants.FILE_ATC_MULTI_LINGUAL_TXT);
+				// Loop through all lines
+				Scanner scanner = new Scanner(atc_classes_multi);
+				while (scanner.hasNextLine()) {
+					String line = scanner.nextLine();
+					List<String> atc_class = Arrays.asList(line.split(": "));
+					String atc_code = atc_class.get(0);
+					String[] atc_classes_str = atc_class.get(1).split(";");
+					String atc_class_french = atc_classes_str[1].trim();
+					m_atc_map.put(atc_code, atc_class_french);
+				}
+				scanner.close();
 			}
 			stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
@@ -248,6 +262,8 @@ public class RealPatientInfo {
 			if (CmlOptions.DB_LANGUAGE.equals("de"))
 				refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_DE_XML);
 			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+				refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_FR_XML);
+			else if (CmlOptions.DB_LANGUAGE.equals("it"))
 				refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_FR_XML);
 			else {
 				System.err.println("ERROR: DB_LANGUAGE undefined");
@@ -282,6 +298,8 @@ public class RealPatientInfo {
 								pi_row.set(10, "a.H.");
 							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 								pi_row.set(10, "p.c.");
+							else if (CmlOptions.DB_LANGUAGE.equals("it"))
+								pi_row.set(10, "f.c.");
 						}
 						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
 						pi_row.set(14, ean_code);
@@ -332,11 +350,15 @@ public class RealPatientInfo {
 								flagSB20_str = "SB 20%";
 							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 								flagSB20_str = "QP 20%";
+							else if (CmlOptions.DB_LANGUAGE.equals("it"))
+								flagSB20_str = "QP 20%";
 						} else if (flagSB20_str.equals("N")) {
 							if (CmlOptions.DB_LANGUAGE.equals("de"))
 								flagSB20_str = "SB 10%";
 							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 								flagSB20_str = "QP 10%";
+							else if (CmlOptions.DB_LANGUAGE.equals("it"))
+								flagSB20_str = "QP 10%";							
 						} else
 							flagSB20_str = "";
 					}
@@ -358,11 +380,15 @@ public class RealPatientInfo {
 									therapeutic_code = code.getDescriptionDe();
 								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 									therapeutic_code = code.getDescriptionFr();
+								else if (CmlOptions.DB_LANGUAGE.equals("it"))
+									therapeutic_code = code.getDescriptionIt();
 							} else {
 								if (CmlOptions.DB_LANGUAGE.equals("de"))
 									bag_application = code.getDescriptionDe();
 								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 									bag_application = code.getDescriptionFr();
+								else if (CmlOptions.DB_LANGUAGE.equals("it"))
+									bag_application = code.getDescriptionIt();
 							}
 							index++;
 						}
@@ -414,6 +440,8 @@ public class RealPatientInfo {
 										if (CmlOptions.DB_LANGUAGE.equals("de"))
 											pi_row.set(11, ", SL");
 										else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+											pi_row.set(11, ", LS");
+										else if (CmlOptions.DB_LANGUAGE.equals("it"))
 											pi_row.set(11, ", LS");
 									} catch (NullPointerException e) {
 										if (CmlOptions.SHOW_ERRORS)
@@ -580,7 +608,7 @@ public class RealPatientInfo {
 						
 						// Remove double spaces in title and capitalize
 						// String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
-						String medtitle = pi_row.get(1).replaceAll("\\s+", " ");
+						String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "));
 						// Remove [QAP?] -> not an easy one!
 						medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");						
 						// --> Add "ausser Handel" information
@@ -647,32 +675,47 @@ public class RealPatientInfo {
 		*/
 		if (CmlOptions.NO_PACK==false) {
 			// Replace original package information with pinfo_str	
-			String p_str = "";
+			String p_str = "<p class=\"spacing2\"> </p>";
 			for (String p : pinfo_str) {
 				p_str += p;
 			}				
 		
-			// Initialize section titles
-			String packages_title = "Packungen";
-			if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-				packages_title = "Présentation";
-			}
-
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);
-			Elements elems = doc.select("div[id^=section]").select("div:contains(Zulassungsinhaberin)");
+			Elements elems = null;
+			if (CmlOptions.DB_LANGUAGE.equals("de"))
+				elems = doc.select("div[id^=section]").select("div:contains(Zulassungsinhaberin)");
+			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+				elems = doc.select("div[id^=section]").select("div:contains(Titulaire de)");
+			else if (CmlOptions.DB_LANGUAGE.equals("it"))
+				elems = doc.select("div[id^=section]").select("div:contains(Titolare dell)");			
 			if (elems!=null) {
 				for (Element e : elems) {
 					if (e.previousElementSibling()!=null) {
 						// ** Chapter "Packungen"						
 						e.previousElementSibling().append(p_str);
-						String section_html = "<div class=\"absTitle\">" + packages_title + "</div>" + p_str;
 					}
 				}
 			}			
 		}
-			
-		System.out.println(doc.html());
 		
 		return doc.html();
+	}
+	
+	private String capitalizeFully(String s) {
+		// Split string
+		String[] tokens = s.split("\\s");
+		// Capitalize only first word!
+		tokens[0] = tokens[0].toUpperCase();
+		// Reassemble string
+		String full_s = "";
+		if (tokens.length > 1) {
+			for (int i = 0; i < tokens.length - 1; i++) {
+				full_s += (tokens[i] + " ");
+			}
+			full_s += tokens[tokens.length - 1];
+		} else {
+			full_s = tokens[0];
+		}
+		return full_s;
 	}
 }
