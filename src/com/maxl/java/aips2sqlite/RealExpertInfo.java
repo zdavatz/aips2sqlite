@@ -222,6 +222,11 @@ public class RealExpertInfo {
 						pack.add(public_price); 	// 7
 						pack.add(exfactory_price); 	// 8
 						pack.add(therapeutic_index);// 9
+						// By default the meds are "ausser Handel"
+						if (CmlOptions.DB_LANGUAGE.equals("de"))
+							withdrawn_str = "a.H.";	// ausser Handel
+						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+							withdrawn_str = "p.c.";	// 
 						pack.add(withdrawn_str); 	// 10
 						pack.add(speciality_str); 	// 11
 						pack.add(plimitation_str); 	// 12
@@ -326,6 +331,8 @@ public class RealExpertInfo {
 							pi_row.set(1, pharma.getDscr() + ", " + pharma.getAddscr());
 						else
 							pi_row.set(1, pharma.getDscr());
+						// If med is in refdata file, then it is "in Handel!!" ;)
+						pi_row.set(10, "");
 						if (pharma.getStatus().equals("I")) {
 							if (CmlOptions.DB_LANGUAGE.equals("de"))
 								pi_row.set(10, "a.H.");

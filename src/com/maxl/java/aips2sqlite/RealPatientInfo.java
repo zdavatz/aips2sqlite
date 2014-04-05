@@ -173,6 +173,13 @@ public class RealPatientInfo {
 						pack.add(public_price); 	// 7
 						pack.add(exfactory_price); 	// 8
 						pack.add(therapeutic_index);// 9
+						// By default the meds are "ausser Handel"
+						if (CmlOptions.DB_LANGUAGE.equals("de"))
+							withdrawn_str = "a.H.";	// ausser Handel
+						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+							withdrawn_str = "p.c.";	// 
+						else if (CmlOptions.DB_LANGUAGE.equals("it"))
+							withdrawn_str = "f.c.";	// fuori commercio
 						pack.add(withdrawn_str); 	// 10
 						pack.add(speciality_str); 	// 11
 						pack.add(plimitation_str); 	// 12
@@ -293,6 +300,8 @@ public class RealPatientInfo {
 							pi_row.set(1, pharma.getDscr() + ", " + pharma.getAddscr());
 						else
 							pi_row.set(1, pharma.getDscr());
+						// If med is in refdata file, then it is "in Handel!!" ;)
+						pi_row.set(10, "");
 						if (pharma.getStatus().equals("I")) {
 							if (CmlOptions.DB_LANGUAGE.equals("de"))
 								pi_row.set(10, "a.H.");
@@ -317,7 +326,7 @@ public class RealPatientInfo {
 						System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getDscr());
 				}
 			}
-
+			
 			stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
 				System.out.println(pharma_list.size() + " medis in " + (stopTime - startTime) / 1000.0f + " sec");
@@ -520,7 +529,7 @@ public class RealPatientInfo {
 						}	
 						*/
 						
-						System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + m.getAuthNrs() + " ver -> "+ m.getVersion());						
+						System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + m.getAuthNrs());// + " ver -> "+ m.getVersion());						
 											
 						// Clean html
 						html_utils = new HtmlUtils(m.getContent());
@@ -711,11 +720,13 @@ public class RealPatientInfo {
 				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quali confezioni sono disponibili?)");			
 			if (elems!=null) {
 				for (Element e : elems) {
-					if (e.siblingElements()!=null) {
+					Elements siblings = e.siblingElements();
+					if (siblings!=null) {
 						// ** Chapter "Packungen"						
 						// System.out.println(e.siblingElements().last().html());
 						// Note: do not use "append"
-						e.siblingElements().last().after(p_str);
+						if (siblings.last()!=null)
+							siblings.last().after(p_str);
 					}
 				}
 			}			

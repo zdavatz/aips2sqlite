@@ -71,8 +71,7 @@ public class FileOps {
 		return file_str;
 	}	
 	
-	static public void writeToFile(String string_to_write, String dir_name,
-			String file_name) {
+	static public void writeToFile(String string_to_write, String dir_name,	String file_name) {
 		try {
 			File wdir = new File(dir_name);
 			if (!wdir.exists())
@@ -82,6 +81,7 @@ public class FileOps {
 				wfile.getParentFile().mkdirs();
 				wfile.createNewFile();
 			}
+			
 			// FileWriter fw = new FileWriter(wfile.getAbsoluteFile());
 			CharsetEncoder encoder = Charset.forName("UTF-8").newEncoder();
 			encoder.onMalformedInput(CodingErrorAction.REPORT);
