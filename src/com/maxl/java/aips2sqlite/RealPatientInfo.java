@@ -493,7 +493,9 @@ public class RealPatientInfo {
 		String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
 		
 		// Initialize counters for different languages
+		int med_counter = 0;
 		int tot_med_counter = 0;
+		String pi_complete_xml = "";
 		
 		HtmlUtils html_utils = null;
 		
@@ -507,6 +509,7 @@ public class RealPatientInfo {
 							&& m.getAuthHolder().toLowerCase().startsWith(CmlOptions.OPT_MED_OWNER.toLowerCase())) {	
 						
 						// Extract section titles and section ids
+						/*
 						MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
 						List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
 						String ids_str = "";
@@ -514,8 +517,8 @@ public class RealPatientInfo {
 						for( MedicalInformations.MedicalInformation.Sections.Section s : med_section_list ) {
 							ids_str += (s.getId() + ",");
 							titles_str += (s.getTitle() + ";");
-							// System.out.println(s.getTitle());
 						}	
+						*/
 						
 						System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + m.getAuthNrs() + " ver -> "+ m.getVersion());						
 											
@@ -541,31 +544,49 @@ public class RealPatientInfo {
 									"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />" +
 									"<style>" + amiko_style_v1_str + "</style>");												
 							m.setContent(mContent_str);
-													
+									
+							// Add header to xml file
+							String xml_str = html_utils.convertHtmlToXml("pi", m.getTitle(), mContent_str, m.getAuthNrs());									
+							xml_str = html_utils.addHeaderToXml("singlepi", xml_str);
+							pi_complete_xml += (xml_str + "\n");
+							
 							// Write to html and xml files to disk
 							String name = m.getTitle();
 							// Replace all "Sonderzeichen"
 							name = name.trim().replaceAll("[/%:]", "_");									
 							if (CmlOptions.DB_LANGUAGE.equals("de")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_de_html/", name + "_pi_de.html");
+								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_de_xml/", name + "_pi_de.xml");
 							} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_fr_html/", name + "_pi_fr.html");										
+								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_fr_html/", name + "_pi_fr.html");
+								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_fr_xml/", name + "_pi_fr.xml");
 							} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_it_html/", name + "_pi_it.html");
-							} else if (CmlOptions.DB_LANGUAGE.equals("en")) {
-								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_en_html/", name + "_pi_en.html");
-							}								
+								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_it_xml/", name + "_pi_it.xml");
+							}
 						}
+						
+						med_counter++;
 					}
 				}
 				tot_med_counter++;
 			}
-		}	
+		}
+		System.out.println();
+		System.out.println("--------------------------------------------");
+		System.out.println("Total number of med infos in database: " + m_med_list.size());
+		System.out.println("Number of PI with package information: " + tot_med_counter);
+		System.out.println("Number of PI which were processed: " + med_counter);
+		System.out.println("--------------------------------------------");
 	}
 	
 	private String updateSectionPackungen(String title, String atc_code, Map<String, ArrayList<String>> pack_info, 
 			String regnr_str, String content_str, List<String> tIndex_list) {
 		Document doc = Jsoup.parse(content_str, "UTF-16");
+		doc.outputSettings().escapeMode(EscapeMode.xhtml);
+		doc.outputSettings().prettyPrint(true);
+		doc.outputSettings().indentAmount(4);
+		
 		// package info string for original
 		List<String> pinfo_originals_str = new ArrayList<String>();
 		// package info string for generika
@@ -678,21 +699,23 @@ public class RealPatientInfo {
 			String p_str = "<p class=\"spacing2\"> </p>";
 			for (String p : pinfo_str) {
 				p_str += p;
-			}				
+			}	
 		
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);
 			Elements elems = null;
 			if (CmlOptions.DB_LANGUAGE.equals("de"))
-				elems = doc.select("div[id^=section]").select("div:contains(Zulassungsinhaberin)");
+				elems = doc.select("div[id^=section]").select("div:matchesOwn(Welche Packungen sind erhältlich?)");
 			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-				elems = doc.select("div[id^=section]").select("div:contains(Titulaire de)");
+				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quels sont les emballages à disposition)");
 			else if (CmlOptions.DB_LANGUAGE.equals("it"))
-				elems = doc.select("div[id^=section]").select("div:contains(Titolare dell)");			
+				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quali confezioni sono disponibili?)");			
 			if (elems!=null) {
 				for (Element e : elems) {
-					if (e.previousElementSibling()!=null) {
+					if (e.siblingElements()!=null) {
 						// ** Chapter "Packungen"						
-						e.previousElementSibling().append(p_str);
+						// System.out.println(e.siblingElements().last().html());
+						// Note: do not use "append"
+						e.siblingElements().last().after(p_str);
 					}
 				}
 			}			

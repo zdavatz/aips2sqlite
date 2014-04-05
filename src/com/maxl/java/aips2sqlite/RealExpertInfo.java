@@ -930,7 +930,7 @@ public class RealExpertInfo {
 									m.setContent(mContent_str);
 																		
 									// Add header to xml file
-									String xml_str = html_utils.convertHtmlToXml(m.getTitle(), mContent_str, regnr_str);									
+									String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);									
 									xml_str = html_utils.addHeaderToXml("singlefi", xml_str);
 									fi_complete_xml += (xml_str + "\n");
 									

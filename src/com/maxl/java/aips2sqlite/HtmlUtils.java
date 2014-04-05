@@ -770,6 +770,8 @@ public class HtmlUtils {
 		html_str = newDoc.html().replaceAll("&lt; ", "&lt;");
 		// Replaces all supscripted � in the main text with �
 		html_str = html_str.replaceAll(">â</sup>", ">®</sup>");
+		// Replaces all &apos; with &quot; (the latter is fine with Html4  and Html5)
+		html_str = html_str.replaceAll("&apos;", "’");
 
 		// Remove multiple instances of <p class="spacing1"> </p>
 		Scanner scanner = new Scanner(html_str);
@@ -805,21 +807,20 @@ public class HtmlUtils {
 		return html_str;
 	}
 	
-	String convertHtmlToXml(String med_title, String html_str, String regnr_str) {				
+	String convertHtmlToXml(String info_type, String med_title, String html_str, String regnr_str) {				
 		Document mDoc = Jsoup.parse(html_str);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
 		mDoc.outputSettings().prettyPrint(true);
 		mDoc.outputSettings().indentAmount(4);
-		
 		// <div id="monographie"> -> <fi>
-		mDoc.select("div[id=monographie]").tagName("fi").removeAttr("id");
+		mDoc.select("div[id=monographie]").tagName(info_type).removeAttr("id");
 		// <div class="MonTitle"> -> <title>
 		mDoc.select("div[class=MonTitle]").tagName("title").removeAttr("class").removeAttr("id");
 		// Beautify the title to the best of my possibilities ... still not good enough!
 		String title_str = mDoc.select("title").text().trim().replaceAll("<br />","").replaceAll("(\\t|\\r?\\n)+","");
 		// title_str is redundant...
 		// Fallback solution: use title from the header AIPS.xml file - the titles look all pretty good!
-		mDoc.select("title").first().text(med_title);
+		mDoc.select("title").first().text(med_title.trim());
 		// <div class="ownerCompany"> -> <owner>
 		Element owner_elem = mDoc.select("div[class=ownerCompany]").first();
 		if (owner_elem!=null) {
@@ -831,7 +832,9 @@ public class HtmlUtils {
 			if (mLanguage.equals("de"))
 				mDoc.select("owner").first().text("k.A.");
 			else if (mLanguage.equals("fr"))
-				mDoc.select("owner").first().text("n.s.");				
+				mDoc.select("owner").first().text("n.s.");
+			else if (mLanguage.equals("it"))
+				mDoc.select("owner").first().text("n.d.");
 			else
 				return ""; 
 		}
@@ -958,6 +961,8 @@ public class HtmlUtils {
 			mDoc.select("lang").first().text("DE");
 		else if (mLanguage.equals("fr"))
 			mDoc.select("lang").first().text("FR");
+		else if (mLanguage.equals("it"))
+			mDoc.select("lang").first().text("IT");
 		else
 			return "";
 		
