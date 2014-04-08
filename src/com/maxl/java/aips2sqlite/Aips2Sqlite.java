@@ -113,6 +113,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("pseudo")) {
 				CmlOptions.ADD_PSEUDO_FI = true;
 			}
+			if (cmd.hasOption("inter")) {
+				CmlOptions.ADD_INTERACTIONS = true;
+			}
 			if (cmd.hasOption("pinfo")) {
 				CmlOptions.GENERATE_PI = true;
 			}
@@ -146,6 +149,7 @@ public class Aips2Sqlite {
 		addOption(options, "owner", "only include medications owned by option value", true, false);
 		addOption(options, "nopack", "does not update the package section", false, false);
 		addOption(options, "pseudo", "adds pseudo expert infos to db", false, false);
+		addOption(options, "inter", "adds drug interactions to db", false, false);
 		addOption(options, "pinfo", "generate patient info htmls", false, false);
 		addOption(options, "xml", "generate xml file", false, false);	
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
@@ -194,6 +198,7 @@ public class Aips2Sqlite {
 		a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 		a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
 		a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
+		a.downInteractionsCsv("DE", Constants.FILE_INTERACTIONS_CSV);
 	}
 
 	static void generateSQLiteDB() {						

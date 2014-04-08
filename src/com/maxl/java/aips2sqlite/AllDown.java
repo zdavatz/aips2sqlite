@@ -306,6 +306,42 @@ public class AllDown {
 		}
 	}
 	
+	public void downInteractionsCsv(String language, String file_interactions_csv) {
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+		
+		try {
+			// Start timer
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading EPha interactions file ... ");	
+			else {
+				pb.init("- Downloading EPha interactions file ... ");
+				pb.start();	
+			}
+			
+			URL url = null;
+			if (language.equals("DE"))
+				url = new URL("http://community.epha.ch/interactions_de_utf8.csv");
+			else if (language.equals("FR"))
+				url = new URL("http://community.epha.ch/interactions_de_utf8.csv");
+				
+			if (url!=null) {
+				File destination = new File(file_interactions_csv);			
+				FileUtils.copyURLToFile(url, destination);		
+				if (!disp)
+					pb.stopp();
+				long stopTime = System.currentTimeMillis();		
+				System.out.println("\r- Downloading EPha interactions file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			}
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downInteractionsCsv'");
+			e.printStackTrace();
+		}	
+	}
+	
 	private void unzipToTemp(File dst) {
 		try {
 			ZipInputStream zin = new ZipInputStream(new FileInputStream(dst));
