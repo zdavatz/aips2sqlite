@@ -19,12 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package com.maxl.java.aips2sqlite;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
@@ -84,6 +86,9 @@ public class RealExpertInfo {
 	// Map to String of additional info, key is the SwissmedicNo5
 	private static Map<String, String> m_add_info_map;
 
+	// Map ATC1 to List(ATC2, Info, Mechanismus, Effekt, Massnahmen, Grad) 
+	private static Map<String, ArrayList<String>> m_drug_interactions_map;
+	
 	// Package section string
 	private static String m_pack_section_str = "";
 
@@ -102,6 +107,7 @@ public class RealExpertInfo {
 		m_swiss_drg_footnote = new TreeMap<String, String>();
 		m_atc_map = new TreeMap<String, String>();
 		m_add_info_map = new TreeMap<String, String>();
+		m_drug_interactions_map = new TreeMap<String, ArrayList<String>>();
 	}
 	
 	/*
@@ -609,6 +615,56 @@ public class RealExpertInfo {
 		}		
 	}	
 	
+	/**
+	 * Extract drug interactions from EPha file
+	 */
+	private void extractDrugInteractions() {
+		try {
+			long startTime = System.currentTimeMillis();
+			if (CmlOptions.SHOW_LOGS)
+				System.out.print("- Processing EPha drug interactions csv... ");
+			
+			// Load EPha interactions file	
+			FileInputStream drugInteractionsCsv = new FileInputStream(Constants.FILE_INTERACTIONS_CSV);	
+			BufferedReader br = new BufferedReader(new InputStreamReader(drugInteractionsCsv, "UTF-8"));
+			String line;
+			while ((line = br.readLine()) != null) {	 
+				// A semicolon is used as a separator -> extract only ATC1
+				String[] inter = line.split(";");	 
+				String atc1_key = inter[0];
+				String entry = inter[1] + ";" + inter[2] + ";" + inter[4] 
+						+ ";" + inter[5] + ";" + inter[6] + ";" + inter[7] + ";" + inter[8];
+
+				if (atc1_key!=null) {
+					ArrayList<String> interaction = m_drug_interactions_map.get(atc1_key);
+					if (interaction==null)
+						interaction = new ArrayList<String>();				
+					interaction.add(entry);
+					
+					m_drug_interactions_map.put(atc1_key, interaction);					
+				}
+			}
+			br.close();
+			
+			// Remove entry with key "ATC1" (first line)
+			m_drug_interactions_map.remove("ATC1");
+			
+			for (Map.Entry<String, ArrayList<String>> entry : m_drug_interactions_map.entrySet()) {
+			    String key = entry.getKey();
+			    ArrayList<String> value = entry.getValue();
+			    System.out.println(key + " -> " + value.size());
+			}
+			
+			long stopTime = System.currentTimeMillis();
+			if (CmlOptions.SHOW_LOGS) {
+				System.out.println("processed " + m_drug_interactions_map.size() + " drug interactions in "
+						+ (stopTime - startTime) / 1000.0f + " sec");
+			}	
+		} catch (Exception e) {
+			System.err.println(">> Error in processing file!");
+		}	
+	}
+	
 	public void process() {
 		
 		// Get stop words first
@@ -619,6 +675,10 @@ public class RealExpertInfo {
 			
 		// Extract Swiss DRG information
 		extractSwissDRGInfo();		
+		
+		// Extract drug interactions information
+		if (CmlOptions.ADD_INTERACTIONS==true)
+			extractDrugInteractions();
 		
 		try {
 
