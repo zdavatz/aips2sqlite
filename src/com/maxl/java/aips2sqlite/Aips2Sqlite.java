@@ -175,6 +175,12 @@ public class Aips2Sqlite {
 						
 			long startTime = System.currentTimeMillis();
 			
+			// Extract drug interactions information
+			if (CmlOptions.ADD_INTERACTIONS==true) {
+				Interactions inter = new Interactions(CmlOptions.DB_LANGUAGE);
+				inter.generateSqlDatabase();
+			}			
+			
 			// Generates SQLite database - function should return the number of entries
 			generateSQLiteDB();
 			
