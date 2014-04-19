@@ -737,10 +737,11 @@ public class RealExpertInfo {
 							// Associate ATC classes and subclasses (atc_map)					
 							String atc_class_str = "";
 							String atc_description_str = "";	
-							String atc_code_str = m.getAtcCode();								
+							String atc_code_str = m.getAtcCode();
+							
 							if (atc_code_str!=null) {
 								// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
-								atc_code_str = atc_code_str.replaceAll("\\s","");										
+								atc_code_str = atc_code_str.replaceAll("\\s","");
 								// Take "leave" of the tree (most precise classification)
 								String a = m_atc_map.get(atc_code_str);
 								if (a!=null) {
@@ -751,7 +752,7 @@ public class RealExpertInfo {
 									if (CmlOptions.DB_LANGUAGE.equals("de"))
 										atc_description_str = "k.A.";
 									else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-										atc_description_str = "non spécifiée";									
+										atc_description_str = "n.s.";	// non spécifiée									
 								}
 								
 								// Read out only two levels (L1 and L3)
@@ -786,6 +787,10 @@ public class RealExpertInfo {
 								}
 								System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
 								missing_atc_code++;
+								if (CmlOptions.DB_LANGUAGE.equals("de"))
+									atc_description_str = "k.A.";
+								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+									atc_description_str = "n.s.";	
 							}						
 							
 							// Additional info stored in add_info_map
@@ -1273,7 +1278,7 @@ public class RealExpertInfo {
 				ArrayList<String> dosages = m_swiss_drg_info.get(atc_code);
 				// For most atc codes, there are NO special DRG sanctioned dosages...
 				if (dosages!=null) {
-					System.out.println(title);
+					System.out.println(title + " (DRG)");
 					for (String drg : dosages)
 						drg_str += "<p class=\"spacing1\">" + drg + "</p>";
 					if (!drg_str.isEmpty()) {
