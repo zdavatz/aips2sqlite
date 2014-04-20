@@ -551,8 +551,9 @@ public class RealPatientInfo {
 							// Add header to html file							
 							mContent_str = mContent_str.replaceAll("<head>", "<head>" + 
 									"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />" +
-									"<style>" + amiko_style_v1_str + "</style>");												
-							m.setContent(mContent_str);
+									"<style>" + amiko_style_v1_str + "</style>");	
+							// --> Note: following line is not really necessary...
+							// m.setContent(mContent_str);
 									
 							// Add header to xml file
 							String xml_str = html_utils.convertHtmlToXml("pi", m.getTitle(), mContent_str, m.getAuthNrs());									

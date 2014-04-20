@@ -626,8 +626,10 @@ public class RealExpertInfo {
 			SqlDatabase sql_db = new SqlDatabase();
 			sql_db.createDB(CmlOptions.DB_LANGUAGE);
 			
-			// Load CSS file
+			// Load CSS file: used only for self-contained xml files
 			String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
+			// For the rest we use an empty CSS file to save harddisk space!
+			String amiko_empty_style_str = "";
 						
 			// Create error report file
 			ParseReport parse_errors = null;
@@ -652,7 +654,7 @@ public class RealExpertInfo {
 			 */
 			int tot_pseudo_counter = 0;
 			if (CmlOptions.ADD_PSEUDO_FI==true) {
-				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, CmlOptions.DB_LANGUAGE, amiko_style_v1_str);
+				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, CmlOptions.DB_LANGUAGE, amiko_empty_style_str);
 				// Process
 				tot_pseudo_counter = pseudo_fi.process();
 				System.out.println("");
@@ -939,7 +941,8 @@ public class RealExpertInfo {
 									mContent_str = mContent_str.replaceAll("<head>", "<head>" + 
 											"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />" +
 											"<style>" + amiko_style_v1_str + "</style>");												
-									m.setContent(mContent_str);
+									// Note: the following line is not necessary!
+									// m.setContent(mContent_str);
 																		
 									// Add header to xml file
 									String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);									
@@ -979,8 +982,10 @@ public class RealExpertInfo {
 								}
 							}
 							
-			    			// Add medis, titles and ids to database
-							sql_db.addDB( m, amiko_style_v1_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
+							/*
+							 * Add medis, titles and ids to database
+							 */
+							sql_db.addDB( m, amiko_empty_style_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
 									m_pack_section_str, orggen_str, customer_id, mTyIndex_list, section_indications );
 							
 							med_counter++;
@@ -1063,12 +1068,14 @@ public class RealExpertInfo {
 				owner_errors.writeHtmlToFile();
 				owner_errors.getBWriter().close();	
 				// Dump to console...
+				/*
 				for (Map.Entry<String, ArrayList<String>> entry : tm_owner_error.entrySet()) {
 					String author = entry.getKey();
 					ArrayList<String> list = entry.getValue();
 					for (String error : list)
 						System.out.println(author + " -> " + error);
 				}
+				*/
 			}
 			
 			if (CmlOptions.INDICATIONS_REPORT==true) {

@@ -817,8 +817,7 @@ public class HtmlUtils {
 		// <div class="MonTitle"> -> <title>
 		mDoc.select("div[class=MonTitle]").tagName("title").removeAttr("class").removeAttr("id");
 		// Beautify the title to the best of my possibilities ... still not good enough!
-		String title_str = mDoc.select("title").text().trim().replaceAll("<br />","").replaceAll("(\\t|\\r?\\n)+","");
-		// title_str is redundant...
+		mDoc.select("title").text().trim().replaceAll("<br />","").replaceAll("(\\t|\\r?\\n)+","");
 		// Fallback solution: use title from the header AIPS.xml file - the titles look all pretty good!
 		mDoc.select("title").first().text(med_title.trim());
 		// <div class="ownerCompany"> -> <owner>
