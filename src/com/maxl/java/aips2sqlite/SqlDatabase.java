@@ -118,17 +118,9 @@ public class SqlDatabase {
 			String titles_str, String atc_description_str, String atc_class_str, String pack_info_str, 
 			String add_info_str, int customer_id, List<String> tIndex_list, String indications_str) throws SQLException {
 		if (prep!=null) {
-			// This bit is necessary because the ATC Code in the AIPS DB is broken sometimes 
-			String atc_code_str = "";
-			if (CmlOptions.DB_LANGUAGE.equals("de"))
-				atc_code_str = "k.A.";
-			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-				atc_code_str = "n.s.";	// non spécifiée
-			if (m.getAtcCode()!=null)
-				atc_code_str = m.getAtcCode().replaceAll("Code", "").replaceAll("ATC", "").replaceAll("[^A-Za-z0-9.]", "");
 			prep.setString(1, m.getTitle());
 	        prep.setString(2, m.getAuthHolder());
-			prep.setString(3, atc_code_str + ";" + atc_description_str);
+			prep.setString(3, m.getAtcCode() + ";" + atc_description_str);
 	        prep.setString(4, m.getSubstances());
 	        prep.setString(5, regnr_str);
 	        prep.setString(6, atc_class_str);

@@ -738,27 +738,92 @@ public class RealExpertInfo {
 							
 							// Associate ATC classes and subclasses (atc_map)					
 							String atc_class_str = "";
-							String atc_description_str = "";	
-							String atc_code_str = m.getAtcCode();
+							String atc_description_str = "";
+							// This bit is necessary because the ATC Code in the AIPS DB is broken sometimes 
+							String atc_code_str = "";
+
+							boolean atc_error_found = false;
+							
+							if (m.getAtcCode()!=null && !m.getAtcCode().equals("n.a.") && m.getAtcCode().length()>1) {
+								atc_code_str = m.getAtcCode();
+								atc_code_str = atc_code_str.replaceAll("&ndash;", "(");
+								atc_code_str = atc_code_str.replaceAll("Code", "").replaceAll("ATC", "")
+									.replaceAll("&nbsp","").replaceAll("\\(.*","").replaceAll("/", ",")
+									.replaceAll("[^A-Za-z0-9äöü,]", "");
+								if (atc_code_str.charAt(1)=='O') {
+									// E.g. Ascosal Brausetabletten
+									atc_code_str = atc_code_str.substring(0,1) + '0' + atc_code_str.substring(2);
+								}
+								if (atc_code_str.length()>7) {
+									if (atc_code_str.charAt(7)!=',' || atc_code_str.length()!=15)
+										atc_code_str = atc_code_str.substring(0,7);
+								}									
+							} else {
+								// Work backwards using m_atc_map and m.getSubstances()
+								String substances = m.getSubstances();
+								if (substances!=null) {
+									if (m_atc_map.containsValue(substances)) {
+										for (Map.Entry<String, String> entry : m_atc_map.entrySet()) {
+											if (entry.getValue().equals(substances)) {
+												atc_code_str = entry.getKey();
+											}
+										}
+									}									
+								}
+							}
+						
+							// Set clean ATC Code
+							m.setAtcCode(atc_code_str);
 							
 							if (atc_code_str!=null) {
 								// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
-								atc_code_str = atc_code_str.replaceAll("\\s","");
+								// atc_code_str = atc_code_str.replaceAll("\\s","");
 								// Take "leave" of the tree (most precise classification)
 								String a = m_atc_map.get(atc_code_str);
 								if (a!=null) {
 									atc_description_str = a;
 									atccode_set.add(atc_code_str + ": " + a);
-								}
-								else {
-									if (CmlOptions.DB_LANGUAGE.equals("de"))
-										atc_description_str = "k.A.";
-									else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-										atc_description_str = "n.s.";	// non spécifiée									
+								} else {
+									// Case: ATC1,ATC2
+									if (atc_code_str.length()==15) {
+										String[] codes = atc_code_str.split(",");
+										if (codes.length>1) {
+											String a1 = m_atc_map.get(codes[0]);
+											if (a1==null) {
+												atc_error_found = true;
+												a1 = "k.A.";
+											}
+											String a2 = m_atc_map.get(codes[1]);
+											if (a2==null) {
+												atc_error_found = true;
+												a2 = "k.A.";
+											}
+											atc_description_str = a1 + "," + a2;
+										}											
+									} else if (m.getSubstances()!=null) {
+										// Fallback in case nothing else works
+										atc_description_str = m.getSubstances();
+										// Work backwards using m_atc_map and m.getSubstances(), change ATC code
+										if (atc_description_str!=null) {
+											if (m_atc_map.containsValue(atc_description_str)) {
+												for (Map.Entry<String, String> entry : m_atc_map.entrySet()) {
+													if (entry.getValue().equals(atc_description_str)) {
+														m.setAtcCode(entry.getKey());
+													}
+												}
+											}									
+										}
+									} else {
+										atc_error_found = true;
+										if (CmlOptions.DB_LANGUAGE.equals("de"))
+											atc_description_str = "k.A.";
+										else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+											atc_description_str = "n.s.";	
+									}
 								}
 								
 								// Read out only two levels (L1 and L3)
-								if (atc_code_str.length()>1) {
+								if (atc_code_str.length()>3) {
 									for (int i=1; i<4; i+=2) {
 										String atc_key = atc_code_str.substring(0, i);
 										if (atc_key!=null) {
@@ -776,10 +841,12 @@ public class RealExpertInfo {
 								if (drg!=null) {
 									atc_description_str += (";DRG");
 								}
-							} else {
+							} 						
+														
+							if (atc_error_found) {
 								errors++;
 								if (CmlOptions.GENERATE_REPORTS) {
-									parse_errors.append("<p style=\"color:#0000bb\">ERROR " + errors + ": ATC-Code-Tag not found in AIPS.xml (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+									parse_errors.append("<p style=\"color:#0000bb\">ERROR " + errors + ": Broken or missing ATC-Code-Tag in AIPS.xml (Swissmedic) or ATC index (Wido) - " + m.getTitle() + " (" + regnr_str + ")</p>");
 									// Add to owner errors
 									ArrayList<String> error = tm_owner_error.get(m.getAuthHolder());
 									if (error==null)
@@ -788,13 +855,9 @@ public class RealExpertInfo {
 									tm_owner_error.put(m.getAuthHolder(), error);									
 								}
 								System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
-								missing_atc_code++;
-								if (CmlOptions.DB_LANGUAGE.equals("de"))
-									atc_description_str = "k.A.";
-								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-									atc_description_str = "n.s.";	
-							}						
-							
+								missing_atc_code++;							
+							}
+
 							// Additional info stored in add_info_map
 							String add_info_str = ";";
 							List<String> rnr_list = Arrays.asList(regnr_str.split("\\s*, \\s*"));
