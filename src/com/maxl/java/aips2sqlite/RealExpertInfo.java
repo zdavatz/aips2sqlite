@@ -772,6 +772,13 @@ public class RealExpertInfo {
 								}
 							}
 						
+							// Now let's check m.getSubstances()
+							String substances = m.getSubstances();
+							if ((substances==null || substances.length()<3) && atc_code_str!=null) {
+								substances = m_atc_map.get(atc_code_str);
+							}
+							// Set clean substances
+							m.setSubstances(substances);
 							// Set clean ATC Code
 							m.setAtcCode(atc_code_str);
 							
