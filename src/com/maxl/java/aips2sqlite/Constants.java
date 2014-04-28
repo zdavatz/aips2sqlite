@@ -20,6 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package com.maxl.java.aips2sqlite;
 
 public class Constants {
+	// Output directory
+	public static final String DIR_OUTPUT = "./output/";
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
 	public static final String FILE_MEDICAL_INFOS_XML = "./downloads/aips_xml.xml";
 	public static final String FILE_MEDICAL_INFOS_XSD = "./downloads/aips_xsd.xsd";
@@ -42,6 +44,8 @@ public class Constants {
 	// CSS style sheets
 	public static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";
 	public static final String FILE_REPORT_CSS_BASE = "./css/report_stylesheet";
+	// ****** Drug interactions file ******
+	public static final String FILE_INTERACTIONS_BASE = "./output/drug_interactions_";
 	// ****** Parse reports (DE != FR) ******
 	public static final String FILE_PARSE_REPORT = "./output/parse_report";
 	public static final String FILE_OWNER_REPORT = "./output/owner_report";

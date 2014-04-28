@@ -178,7 +178,8 @@ public class Aips2Sqlite {
 			// Extract drug interactions information
 			if (CmlOptions.ADD_INTERACTIONS==true) {
 				Interactions inter = new Interactions(CmlOptions.DB_LANGUAGE);
-				inter.generateSqlDatabase();
+				// Generate in various data exchange files
+				inter.generateDataExchangeFiles();
 			}			
 			
 			// Generates SQLite database - function should return the number of entries

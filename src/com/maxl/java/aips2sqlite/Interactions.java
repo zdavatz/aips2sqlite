@@ -55,13 +55,13 @@ public class Interactions {
 			String line;
 			while ((line = br.readLine()) != null) {	 
 				// A semicolon is used as a separator -> extract only ATC1
-				String[] inter = line.split(";");	 
-				String atc1_key = inter[0].substring(1, inter[0].length()-1);
+				String[] inter = line.split("\",\"");	 
+				String atc1_key = inter[0].replaceAll("\"", "");//.substring(1, inter[0].length()-1);
 				String entry = "";
 				for (int k=1; k<9; ++k)
-					entry += (inter[k].substring(1, inter[k].length()-1) + ";");
-				entry = entry.substring(0, entry.length()-1);
-	
+					entry += (inter[k].replaceAll("\"", "") + "||");
+				entry = entry.substring(0, entry.length()-2);
+				
 				if (atc1_key!=null) {
 					ArrayList<String> interaction = m_drug_interactions_map.get(atc1_key);
 					if (interaction==null)
@@ -74,25 +74,28 @@ public class Interactions {
 			br.close();
 			
 			// Remove entry with key "ATC1" (first line)
-			m_drug_interactions_map.remove("TC");
+			m_drug_interactions_map.remove("ATC1");
 	
 		} catch (Exception e) {
 			System.err.println(">> InteractionsDB: Error in processing file!");
 		}	
 	}	
 	
-	public void generateSqlDatabase() {
+	public void generateDataExchangeFiles() {
 		
 		long startTime = System.currentTimeMillis();
 		if (CmlOptions.SHOW_LOGS)
-			System.out.print("- Processing EPha drug interactions csv... ");
-		
-		// Get drug interactions from file
+			System.out.print("- Generating SQLite DB from EPha drug interactions csv... ");
+
 		extract();
 		
 		// Save interactions to DB
 		try {		
+			// Create Sqlite database
 			createDB();
+			// CSV file
+			String csv_file = "";
+			// 
 			int intercnt = 0;
 			for (Map.Entry<String, ArrayList<String>> entry : m_drug_interactions_map.entrySet()) {
 			    String key = entry.getKey().toUpperCase();
@@ -122,7 +125,7 @@ public class Interactions {
 				     0: Keine Angaben (grau)
 			    */
 			    for (String s : value) {
-			    	String[] inter = s.split(";");
+			    	String[] inter = s.split("\\|\\|");
 			    	String risk_class = "";
 			    	if (inter[7].equals("A")) 
 			    		risk_class = "Keine Massnahmen notwendig";
@@ -139,13 +142,16 @@ public class Interactions {
 			    				    	
 			    	String para_class = "paragraph" + inter[7];			    	
 			    	String html_content = "<div>" 
-			    			+ "<div class=\"" + para_class + "\" id=\"" + key + " - " + inter[1] + "\">"
+			    			+ "<div class=\"" + para_class + "\" id=\"" + key + "-" + inter[1] + "\">"
 			    			+ "<div class=\"absTitle\">" + key + " [" + inter[0] + "] &rarr; " + inter[1] + " [" + inter[2] + "]</div></div>"
 			    			+ "<p class=\"spacing2\">" + "<i>Risikoklasse:</i> " + risk_class + " (" + inter[7] + ")</p>"
 			    			+ "<p class=\"spacing2\">" + "<i>Möglicher Effekt:</i> " + inter[3] + "</p>"
 							+ "<p class=\"spacing2\">" + "<i>Mechanismus:</i> " + inter[4] + "</p>"
 							+ "<p class=\"spacing2\">" + "<i>Empfohlene Massnahmen:</i> " + inter[6] + "</p></div>";			    	
+			    	// Add to sqlite database
 			    	addDB(key, inter[0], inter[1], inter[2], html_content);
+			    	// Add to csv file
+			    	csv_file += key + "||" + inter[1] + "||" + html_content + "\n";
 			    }
 		        // Assume batch size of 20
 		        if (batch_cnt>20) {
@@ -162,7 +168,9 @@ public class Interactions {
         	conn.setAutoCommit(true);			
         	// Compress
 	        stat.executeUpdate("VACUUM;");
-			
+	        
+	        // Write CSV to file
+        	FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT,	"drug_interactions_csv_" + CmlOptions.DB_LANGUAGE + ".csv");	
 		} catch (SQLException e ) {
 			System.out.println("SQLException!");
 		} catch (ClassNotFoundException e) {
@@ -182,7 +190,7 @@ public class Interactions {
 
 		try {
 			// Touch db file if it does not exist
-			String db_url = System.getProperty("user.dir") + "/output/drug_interactions_idx_" + m_language + ".db";			
+			String db_url = System.getProperty("user.dir") + Constants.FILE_INTERACTIONS_BASE + "idx_" + m_language + ".db";			
 			File db_file = new File(db_url);
 			if (!db_file.exists()) {
 				db_file.getParentFile().mkdirs();

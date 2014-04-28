@@ -34,6 +34,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.cert.X509Certificate;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPBody;
@@ -305,7 +312,7 @@ public class AllDown {
 			e.printStackTrace();
 		}
 	}
-	
+			
 	public void downInteractionsCsv(String language, String file_interactions_csv) {
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();
@@ -320,11 +327,13 @@ public class AllDown {
 				pb.start();	
 			}
 			
+			setNoValidation();
+			
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("http://community.epha.ch/interactions_de_utf8.csv");
+				url = new URL("https://download.epha.ch/cleaned/matrix.csv");
 			else if (language.equals("FR"))
-				url = new URL("http://community.epha.ch/interactions_de_utf8.csv");
+				url = new URL("https://download.epha.ch/cleaned/matrix.csv");
 				
 			if (url!=null) {
 				File destination = new File(file_interactions_csv);			
@@ -340,6 +349,48 @@ public class AllDown {
 			System.err.println(" Exception: in 'downInteractionsCsv'");
 			e.printStackTrace();
 		}	
+	}
+	
+    /*
+     *  fix for exception 
+     *  javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException:
+     *  PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException:
+     *  unable to find valid certification path to requested target
+     */	
+	private void setNoValidation() throws Exception {
+		// Create a trust manager that does not validate certificate chains
+		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			@Override
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+
+			@Override
+			public void checkClientTrusted(X509Certificate[] certs, String authType) {
+				// Do nothing
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] certs,	String authType) {
+				// Do nothing
+			}
+		} };
+
+		// Install the all-trusting trust manager
+		SSLContext sc = SSLContext.getInstance("SSL");
+		sc.init(null, trustAllCerts, new java.security.SecureRandom());
+		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		
+		// Create all-trusting host name verifier
+		HostnameVerifier allHostsValid = new HostnameVerifier() {
+			@Override
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		};
+
+		// Install the all-trusting host verifier
+		HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 	}
 	
 	private void unzipToTemp(File dst) {
