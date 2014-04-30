@@ -14,20 +14,21 @@ On some systems it may be necessary to increase the heap space with the Java opt
 ## Options
 
 ```
---help            print help
---version         print the version information and exit
---quiet           be extra quiet
---verbose         be extra verbose
---nodown          do not download the aips, swissmedic, bag and refdata files
---lang=<arg>      generate database with given language, two options are supported: 'de' and 'fr'
 --alpha=<char>    generate sqlite database or xml file for meds whose title starts with 'char'
---regnr=<number>  generate sqlite database or xml file for meds whose registration number starts with 'number'
+--help            print help
+--indications     generate report about keywords found in section indications (folder output)
+--inter			  generate drug interaction files as an sqlite database and a csv data file
+--lang=<arg>      generate database with given language, two options are supported: 'de' and 'fr'
+--nodown          do not download the aips, swissmedic, bag and refdata files
 --owner=<owner>   generate sqlite database or xml file for meds whose holder starts with 'owner'
+--pinfo           generate Patinfo (default is Fachinfo)
+--quiet           be extra quiet
+--regnr=<number>  generate sqlite database or xml file for meds whose registration number starts with 'number'
+--reports         generate parse and owner error reports (folder output)
+--verbose         be extra verbose
+--version         print the version information and exit
 --xml             generate xml file 
 --zip             generate zipped versions sqlite database or xml file 
---reports         generate parse and owner error reports (folder output)
---indications     generate report about keywords found in section indications (folder output)
---pinfo           generate Patinfo (default is Fachinfo)
 ```
 
 ## Examples
