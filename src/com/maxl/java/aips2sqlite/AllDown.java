@@ -285,9 +285,9 @@ public class AllDown {
 			// Start timer 
 			long startTime = System.currentTimeMillis();
 			if (disp)
-				System.out.print("- Downloading Swiss DRG file ... ");	
+				System.out.print("- Downloading Swiss DRG (" + language + ") file... ");	
 			else {
-				pb.init("- Downloading Swiss DRG file ... ");
+				pb.init("- Downloading Swiss DRG (" + language + ") file... ");
 				pb.start();	
 			}
 				
@@ -303,7 +303,7 @@ public class AllDown {
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
-				System.out.println("\r- Downloading Swiss DRG file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+				System.out.println("\r- Downloading Swiss DRG (" + language + ") file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 			}
 		} catch (Exception e) {
 			if (!disp)
@@ -313,23 +313,23 @@ public class AllDown {
 		}
 	}
 			
-	public void downInteractionsCsv(String language, String file_interactions_csv) {
+	public void downEPhaInteractionsCsv(String language, String file_interactions_csv) {
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();
+		URL url = null;
 		
 		try {
+			// Ignore validation for https sites
+			setNoValidation();
+			
 			// Start timer
 			long startTime = System.currentTimeMillis();
 			if (disp)
-				System.out.print("- Downloading EPha interactions file ... ");	
+				System.out.print("- Downloading EPha interactions (" + language + ") file... ");	
 			else {
-				pb.init("- Downloading EPha interactions file ... ");
+				pb.init("- Downloading EPha interactions file (" + language + ")... ");
 				pb.start();	
 			}
-			
-			setNoValidation();
-			
-			URL url = null;
 			if (language.equals("DE"))
 				url = new URL("https://download.epha.ch/cleaned/matrix.csv");
 			else if (language.equals("FR"))
@@ -341,8 +341,45 @@ public class AllDown {
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
-				System.out.println("\r- Downloading EPha interactions file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+				System.out.println("\r- Downloading EPha interactions (" + language + ") file... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			}				
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downInteractionsCsv'");
+			e.printStackTrace();
+		}	
+	}
+	
+	public void downEPhaProductsJson(String language, String file_products_json) {
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+		URL url = null;
+		
+		try {
+			// Ignore validation for https sites
+			setNoValidation();
+
+			// Start timer
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading EPha products (" + language + ") file... ");	
+			else {
+				pb.init("- Downloading EPha products (" + language + ") file... ");
+				pb.start();	
 			}
+			if (language.equals("DE"))
+				url = new URL("https://download.epha.ch/cleaned/produkte.json");
+			else if (language.equals("FR"))
+				url = new URL("https://download.epha.ch/cleaned/produkte.json");
+			if (url!=null) {
+				File destination = new File(file_products_json);			
+				FileUtils.copyURLToFile(url, destination);		
+				if (!disp)
+					pb.stopp();
+				long stopTime = System.currentTimeMillis();		
+				System.out.println("\r- Downloading EPha products (" + language + ") file... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			}					
 		} catch (Exception e) {
 			if (!disp)
 				pb.stopp();			

@@ -47,10 +47,14 @@ public class Interactions {
 	/**
 	 * Extract drug interactions from EPha file
 	 */
-	private void extract() {
+	private void extractInteractionMap() {
 		try {			
 			// Load EPha interactions file	
-			FileInputStream drugInteractionsCsv = new FileInputStream(Constants.FILE_INTERACTIONS_CSV);	
+			FileInputStream drugInteractionsCsv = null;
+			if (CmlOptions.DB_LANGUAGE.equals("de"))
+				drugInteractionsCsv = new FileInputStream(Constants.FILE_EPHA_INTERACTIONS_DE_CSV);	
+			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+				drugInteractionsCsv = new FileInputStream(Constants.FILE_EPHA_INTERACTIONS_FR_CSV);					
 			BufferedReader br = new BufferedReader(new InputStreamReader(drugInteractionsCsv, "UTF-8"));
 			String line;
 			while ((line = br.readLine()) != null) {	 
@@ -87,7 +91,7 @@ public class Interactions {
 		if (CmlOptions.SHOW_LOGS)
 			System.out.print("- Generating SQLite DB from EPha drug interactions csv... ");
 
-		extract();
+		extractInteractionMap();
 		
 		// Save interactions to DB
 		try {		
@@ -170,7 +174,9 @@ public class Interactions {
 	        stat.executeUpdate("VACUUM;");
 	        
 	        // Write CSV to file
-        	FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT,	"drug_interactions_csv_" + CmlOptions.DB_LANGUAGE + ".csv");	
+        	FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT,	"drug_interactions_csv_" + CmlOptions.DB_LANGUAGE + ".csv");
+        	// Zip file
+        	FileOps.zipToFile(Constants.DIR_OUTPUT, "drug_interactions_csv_" + CmlOptions.DB_LANGUAGE + ".csv");
 		} catch (SQLException e ) {
 			System.out.println("SQLException!");
 		} catch (ClassNotFoundException e) {

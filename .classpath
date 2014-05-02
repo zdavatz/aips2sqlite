@@ -39,5 +39,8 @@
 	<classpathentry kind="lib" path="libs/xmlbeans-2.6.0/xmlbeans-qname.jar"/>
 	<classpathentry kind="lib" path="libs/xmlbeans-2.6.0/xmlpublic.jar"/>
 	<classpathentry kind="lib" path="libs/barcode4j-2.1.0/barcode4j.jar"/>
+	<classpathentry kind="lib" path="libs/jackson-annotations-2.2.3.jar"/>
+	<classpathentry kind="lib" path="libs/jackson-core-2.2.3.jar"/>
+	<classpathentry kind="lib" path="libs/jackson-databind-2.2.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

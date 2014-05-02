@@ -31,6 +31,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -64,6 +65,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maxl.java.aips2sqlite.Preparations.Preparation;
 
 public class RealExpertInfo {
@@ -78,10 +81,13 @@ public class RealExpertInfo {
 	private static Map<String, ArrayList<String>> m_swiss_drg_info;
 	private static Map<String, String> m_swiss_drg_footnote;
 	
-	// Map to String of atc classes, key is the ATC-code or any of its substrings
+	// Map to string of atc classes, key is the ATC-code or any of its substrings
 	private static Map<String, String> m_atc_map;
 
-	// Map to String of additional info, key is the SwissmedicNo5
+	// Map from swissmedic no.5 to atc codes
+	private static Map<String, String> m_smn5_atc_map;
+	
+	// Map to string of additional info, key is the SwissmedicNo5
 	private static Map<String, String> m_add_info_map;
 	
 	// Package section string
@@ -101,6 +107,7 @@ public class RealExpertInfo {
 		m_swiss_drg_info = new TreeMap<String, ArrayList<String>>();
 		m_swiss_drg_footnote = new TreeMap<String, String>();
 		m_atc_map = new TreeMap<String, String>();
+		m_smn5_atc_map = new TreeMap<String, String>();
 		m_add_info_map = new TreeMap<String, String>();
 	}
 	
@@ -609,16 +616,57 @@ public class RealExpertInfo {
 		}		
 	}	
 	
+	/**
+	 * Extract EPha SwissmedicNo5 to ATC map
+	 */
+	private void extractSwissmedicNo5ToAtcMap() {
+		try {
+			long startTime = System.currentTimeMillis();
+			
+			if (CmlOptions.SHOW_LOGS)
+				System.out.print("- Processing EPha product json file... ");
+			// Load EPha product json file		
+			if (CmlOptions.DB_LANGUAGE.equals("de")) {
+				ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally				
+				TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};				
+				Map<String,Object> ephaProductData = mapper.readValue(new File(Constants.FILE_EPHA_PRODUCTS_DE_JSON), typeRef);								
+				@SuppressWarnings("unchecked")
+				ArrayList<HashMap<String,String>> medList = (ArrayList<HashMap<String,String>>)ephaProductData.get("documents");				 
+				for (HashMap<String,String> med : medList) {
+					String s[] = med.get("zulassung").split(" ");
+					for (String smno5 : s)
+						m_smn5_atc_map.put(smno5, med.get("atc"));
+				}
+				for (Map.Entry<String, String> entry : m_smn5_atc_map.entrySet()) {
+					System.out.println(entry.getValue() + ": " + entry.getKey());
+				}
+			}
+				
+			long stopTime = System.currentTimeMillis();
+			if (CmlOptions.SHOW_LOGS) {
+				System.out.println("processed EPha product json file in "
+						+ (stopTime - startTime) / 1000.0f + " sec");
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}			
+	}
+	
 	public void process() {
 		
 		// Get stop words first
 		getStopWords();
 		
+		// Extract EPha SwissmedicNo5 to ATC map
+		// extractSwissmedicNo5ToAtcMap();
+		
 		// Extract package information (this is the heavy-duty bit)
 		extractPackageInfo();
 			
 		// Extract Swiss DRG information
-		extractSwissDRGInfo();		
+		extractSwissDRGInfo();
 		
 		try {
 

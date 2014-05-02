@@ -37,7 +37,10 @@ public class Constants {
 	public static final String FILE_SWISS_DRG_DE_XLSX = "./downloads/swiss_drg_de_xlsx.xlsx";
 	public static final String FILE_SWISS_DRG_FR_XLSX = "./downloads/swiss_drg_fr_xlsx.xlsx";
 	// EPha interactions file to be parsed (DE != FR)
-	public static final String FILE_INTERACTIONS_CSV = "./downloads/epha_interactions_csv.csv";
+	public static final String FILE_EPHA_INTERACTIONS_DE_CSV = "./downloads/epha_interactions_de_csv.csv";
+	public static final String FILE_EPHA_INTERACTIONS_FR_CSV = "./downloads/epha_interactions_fr_csv.csv";
+	public static final String FILE_EPHA_PRODUCTS_DE_JSON = "./downloads/epha_products_de_json.json";
+	public static final String FILE_EPHA_PRODUCTS_FR_JSON = "./downloads/epha_products_fr_json.json";	
 	// ****** ATC class xls file (DE != FR) ******
 	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";
 	public static final String FILE_ATC_MULTI_LINGUAL_TXT = "./input/atc_codes_multi_lingual.txt";
