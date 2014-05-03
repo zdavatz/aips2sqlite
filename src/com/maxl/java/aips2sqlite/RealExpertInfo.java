@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -637,9 +638,11 @@ public class RealExpertInfo {
 					for (String smno5 : s)
 						m_smn5_atc_map.put(smno5, med.get("atc"));
 				}
+				/*
 				for (Map.Entry<String, String> entry : m_smn5_atc_map.entrySet()) {
 					System.out.println(entry.getValue() + ": " + entry.getKey());
 				}
+				*/
 			}
 				
 			long stopTime = System.currentTimeMillis();
@@ -660,7 +663,7 @@ public class RealExpertInfo {
 		getStopWords();
 		
 		// Extract EPha SwissmedicNo5 to ATC map
-		// extractSwissmedicNo5ToAtcMap();
+		extractSwissmedicNo5ToAtcMap();
 		
 		// Extract package information (this is the heavy-duty bit)
 		extractPackageInfo();
@@ -792,43 +795,75 @@ public class RealExpertInfo {
 
 							boolean atc_error_found = false;
 							
-							if (m.getAtcCode()!=null && !m.getAtcCode().equals("n.a.") && m.getAtcCode().length()>1) {
-								atc_code_str = m.getAtcCode();
-								atc_code_str = atc_code_str.replaceAll("&ndash;", "(");
-								atc_code_str = atc_code_str.replaceAll("Code", "").replaceAll("ATC", "")
-									.replaceAll("&nbsp","").replaceAll("\\(.*","").replaceAll("/", ",")
-									.replaceAll("[^A-Za-z0-9הצü,]", "");
-								if (atc_code_str.charAt(1)=='O') {
-									// E.g. Ascosal Brausetabletten
-									atc_code_str = atc_code_str.substring(0,1) + '0' + atc_code_str.substring(2);
+							// Use EPha ATC Codes, AIPS is fallback solution
+							String authNrs = m.getAuthNrs();					
+							if (authNrs!=null) {
+								// Deal with multi-swissmedic no5 case
+								String regnrs[] = authNrs.split(",");
+								// Use set to avoid duplicate ATC codes
+								Set<String> regnrs_set = new LinkedHashSet<>();
+								// Loop through EPha ATC codes
+								for (String r : regnrs) {
+									regnrs_set.add(m_smn5_atc_map.get(r.trim()));
 								}
-								if (atc_code_str.length()>7) {
-									if (atc_code_str.charAt(7)!=',' || atc_code_str.length()!=15)
-										atc_code_str = atc_code_str.substring(0,7);
-								}									
-							} else {
-								// Work backwards using m_atc_map and m.getSubstances()
-								String substances = m.getSubstances();
-								if (substances!=null) {
-									if (m_atc_map.containsValue(substances)) {
-										for (Map.Entry<String, String> entry : m_atc_map.entrySet()) {
-											if (entry.getValue().equals(substances)) {
-												atc_code_str = entry.getKey();
+								// Iterate through set and format nicely
+								for (String r : regnrs_set) {
+									if (atc_code_str==null || atc_code_str.isEmpty())
+										atc_code_str = r;
+									else
+										atc_code_str += "," + r;
+								}
+							} else
+								atc_error_found = true;
+
+							// Notify any other problem with the EPha ATC codes
+							if (atc_code_str==null || atc_code_str.isEmpty())
+								atc_error_found = true;
+							
+							// Fallback solution 
+							if (atc_error_found==true) {
+								if (m.getAtcCode()!=null && !m.getAtcCode().equals("n.a.") && m.getAtcCode().length()>1) {
+									atc_code_str = m.getAtcCode();
+									atc_code_str = atc_code_str.replaceAll("&ndash;", "(");
+									atc_code_str = atc_code_str.replaceAll("Code", "").replaceAll("ATC", "")
+										.replaceAll("&nbsp","").replaceAll("\\(.*","").replaceAll("/", ",")
+										.replaceAll("[^A-Za-z0-9הצü,]", "");
+									if (atc_code_str.charAt(1)=='O') {
+										// E.g. Ascosal Brausetabletten
+										atc_code_str = atc_code_str.substring(0,1) + '0' + atc_code_str.substring(2);
+									}
+									if (atc_code_str.length()>7) {
+										if (atc_code_str.charAt(7)!=',' || atc_code_str.length()!=15)
+											atc_code_str = atc_code_str.substring(0,7);
+									}
+								} else {
+									// Work backwards using m_atc_map and m.getSubstances()
+									String substances = m.getSubstances();
+									if (substances!=null) {
+										if (m_atc_map.containsValue(substances)) {
+											for (Map.Entry<String, String> entry : m_atc_map.entrySet()) {
+												if (entry.getValue().equals(substances)) {
+													atc_code_str = entry.getKey();
+												}
 											}
-										}
-									}									
+										}									
+									}
 								}
+								atc_error_found = false;
 							}
-						
-							// Now let's check m.getSubstances()
+							
+							// Now let's clean the m.getSubstances()
 							String substances = m.getSubstances();
 							if ((substances==null || substances.length()<3) && atc_code_str!=null) {
 								substances = m_atc_map.get(atc_code_str);
 							}
+							
 							// Set clean substances
 							m.setSubstances(substances);
 							// Set clean ATC Code
 							m.setAtcCode(atc_code_str);
+
+							// System.out.println("ATC -> " + atc_code_str + ": " + substances);
 							
 							if (atc_code_str!=null) {
 								// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
