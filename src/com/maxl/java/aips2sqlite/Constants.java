@@ -42,7 +42,8 @@ public class Constants {
 	public static final String FILE_EPHA_PRODUCTS_DE_JSON = "./downloads/epha_products_de_json.json";
 	public static final String FILE_EPHA_PRODUCTS_FR_JSON = "./downloads/epha_products_fr_json.json";	
 	// ****** ATC class xls file (DE != FR) ******
-	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";
+	// public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";	// 2013
+	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0114_xls.xls";		// 2014
 	public static final String FILE_ATC_MULTI_LINGUAL_TXT = "./input/atc_codes_multi_lingual.txt";
 	// CSS style sheets
 	public static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";
@@ -61,6 +62,6 @@ public class Constants {
 	public static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";
 	
 	// Version of the generated database 
-	public static final String FI_DB_VERSION = "1.2.8";	
+	public static final String FI_DB_VERSION = "1.2.9";	
 	public static final String PI_DB_VERSION = "1.0.0";
 }

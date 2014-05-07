@@ -263,7 +263,8 @@ public class RealExpertInfo {
 				// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 				HSSFWorkbook atc_classes_workbook = new HSSFWorkbook(atc_classes_file);
 				// Get first sheet from workbook
-				HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(1);
+				// HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(1);	// --> 2013 file
+				HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(0);		// --> 2014 file			
 				// Iterate through all rows of first sheet
 				rowIterator = atc_classes_sheet.iterator();
 
@@ -912,19 +913,28 @@ public class RealExpertInfo {
 									}
 								}
 								
-								// Read out only two levels (L1 and L3)
-								if (atc_code_str.length()>3) {
-									for (int i=1; i<4; i+=2) {
-										String atc_key = atc_code_str.substring(0, i);
+								// Read out only two levels (L1, L3, L4, L5)
+								for (int i=1; i<6; i++) {
+									if (i!=2) {
+										String atc_key = "";
+										if (i<=atc_code_str.length())
+											atc_key = atc_code_str.substring(0, i);
+										char sep = (i>=4) ? '#' : ';';	// #-separator between L4 and L5										
 										if (atc_key!=null) {
 											String c = m_atc_map.get(atc_key);
 											if (c!=null) {
-												atc_class_str += (c + ";");
-												atccode_set.add(atc_key + ": " + c);
+												atccode_set.add(atc_key + ": " + c);													
+												atc_class_str += (c + sep);
+											} else {
+												atc_class_str += sep;
 											}
+										} else {
+											atc_class_str += sep;
 										}
 									}
 								}
+
+								System.out.println("atc class = " + atc_class_str);
 								
 								// If DRG medication, add to atc_description_str
 								ArrayList<String> drg = m_swiss_drg_info.get(atc_code_str);
