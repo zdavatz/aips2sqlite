@@ -44,6 +44,7 @@ public class Constants {
 	// ****** ATC class xls file (DE != FR) ******
 	// public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";	// 2013
 	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0114_xls.xls";		// 2014
+	public static final String FILE_WHO_ATC_CLASSES_XLS = "./input/who_atc_index_2013_xls.xls";				// 2013
 	public static final String FILE_ATC_MULTI_LINGUAL_TXT = "./input/atc_codes_multi_lingual.txt";
 	// CSS style sheets
 	public static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";

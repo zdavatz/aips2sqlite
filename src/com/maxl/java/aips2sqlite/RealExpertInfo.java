@@ -271,24 +271,58 @@ public class RealExpertInfo {
 				num_rows = 0;
 				while (rowIterator.hasNext()) {
 					Row row = rowIterator.next();
-					if (num_rows > 2) {
+					if (num_rows>2) {
 						String atc_code = "";
 						String atc_class = "";
-						if (row.getCell(0) != null) {
+						if (row.getCell(0)!=null) {
 							atc_code = row.getCell(0).getStringCellValue().replaceAll("\\s", "");
 						}
-						if (row.getCell(2) != null) {
+						if (row.getCell(2)!=null) {
 							atc_class = row.getCell(2).getStringCellValue();
 						}
 						// Build a full map atc code to atc class
-						if (atc_code.length() > 0) {
+						if (atc_code.length()>0) {
 							m_atc_map.put(atc_code, atc_class);
 						}
 					}
 					num_rows++;
 				}
 			} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-				// Load multilinguagl ATC classes txt file
+				// Load ATC classes xls file
+				FileInputStream atc_classes_file = new FileInputStream(Constants.FILE_WHO_ATC_CLASSES_XLS);
+				// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
+				HSSFWorkbook atc_classes_workbook = new HSSFWorkbook(atc_classes_file);
+				// Get first sheet from workbook
+				HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(0);		// --> 2014 file			
+				// Iterate through all rows of first sheet
+				rowIterator = atc_classes_sheet.iterator();
+
+				num_rows = 0;
+				while (rowIterator.hasNext()) {
+					Row row = rowIterator.next();
+					if (num_rows>0) {
+						String atc_code = "";
+						String atc_class = "";
+						if (row.getCell(1)!=null) {
+							atc_code = row.getCell(1).getStringCellValue();
+							if (atc_code.length()>0) {
+								// Extract L5 and below
+								if (atc_code.length()<6 && row.getCell(2)!=null) {
+									atc_class = row.getCell(2).getStringCellValue();
+									// Build a full map atc code to atc class
+									m_atc_map.put(atc_code, atc_class);
+								// Extract L7
+								} else if (atc_code.length()==7 && row.getCell(4)!=null) {
+									atc_class = row.getCell(4).getStringCellValue();
+									m_atc_map.put(atc_code, atc_class);
+								}
+							}
+						}							
+					}
+					num_rows++;
+				}
+				
+				// Load multilingual ATC classes txt file, replace English with French
 				String atc_classes_multi = FileOps.readFromFile(Constants.FILE_ATC_MULTI_LINGUAL_TXT);
 				// Loop through all lines
 				Scanner scanner = new Scanner(atc_classes_multi);
@@ -298,6 +332,7 @@ public class RealExpertInfo {
 					String atc_code = atc_class.get(0);
 					String[] atc_classes_str = atc_class.get(1).split(";");
 					String atc_class_french = atc_classes_str[1].trim();
+					// Replaces atc code...
 					m_atc_map.put(atc_code, atc_class_french);
 				}
 				scanner.close();
@@ -639,11 +674,17 @@ public class RealExpertInfo {
 					for (String smno5 : s)
 						m_smn5_atc_map.put(smno5, med.get("atc"));
 				}
-				/*
-				for (Map.Entry<String, String> entry : m_smn5_atc_map.entrySet()) {
-					System.out.println(entry.getValue() + ": " + entry.getKey());
+			} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
+				ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally				
+				TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};				
+				Map<String,Object> ephaProductData = mapper.readValue(new File(Constants.FILE_EPHA_PRODUCTS_FR_JSON), typeRef);								
+				@SuppressWarnings("unchecked")
+				ArrayList<HashMap<String,String>> medList = (ArrayList<HashMap<String,String>>)ephaProductData.get("documents");				 
+				for (HashMap<String,String> med : medList) {
+					String s[] = med.get("zulassung").split(" ");
+					for (String smno5 : s)
+						m_smn5_atc_map.put(smno5, med.get("atc"));
 				}
-				*/
 			}
 				
 			long stopTime = System.currentTimeMillis();
@@ -934,7 +975,7 @@ public class RealExpertInfo {
 									}
 								}
 
-								System.out.println("atc class = " + atc_class_str);
+								// System.out.println("atc class = " + atc_class_str);
 								
 								// If DRG medication, add to atc_description_str
 								ArrayList<String> drg = m_swiss_drg_info.get(atc_code_str);
