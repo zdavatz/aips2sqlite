@@ -457,7 +457,15 @@ public class HtmlUtils {
 						if (e.tagName().equals("p")) {
 							if (e.select("img[src]")!=null) 
 								img = e.select("img[src]").first();
-							String re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
+							String re = e.html().trim();  //e.text(); -> the latter solution removes all <sup> and <sub>
+							
+							// Is last character a period (".")?
+							if (!re.endsWith(".") && !re.endsWith(",") && !re.endsWith(":") 
+									&& !re.startsWith("–") && !re.startsWith("·") && !re.startsWith("-") && !re.startsWith("•")
+									&& !re.contains("ATC-Code") && !re.contains("Code ATC")) { 										
+								re = "<span style=\"font-style:italic;\">" + re + "</span>";
+							}
+							/*
 							if (language.equals("de")) {
 								for (int i=0; i<ListOfKeywordsDE.length; ++i) {
 									// Exact match through keyword "\\b" for boundary					
@@ -484,7 +492,8 @@ public class HtmlUtils {
 									re = re.replaceAll("\\b"+ListOfKeywordsFR[i]+"$", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[i]+"</span>");								
 									re = re.replaceAll("\\b"+ListOfKeywordsFR[i]+"\\b", "<span style=\"font-style:italic;\">"+ListOfKeywordsFR[i]+"</span>");									
 								}
-							}							
+							}
+							*/							
 							// Important step: add the section content!
 							if (img==null)
 								paraDiv.append("<p class=\"spacing1\">" + re + "</p>");
@@ -572,6 +581,9 @@ public class HtmlUtils {
 		// Cosmetic upgrades. Use with care!
 		html_str = html_str.replaceAll("<p class=\"spacing1\"> </p>\n</div>", "</div>");
 		html_str = html_str.replaceAll("</div>\n <p class=\"spacing1\"> </p>", "</div>");
+		
+		// List items
+		html_str = html_str.replaceAll("<p class=\"spacing1\">(–|·|-|•)", "<p class=\"spacing1\">– ");
 		
 		return html_str;
 	}
@@ -685,8 +697,14 @@ public class HtmlUtils {
 									if (e.select("img[src]")!=null) 
 										img = e.select("img[src]").first();
 									
-									re = e.html();  //e.text(); -> the latter solution removes all <sup> and <sub>
+									re = e.html().trim();  //e.text(); -> the latter solution removes all <sup> and <sub>
 
+									// Is last character a period (".")?
+									if (!re.endsWith(".") && !re.endsWith(",") && !re.endsWith(":") 
+											&& !re.startsWith("–") && !re.startsWith("·") && !re.startsWith("-") && !re.startsWith("•")) { 										
+										re = "<span style=\"font-style:italic;\">" + re + "</span>";
+									}
+									/*
 									if (language.equals("de")) {
 										for (int k=0; k<ListOfKeywordsDE.length; ++k) {
 											// Exact match through keyword "\\b" for boundary					
@@ -718,6 +736,7 @@ public class HtmlUtils {
 									} else if (language.equals("en")) {
 										// 
 									}
+									*/
 									// Important step: add the section content!
 									if (img==null) {
 										Element untertitle_elem = e.select("div[class=untertitle1], div[class=untertitle]").first();
