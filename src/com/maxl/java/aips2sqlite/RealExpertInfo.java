@@ -1156,7 +1156,7 @@ public class RealExpertInfo {
 									// Write to html and xml files to disk
 									String name = m.getTitle();
 									// Replace all "Sonderzeichen"
-									name = name.replaceAll("[/%:]", "_");									
+									name = name.replaceAll("[^a-zA-Z0-9]+", "_");									
 									if (CmlOptions.DB_LANGUAGE.equals("de")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
 										FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
