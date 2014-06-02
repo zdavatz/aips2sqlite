@@ -1110,8 +1110,8 @@ public class RealExpertInfo {
 							String mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, regnr_str, html_sanitized, mTyIndex_list);
 							m.setContent(mContent_str);
 								
-							// Check if mPackSection_str is empty AND command line option NO_PACK is not active
-							if (CmlOptions.NO_PACK==false && m_pack_section_str.isEmpty()) {	
+							// Check if mPackSection_str is empty AND command line option PLAIN is not active
+							if (CmlOptions.PLAIN==false && m_pack_section_str.isEmpty()) {	
 								errors++;
 								if (CmlOptions.GENERATE_REPORTS) {
 									parse_errors.append("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
@@ -1446,7 +1446,7 @@ public class RealExpertInfo {
 		/*
 		* Replace package information
 		*/
-		if (CmlOptions.NO_PACK==false) {
+		if (CmlOptions.PLAIN==false) {
 			// Replace original package information with pinfo_str	
 			String p_str = "";
 			for (String p : pinfo_str) {

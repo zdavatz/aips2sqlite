@@ -704,7 +704,7 @@ public class RealPatientInfo {
 		/*
 		* Replace package information
 		*/
-		if (CmlOptions.NO_PACK==false) {
+		if (CmlOptions.PLAIN==false) {
 			// Replace original package information with pinfo_str	
 			String p_str = "<p class=\"spacing2\"> </p>";
 			for (String p : pinfo_str) {

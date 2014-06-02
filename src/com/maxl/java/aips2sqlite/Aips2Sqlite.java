@@ -107,9 +107,6 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("owner")) {
 				CmlOptions.OPT_MED_OWNER = cmd.getOptionValue("owner");
 			}
-			if (cmd.hasOption("nopack")) {
-				CmlOptions.NO_PACK = true;
-			}
 			if (cmd.hasOption("pseudo")) {
 				CmlOptions.ADD_PSEUDO_FI = true;
 			}
@@ -131,6 +128,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("indications")) {
 				CmlOptions.INDICATIONS_REPORT = true;
 			}
+			if (cmd.hasOption("plain")) {				
+				CmlOptions.PLAIN = true;
+			}
 		} catch (ParseException e) {
 			System.err.println("Parsing failed: " + e.getMessage());
 		}
@@ -147,7 +147,6 @@ public class Aips2Sqlite {
 		addOption(options, "alpha",	"only include titles which start with option value", true, false);
 		addOption(options, "regnr", "only include medications which start with option value", true, false);
 		addOption(options, "owner", "only include medications owned by option value", true, false);
-		addOption(options, "nopack", "does not update the package section", false, false);
 		addOption(options, "pseudo", "adds pseudo expert infos to db", false, false);
 		addOption(options, "inter", "adds drug interactions to db", false, false);
 		addOption(options, "pinfo", "generate patient info htmls", false, false);
@@ -155,6 +154,7 @@ public class Aips2Sqlite {
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
+		addOption(options, "plain", "does not update the package section", false, false);
 
 		// Parse command line options
 		commandLineParse(options, args);

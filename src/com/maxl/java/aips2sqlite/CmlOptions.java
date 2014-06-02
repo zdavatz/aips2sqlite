@@ -31,10 +31,10 @@ public class CmlOptions {
 	public static boolean ZIP_BIG_FILES = false;
 	public static boolean GENERATE_REPORTS = false;
 	public static boolean INDICATIONS_REPORT = false;
-	public static boolean NO_PACK = false;
 	public static boolean ADD_PSEUDO_FI = false;
 	public static boolean ADD_INTERACTIONS = false;
 	public static boolean GENERATE_PI = false;
+	public static boolean PLAIN = false;
 	public static String OPT_MED_TITLE = "";
 	public static String OPT_MED_REGNR = "";
 	public static String OPT_MED_OWNER = "";
