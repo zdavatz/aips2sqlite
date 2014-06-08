@@ -781,6 +781,8 @@ public class RealExpertInfo {
 				if (m.getLang().equals(CmlOptions.DB_LANGUAGE) && m.getType().equals("fi")) {
 					// Database contains less than 5000 medis - this is a safe upperbound!
 					if (tot_med_counter<5000) {						
+						// Trim titles of leading and trailing spaces
+						m.setTitle(m.getTitle().trim());						
 						// Extract section titles and section ids
 						MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
 						List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
