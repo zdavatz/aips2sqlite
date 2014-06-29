@@ -35,6 +35,8 @@ public class Interactions {
 	
 	// Map ATC1 to List(ATC2, Info, Mechanismus, Effekt, Massnahmen, Grad) 
 	private static Map<String, ArrayList<String>> m_drug_interactions_map;
+	// Map ATC1-ATC2 to html - used to generate interactions_report
+	private static Map<String, ArrayList<String>> m_atc1_atc2_html_map;
 	
 	/**
 	 * Constructors
@@ -42,6 +44,7 @@ public class Interactions {
 	public Interactions(String language) {
 		m_language = language;
 		m_drug_interactions_map = new TreeMap<String, ArrayList<String>>();
+		m_atc1_atc2_html_map = new TreeMap<String, ArrayList<String>>();
 	}
 	
 	/**
@@ -156,6 +159,15 @@ public class Interactions {
 			    	addDB(key, inter[0], inter[1], inter[2], html_content);
 			    	// Add to csv file
 			    	csv_file += key + "||" + inter[1] + "||" + html_content + "\n";
+			    	// Add to atc code - html map
+					String atc1_atc2_key = key + "-" + inter[1];
+					if (atc1_atc2_key!=null) {
+				    	ArrayList<String> interaction_html = m_atc1_atc2_html_map.get(atc1_atc2_key);
+				    	if (interaction_html==null)
+				    		interaction_html = new ArrayList<String>();
+				    	interaction_html.add(html_content);
+				    	m_atc1_atc2_html_map.put(atc1_atc2_key, interaction_html);	
+					}
 			    }
 		        // Assume batch size of 20
 		        if (batch_cnt>20) {
@@ -177,6 +189,22 @@ public class Interactions {
         	FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT,	"drug_interactions_csv_" + CmlOptions.DB_LANGUAGE + ".csv");
         	// Zip file
         	FileOps.zipToFile(Constants.DIR_OUTPUT, "drug_interactions_csv_" + CmlOptions.DB_LANGUAGE + ".csv");
+        	// Generate report
+        	if (CmlOptions.GENERATE_REPORTS==true) {
+    			// Create interactions error report file
+    			InteractionsReport interactions_errors = new InteractionsReport(Constants.FILE_INTERACTIONS_REPORT, CmlOptions.DB_LANGUAGE, "html");
+				String report_style_str = FileOps.readCSSfromFile(Constants.FILE_REPORT_CSS_BASE + ".css");
+				interactions_errors.addStyleSheet(report_style_str);
+    			if (CmlOptions.DB_LANGUAGE.equals("de"))
+    				interactions_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", Constants.FI_DB_VERSION);
+    			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+    				interactions_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
+    			interactions_errors.append(interactions_errors.treemapToHtmlTable(m_atc1_atc2_html_map));
+    			interactions_errors.writeHtmlToFile();
+    			interactions_errors.getBWriter().close();
+        	}     
+		} catch (IOException e) {
+			e.printStackTrace();        	
 		} catch (SQLException e ) {
 			System.out.println("SQLException!");
 		} catch (ClassNotFoundException e) {

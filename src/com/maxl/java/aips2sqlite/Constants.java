@@ -55,6 +55,7 @@ public class Constants {
 	public static final String FILE_PARSE_REPORT = "./output/parse_report";
 	public static final String FILE_OWNER_REPORT = "./output/owner_report";
 	public static final String FILE_INDICATIONS_REPORT = "./output/indications_report";
+	public static final String FILE_INTERACTIONS_REPORT = "./output/interactions_report";
 	// ****** XML file ******
 	public static final String FI_FILE_XML_BASE = "./output/fis/";
 	public static final String PI_FILE_XML_BASE = "./output/pis/";

@@ -81,10 +81,10 @@ public class ParseReport {
 			mReport.append("<p>Entwicklung: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
 			mReport.append("<br/>");
 			mReport.append("<p>Verwendete Files:</p>");
-			mReport.append("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (Stand: " + date_str + ")</p>");
-			mReport.append("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (Stand: " + date_str + ")</p>");
-			mReport.append("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (Stand: " + date_str + ")</p>");
-			mReport.append("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
+			mReport.append("<p>- <a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (Stand: " + date_str + ")</p>");
+			mReport.append("<p>- <a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (Stand: " + date_str + ")</p>");
+			mReport.append("<p>- <a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (Stand: " + date_str + ")</p>");
+			mReport.append("<p>- <a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
 					"Packungen.xls</a> (Stand: " + date_str + ")</p>");
 			mReport.append("<br/>");
 			mHeaderAdded = true;			
@@ -97,10 +97,10 @@ public class ParseReport {
 			mReport.append("<p>Développement: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
 			mReport.append("<br/>");
 			mReport.append("<p>Fichiers utilisés:</p>");
-			mReport.append("<p><a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (actualisé: " + date_str + ")</p>");
-			mReport.append("<p><a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (actualisé: " + date_str + ")</p>");
-			mReport.append("<p><a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (actualisé: " + date_str + ")</p>");
-			mReport.append("<p><a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
+			mReport.append("<p>- <a target=\"_new\" href=\"http://download.swissmedicinfo.ch\">AIPS.xml</a> (actualisé: " + date_str + ")</p>");
+			mReport.append("<p>- <a target=\"_new\" href=\"http://bag.e-mediat.net/SL2007.Web.External/Default.aspx?webgrab=ignore\">Preparations.xml</a> (actualisé: " + date_str + ")</p>");
+			mReport.append("<p>- <a target=\"_new\" href=\"http://www.refdata.ch/downloads/company/download/swissindex_TechnischeBeschreibung.pdf\">swissindex.xml</a> (actualisé: " + date_str + ")</p>");
+			mReport.append("<p>- <a target=\"_new\" href=\"http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls\">" +
 					"Packungen.xls</a> (actualisé: " + date_str + ")</p>");
 			mReport.append("<br/>");			
 			mHeaderAdded = true;			
