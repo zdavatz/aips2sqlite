@@ -1019,7 +1019,7 @@ public class RealExpertInfo {
 								html_sanitized = m.getContent();
 							}
 					
-							// System.out.println(html_sanitized);
+							html_sanitized = html_sanitized.replaceAll("<div id=\"monographie\">", "<div id=\"monographie\" name=\"" + m.getAuthNrs() + "\">");
 							
 							// Extract section indications
 							String section_indications = "";

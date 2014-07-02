@@ -538,7 +538,7 @@ public class RealPatientInfo {
 						html_utils.clean();	
 																		
 						// Sanitize html, the function returns nicely formatted html												
-						String html_sanitized = html_utils.sanitizePatient(m.getTitle(), m.getAuthHolder(), CmlOptions.DB_LANGUAGE);
+						String html_sanitized = html_utils.sanitizePatient(m.getTitle(), m.getAuthHolder(), m.getAuthNrs(), CmlOptions.DB_LANGUAGE);
 						String mContent_str = html_sanitized;
 						
 						/*

@@ -595,7 +595,7 @@ public class HtmlUtils {
 	 * @param language
 	 * @return
 	 */
-	public String sanitizePatient(String med_title, String med_author, String language) {
+	public String sanitizePatient(String med_title, String med_author, String med_regnrs, String language) {
 		if (mHtmlStr.isEmpty())
 			return "";
 		
@@ -781,7 +781,7 @@ public class HtmlUtils {
 			System.out.println("---> HtmlUtils: Krasser Fehler!");			
 		}
 		// Modified (pretty)html string
-		Document newDoc = Jsoup.parse("<div id=\"monographie\">" + html_str + "</div>");
+		Document newDoc = Jsoup.parse("<div id=\"monographie\" name=\"" + med_regnrs + "\">" + html_str + "</div>");
 		newDoc.outputSettings().escapeMode(EscapeMode.xhtml);
 		newDoc.outputSettings().charset("UTF-8");
 		
@@ -832,7 +832,7 @@ public class HtmlUtils {
 		mDoc.outputSettings().prettyPrint(true);
 		mDoc.outputSettings().indentAmount(4);
 		// <div id="monographie"> -> <fi>
-		mDoc.select("div[id=monographie]").tagName(info_type).removeAttr("id");
+		mDoc.select("div[id=monographie]").tagName(info_type).removeAttr("id").removeAttr("name");
 		// <div class="MonTitle"> -> <title>
 		mDoc.select("div[class=MonTitle]").tagName("title").removeAttr("class").removeAttr("id");
 		// Beautify the title to the best of my possibilities ... still not good enough!
