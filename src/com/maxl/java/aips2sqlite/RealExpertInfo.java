@@ -91,9 +91,12 @@ public class RealExpertInfo {
 	// Map to string of additional info, key is the SwissmedicNo5
 	private static Map<String, String> m_add_info_map;
 	
+	// Packages string used for "shopping" purposes (will contain ean code, pharma codes, prices etc.) 
+	private List<String> m_list_of_packages = null;	
+	
 	// Package section string
 	private static String m_pack_section_str = "";
-
+	
 	// Stop word hashset
 	HashSet<String> m_stop_words_hash = null;
 
@@ -103,13 +106,14 @@ public class RealExpertInfo {
 	public RealExpertInfo(List<MedicalInformations.MedicalInformation> med_list) {
 		m_med_list = med_list;
 		
-		// Initialize maps
+		// Initialize maps and lists
 		m_package_info = new TreeMap<String, ArrayList<String>>();
 		m_swiss_drg_info = new TreeMap<String, ArrayList<String>>();
 		m_swiss_drg_footnote = new TreeMap<String, String>();
 		m_atc_map = new TreeMap<String, String>();
 		m_smn5_atc_map = new TreeMap<String, String>();
 		m_add_info_map = new TreeMap<String, String>();
+		m_list_of_packages = new ArrayList<String>();
 	}
 	
 	/*
@@ -192,6 +196,7 @@ public class RealExpertInfo {
 					String plimitation_str = "";
 					String add_info_str = ""; 	// Contains additional information separated by ;
 					String ean_code_str = "";
+					String pharma_code_str = "";
 
 					// 0: Zulassungsnummer, 1: Sequenz, 2: Sequenzname, 3: Zulassunginhaberin, 4: T-Nummer, 5: ATC-Code, 6: Heilmittelcode
 					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Verpackung, 11: Packungsgrösse
@@ -242,6 +247,7 @@ public class RealExpertInfo {
 						// 22.03.2014: EAN-13 barcodes - initialization
 						ean_code_str = "7680" + swissmedic_no8;
 						pack.add(ean_code_str); 	// 14
+						pack.add(pharma_code_str);	// 15
 						
 						m_package_info.put(swissmedic_no8, pack);
 					}
@@ -341,6 +347,7 @@ public class RealExpertInfo {
 			if (CmlOptions.SHOW_LOGS)
 				System.out.println((m_atc_map.size() + 1) + " classes in "
 						+ (stopTime - startTime) / 1000.0f + " sec");
+			
 			// Load Refdata xml file
 			File refdata_xml_file = null;
 			if (CmlOptions.DB_LANGUAGE.equals("de"))
@@ -365,12 +372,14 @@ public class RealExpertInfo {
 			String smno8;
 			for (Pharma.ITEM pharma : pharma_list) {
 				String ean_code = pharma.getGtin();
+				String pharma_code = pharma.getPhar();
 				if (ean_code.length() == 13) {
 					smno8 = ean_code.substring(4, 12);
 					// Extract pharma corresponding to swissmedicno8 (source: swissmedic package file)
 					ArrayList<String> pi_row = m_package_info.get(smno8);
 					// Replace sequence_name
 					if (pi_row != null) {
+						// Präparatname + galenische Form
 						if (pharma.getAddscr().length() > 0)
 							pi_row.set(1, pharma.getDscr() + ", " + pharma.getAddscr());
 						else
@@ -385,6 +394,8 @@ public class RealExpertInfo {
 						}
 						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
 						pi_row.set(14, ean_code);
+						// Pharma code
+						pi_row.set(15, pharma_code);
 					} else {
 						if (CmlOptions.SHOW_ERRORS) {
 							System.err.println(">> Does not exist in BAG xls: " + smno8 
@@ -721,9 +732,7 @@ public class RealExpertInfo {
 			
 			// Load CSS file: used only for self-contained xml files
 			String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
-			// For the rest we use an empty CSS file to save harddisk space!
-			String amiko_empty_style_str = "";
-						
+					
 			// Create error report file
 			ParseReport parse_errors = null;
 			if (CmlOptions.GENERATE_REPORTS==true) {
@@ -747,7 +756,8 @@ public class RealExpertInfo {
 			 */
 			int tot_pseudo_counter = 0;
 			if (CmlOptions.ADD_PSEUDO_FI==true) {
-				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, CmlOptions.DB_LANGUAGE, amiko_empty_style_str);
+				String empty_pack_str = "";
+				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, CmlOptions.DB_LANGUAGE, empty_pack_str);
 				// Process
 				tot_pseudo_counter = pseudo_fi.process();
 				System.out.println("");
@@ -1106,9 +1116,10 @@ public class RealExpertInfo {
 							}
 						
 							/*
-							 * Update "Packungen" section and extract therapeutisches index
+							 * Update section "Packungen", generate packungen string for shopping cart, and extract therapeutisches index
 							 */
-							List<String> mTyIndex_list = new ArrayList<String>();						
+							List<String> mTyIndex_list = new ArrayList<String>();
+							m_list_of_packages.clear();
 							String mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, regnr_str, html_sanitized, mTyIndex_list);
 							m.setContent(mContent_str);
 								
@@ -1191,7 +1202,10 @@ public class RealExpertInfo {
 							/*
 							 * Add medis, titles and ids to database
 							 */
-							sql_db.addDB( m, amiko_empty_style_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
+							String packages_str = "";
+							for (String s : m_list_of_packages)
+								packages_str += s;
+							sql_db.addDB( m, packages_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
 									m_pack_section_str, orggen_str, customer_id, mTyIndex_list, section_indications );
 							
 							med_counter++;
@@ -1323,6 +1337,17 @@ public class RealExpertInfo {
 		}	
 	}
 	
+	private String getSwissmedicNo8(String swissmedicNo5, int n) {
+		String key = "";
+		if (n<10)
+			key = swissmedicNo5 + String.valueOf(n).format("00%d", n);
+		else if (n<100)
+			key = swissmedicNo5 + String.valueOf(n).format("0%d", n);
+		else
+			key = swissmedicNo5 + String.valueOf(n).format("%d", n);	
+		return key;
+	}	
+	
 	private String updateSectionPackungen(String title, String atc_code, Map<String, ArrayList<String>> pack_info, 
 			String regnr_str, String content_str, List<String> tIndex_list) {
 		Document doc = Jsoup.parse(content_str, "UTF-16");
@@ -1339,12 +1364,12 @@ public class RealExpertInfo {
 
 		// Extract swissmedicno5 registration numbers
 		List<String> swissmedicno5_list = Arrays.asList(regnr_str.split("\\s*,\\s*"));
-		for (String s : swissmedicno5_list) {
+		for (String smno5 : swissmedicno5_list) {
 			// Extract original / generika info + Selbstbehalt info from
 			// "add_info_map"
 			String orggen_str = "";		// O=Original, G=Generika
 			String flagsb_str = "";		// SB=Selbstbehalt 
-			String addinfo_str = m_add_info_map.get(s);
+			String addinfo_str = m_add_info_map.get(smno5);
 			if (addinfo_str != null) {
 				List<String> ai_list = Arrays.asList(addinfo_str.split("\\s*;\\s*"));
 				if (ai_list != null) {
@@ -1357,16 +1382,21 @@ public class RealExpertInfo {
 			// Now generate many swissmedicno8 = swissmedicno5 + ***, check if they're keys and retrieve package info
 			String swissmedicno8_key = "";
 			for (int n=0; n<1000; ++n) {
-				if (n<10)
-					swissmedicno8_key = s + String.valueOf(n).format("00%d", n);
-				else if (n<100)
-					swissmedicno8_key = s + String.valueOf(n).format("0%d", n);
-				else
-					swissmedicno8_key = s + String.valueOf(n).format("%d", n);
+				swissmedicno8_key = getSwissmedicNo8(smno5, n);
 				// Check if swissmedicno8_key is a key of the map
 				if (pack_info.containsKey(swissmedicno8_key)) {
 					ArrayList<String> pi_row = m_package_info.get(swissmedicno8_key);
-					if (pi_row != null) {						
+					if (pi_row != null) {							
+						// This string is used for "shopping carts" and contatins:
+						// Präparatname | Package size | Package unit | Public price
+						// | Exfactory price | Spezialitätenliste, Swissmedic Kategorie, Limitations
+						// | EAN code | Pharma code
+						// Add only if medication is "in Handel"
+						if (pi_row.get(10).isEmpty()) {
+							m_list_of_packages.add(pi_row.get(1) + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" + pi_row.get(7) + "|" 
+									+ pi_row.get(8) + "|" + pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
+									+ pi_row.get(14) + "|" + pi_row.get(15) + "\n");
+						}
 						// --> Extract EAN-13 and generate barcodes
 						String barcode_html = "";
 						try {
@@ -1422,8 +1452,11 @@ public class RealExpertInfo {
 					}
 				}
 			}
-		}
+		}		
 		// Re-order the string alphabetically
+		if (!m_list_of_packages.isEmpty()) {
+			Collections.sort(m_list_of_packages, new AlphanumComp());
+		}			
 		if (!pinfo_originals_str.isEmpty()) {		
 			Collections.sort(pinfo_originals_str, new AlphanumComp()); 
 		}	

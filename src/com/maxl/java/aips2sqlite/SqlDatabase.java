@@ -34,7 +34,7 @@ public class SqlDatabase {
 	private String AllRows = "title, auth, atc, substances, regnrs, atc_class, " +
         		"tindex_str, application_str, indications_str, " +
         		"customer_id, pack_info_str, " +
-        		"add_info_str, ids_str, titles_str, content, style_str";
+        		"add_info_str, ids_str, titles_str, content, packages";
 	
 	private String mLanguage;
 	private File m_db_file;
@@ -47,7 +47,7 @@ public class SqlDatabase {
 	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, atc_class TEXT, " +
 	        		"tindex_str TEXT, application_str TEXT, indications_str TEXT, " +
 	        		"customer_id INTEGER, pack_info_str TEXT, " + 
-	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, style_str TEXT);";
+	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, packages TEXT);";
 	}
 	
 	public String getDBFile() {
@@ -71,6 +71,9 @@ public class SqlDatabase {
 			// Creates connection
 			conn = DriverManager.getConnection("jdbc:sqlite:" + db_url);		
 			stat = conn.createStatement();
+			
+			// Add version number 
+			stat.executeUpdate("PRAGMA user_version=" + Constants.FI_DB_VERSION.replaceAll("[^\\d]", "") + ";");
 			
 	        // Create android metadata table
 			stat.executeUpdate("DROP TABLE IF EXISTS android_metadata;");
@@ -114,7 +117,7 @@ public class SqlDatabase {
         conn.setAutoCommit(true);         
 	}
 
-	public void addDB(MedicalInformations.MedicalInformation m, String style_str, String regnr_str, String ids_str, 
+	public void addDB(MedicalInformations.MedicalInformation m, String packages_str, String regnr_str, String ids_str, 
 			String titles_str, String atc_description_str, String atc_class_str, String pack_info_str, 
 			String add_info_str, int customer_id, List<String> tIndex_list, String indications_str) throws SQLException {
 		if (prep!=null) {
@@ -126,14 +129,14 @@ public class SqlDatabase {
 	        prep.setString(6, atc_class_str);
 	        prep.setString(7, tIndex_list.get(0));	// therapeutic index
 	        prep.setString(8, tIndex_list.get(1));	// application area	 
-	        prep.setString(9,  indications_str);	// indications section
+	        prep.setString(9, indications_str);		// indications section
 	        prep.setInt(10, customer_id);	        
-	        prep.setString(11,  pack_info_str);
+	        prep.setString(11, pack_info_str);
 	        prep.setString(12, add_info_str);
 	        prep.setString(13, ids_str);
 	        prep.setString(14, titles_str);
 	        prep.setString(15, m.getContent()); 
-	        prep.setString(16, style_str);
+	        prep.setString(16, packages_str);
 	        prep.addBatch();        
 			conn.setAutoCommit(false);
 	        prep.executeBatch();

@@ -119,6 +119,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("xml")) {
 				CmlOptions.XML_FILE = true;
 			}
+			if (cmd.hasOption("gln")) {
+				CmlOptions.GLN_CODES = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -151,6 +154,7 @@ public class Aips2Sqlite {
 		addOption(options, "inter", "adds drug interactions to db", false, false);
 		addOption(options, "pinfo", "generate patient info htmls", false, false);
 		addOption(options, "xml", "generate xml file", false, false);	
+		addOption(options, "gln", "generate csv file with Swiss gln codes", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -182,6 +186,12 @@ public class Aips2Sqlite {
 				inter.generateDataExchangeFiles();
 			}			
 			
+			// Generate a csv file with all the GLN codes pertinent information
+			if (CmlOptions.GLN_CODES==true) {
+				GlnCodes glns = new GlnCodes();
+				glns.generateCsvFile();
+			}
+			
 			// Generates SQLite database - function should return the number of entries
 			generateSQLiteDB();
 			
@@ -208,7 +218,8 @@ public class Aips2Sqlite {
 		a.downEPhaInteractionsCsv("DE", Constants.FILE_EPHA_INTERACTIONS_DE_CSV);
 		a.downEPhaInteractionsCsv("FR", Constants.FILE_EPHA_INTERACTIONS_FR_CSV);
 		a.downEPhaProductsJson("DE", Constants.FILE_EPHA_PRODUCTS_DE_JSON);
-		a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);		
+		a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);	
+		a.downGLNCodesXlsx(Constants.FILE_GLN_CODES_PEOPLE, Constants.FILE_GLN_CODES_COMPANIES);
 	}
 
 	static void generateSQLiteDB() {						

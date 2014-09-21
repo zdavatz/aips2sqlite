@@ -33,6 +33,7 @@ public class CmlOptions {
 	public static boolean INDICATIONS_REPORT = false;
 	public static boolean ADD_PSEUDO_FI = false;
 	public static boolean ADD_INTERACTIONS = false;
+	public static boolean GLN_CODES = false;
 	public static boolean GENERATE_PI = false;
 	public static boolean PLAIN = false;
 	public static String OPT_MED_TITLE = "";

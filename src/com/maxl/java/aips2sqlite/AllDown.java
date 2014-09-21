@@ -79,9 +79,9 @@ public class AllDown {
 			// Start timer 
 			long startTime = System.currentTimeMillis();
 			if (disp)
-				System.out.print("- Downloading AIPS file ... ");		
+				System.out.print("- Downloading AIPS file... ");		
 			else {
-				pb.init("- Downloading AIPS file ... ");
+				pb.init("- Downloading AIPS file... ");
 				pb.start();	
 			}
 			
@@ -119,7 +119,7 @@ public class AllDown {
 				        FileUtils.copyFile(src, dst);
 						// Stop timer 
 						long stopTime = System.currentTimeMillis();				        
-						System.out.println("\r- Downloading AIPS file ... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+						System.out.println("\r- Downloading AIPS file... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 					} else if (file.endsWith(".xsd")) {
 				        File src = new File("./downloads/tmp/unzipped_tmp/" + file);
 				        File dst = new File(file_medical_infos_xsd);
@@ -147,9 +147,9 @@ public class AllDown {
 			// Start timer 
 			long startTime = System.currentTimeMillis();
 			if (disp)
-				System.out.print("- Downloading Packungen file ... ");	
+				System.out.print("- Downloading Packungen file... ");	
 			else {
-				pb.init("- Downloading Packungen file ... ");
+				pb.init("- Downloading Packungen file... ");
 				pb.start();	
 			}
 				
@@ -161,7 +161,7 @@ public class AllDown {
 			if (!disp)
 				pb.stopp();
 			long stopTime = System.currentTimeMillis();		
-			System.out.println("\r- Downloading Packungen file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			System.out.println("\r- Downloading Packungen file... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 		} catch (Exception e) {
 			if (!disp)
 				pb.stopp();			
@@ -178,9 +178,9 @@ public class AllDown {
 			// Start timer 
 			long startTime = System.currentTimeMillis();
 			if (disp)
-				System.out.print("- Downloading Swissindex (" + language + ") file ... ");
+				System.out.print("- Downloading Swissindex (" + language + ") file... ");
 			else {
-				pb.init("- Downloading Swissindex (" + language + ") file ... ");
+				pb.init("- Downloading Swissindex (" + language + ") file... ");
 				pb.start();
 			}
 			
@@ -224,7 +224,7 @@ public class AllDown {
 			if (!disp)
 				pb.stopp();
 			long stopTime = System.currentTimeMillis();	
-			System.out.println("\r- Downloading Swissindex (" + language + ") file ... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			System.out.println("\r- Downloading Swissindex (" + language + ") file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 			
 			connection.close();			
 			
@@ -245,9 +245,9 @@ public class AllDown {
 			// Start timer 
 			long startTime = System.currentTimeMillis();
 			if (disp)
-				System.out.print("- Downloading Preparations file ... ");
+				System.out.print("- Downloading Preparations file... ");
 			else {
-				pb.init("- Downloading Preparations file ... ");
+				pb.init("- Downloading Preparations file... ");
 				pb.start();
 			}
 			
@@ -265,7 +265,7 @@ public class AllDown {
 	        if (!disp)
 	        	pb.stopp();
 	        long stopTime = System.currentTimeMillis();	
-	        System.out.println("\r- Downloading Preparations file ... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+	        System.out.println("\r- Downloading Preparations file... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 
 	        // Delete folder ./tmp
 	        FileUtils.deleteDirectory(new File("./downloads/tmp"));	        
@@ -303,7 +303,7 @@ public class AllDown {
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
-				System.out.println("\r- Downloading Swiss DRG (" + language + ") file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+				System.out.println("\r- Downloading Swiss DRG (" + language + ") file... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 			}
 		} catch (Exception e) {
 			if (!disp)
@@ -386,6 +386,49 @@ public class AllDown {
 			System.err.println(" Exception: in 'downInteractionsCsv'");
 			e.printStackTrace();
 		}	
+	}
+	
+	public void downGLNCodesXlsx(String file_glncodes_people_xlsx, String file_glncodes_companies_xlsx) {
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+		
+		try {
+			// Start timer 
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading GLN codes files (Personen + Betriebe)... ");	
+			else {
+				pb.init("- Downloading GLN codes files (Personen + Betriebe)... ");
+				pb.start();	
+			}
+				
+			URL url = null;
+			url = new URL("https://www.medregbm.admin.ch/Publikation/CreateExcelListMedizinalPersons");				
+			if (url!=null) {
+				File destination = new File(file_glncodes_people_xlsx);			
+				FileUtils.copyURLToFile(url, destination);		
+				if (!disp)
+					pb.stopp();
+				long stopTime = System.currentTimeMillis();		
+				System.out.println("\r- Downloading GLN codes file (people/personen)... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			}
+
+			startTime = System.currentTimeMillis();
+			url = new URL("https://www.medregbm.admin.ch/Publikation/CreateExcelListBetriebs");			
+			if (url!=null) {
+				File destination = new File(file_glncodes_companies_xlsx);			
+				FileUtils.copyURLToFile(url, destination);		
+				if (!disp)
+					pb.stopp();
+				long stopTime = System.currentTimeMillis();		
+				System.out.println("\r- Downloading GLN codes file (companies/betriebe)... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			}
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downGLNCodesXlsx'");
+			e.printStackTrace();
+		}
 	}
 	
     /*

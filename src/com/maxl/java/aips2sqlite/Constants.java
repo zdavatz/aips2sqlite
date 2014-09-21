@@ -41,6 +41,9 @@ public class Constants {
 	public static final String FILE_EPHA_INTERACTIONS_FR_CSV = "./downloads/epha_interactions_fr_csv.csv";
 	public static final String FILE_EPHA_PRODUCTS_DE_JSON = "./downloads/epha_products_de_json.json";
 	public static final String FILE_EPHA_PRODUCTS_FR_JSON = "./downloads/epha_products_fr_json.json";	
+	// GLN Codes (Personen + Betriebe)
+	public static final String FILE_GLN_CODES_PEOPLE = "./downloads/gln_codes_people_xlsx.xlsx";
+	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";
 	// ****** ATC class xls file (DE != FR) ******
 	// public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";	// 2013
 	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0114_xls.xls";		// 2014
@@ -64,6 +67,6 @@ public class Constants {
 	public static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";
 	
 	// Version of the generated database 
-	public static final String FI_DB_VERSION = "1.2.9";	
-	public static final String PI_DB_VERSION = "1.0.0";
+	public static final String FI_DB_VERSION = "1.3.0";	
+	public static final String PI_DB_VERSION = "1.0.1";
 }
