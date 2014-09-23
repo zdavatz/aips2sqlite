@@ -34,9 +34,8 @@ public class SqlDatabase {
 	private String AllRows = "title, auth, atc, substances, regnrs, atc_class, " +
         		"tindex_str, application_str, indications_str, " +
         		"customer_id, pack_info_str, " +
-        		"add_info_str, ids_str, titles_str, content, packages";
+        		"add_info_str, ids_str, titles_str, content, style_str, packages";
 	
-	private String mLanguage;
 	private File m_db_file;
 	private Connection conn;
 	private Statement stat;
@@ -47,7 +46,7 @@ public class SqlDatabase {
 	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, atc_class TEXT, " +
 	        		"tindex_str TEXT, application_str TEXT, indications_str TEXT, " +
 	        		"customer_id INTEGER, pack_info_str TEXT, " + 
-	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, packages TEXT);";
+	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, style_str TEXT, packages TEXT);";
 	}
 	
 	public String getDBFile() {
@@ -60,7 +59,6 @@ public class SqlDatabase {
 
 		try {
 			// Touch db file if it does not exist
-			mLanguage = db_lang;
 			String db_url = System.getProperty("user.dir") + "/output/amiko_db_full_idx_" + db_lang + ".db";			
 			File db_file = new File(db_url);
 			if (!db_file.exists()) {
@@ -98,7 +96,7 @@ public class SqlDatabase {
 	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, " +
 	        		"ids_str TEXT, titles_str TEXT, style TEXT, content TEXT);");
 	        */		        
-	        prep = conn.prepareStatement("INSERT INTO amikodb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
+	        prep = conn.prepareStatement("INSERT INTO amikodb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
 		} catch (IOException e) {
 			System.err.println(">> SqlDatabase: DB file does not exist!");
 		} catch (SQLException e ) {
@@ -136,7 +134,7 @@ public class SqlDatabase {
 	        prep.setString(13, ids_str);
 	        prep.setString(14, titles_str);
 	        prep.setString(15, m.getContent()); 
-	        prep.setString(16, packages_str);
+	        prep.setString(17, packages_str);
 	        prep.addBatch();        
 			conn.setAutoCommit(false);
 	        prep.executeBatch();

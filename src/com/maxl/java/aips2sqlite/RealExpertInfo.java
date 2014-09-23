@@ -1121,6 +1121,7 @@ public class RealExpertInfo {
 							List<String> mTyIndex_list = new ArrayList<String>();
 							m_list_of_packages.clear();
 							String mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, regnr_str, html_sanitized, mTyIndex_list);
+						
 							m.setContent(mContent_str);
 								
 							// Check if mPackSection_str is empty AND command line option PLAIN is not active
