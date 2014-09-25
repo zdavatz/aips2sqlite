@@ -89,7 +89,8 @@ public class BarCode {
            	BitmapCanvasProvider canvas = new BitmapCanvasProvider(
            			dpi, BufferedImage.TYPE_BYTE_BINARY, antiAlias, orientation);
             // Generate barcode
-            bean.generateBarcode(canvas, eanStr);            
+            bean.generateBarcode(canvas, eanStr);           
+            
             // Get png image encoded as base64 string
             barcodeBase64 = encodeImgAsString(canvas.getBufferedImage(), "png");
         } catch (Exception e) {
@@ -97,17 +98,18 @@ public class BarCode {
         }
         
         // Return html string          
-        return generateHtmlString(barcodeBase64);                    
+        return generateHtmlString(barcodeBase64, eanStr);                    
 	}
 		
-    public String generateHtmlString(String b) {  	
-		return ("<img src=\"data:image/png;base64," + b + "\" style=\"margin:0px 0px 15px 0px;\" width=\"320\" >");
+    public String generateHtmlString(String b, String ean) {  	
+		return ("<img id=\"" + ean + "\" src=\"data:image/png;base64," + b + "\" style=\"margin:0px 0px 15px 0px;\" width=\"320\" " 
+				+ "onmouseup=\"addShoppingCart(this)\" />");
     }
     
 	public String generateHtmlPage(String b) {
 		String base64Str = "<!DOCTYPE html><html><body>" +
-				"<img style=\"max-width:100%25; width:auto; height:auto;\" src=\"data:image/png;base64," + b + "\"/>" +
-				"</body></html>";
+				"<img style=\"max-width:100%25; width:auto; height:auto;\" src=\"data:image/png;base64," + b + "\"/>" 
+				+ "</body></html>";
 
 		saveHtmlToFile(base64Str, "picb64.html");
 
