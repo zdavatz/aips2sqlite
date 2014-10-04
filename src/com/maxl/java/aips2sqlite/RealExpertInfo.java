@@ -1407,24 +1407,25 @@ public class RealExpertInfo {
 						// | Exfactory price | Spezialitätenliste, Swissmedic Kategorie, Limitations
 						// | EAN code | Pharma code
 						// Add only if medication is "in Handel"
+						String barcode_html = "";
 						if (pi_row.get(10).isEmpty()) {
 							m_list_of_packages.add(pi_row.get(1) + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" + pi_row.get(7) + "|" 
 									+ pi_row.get(8) + "|" + pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
 									+ pi_row.get(14) + "|" + pi_row.get(15) + "\n");
-						}
-						// --> Extract EAN-13 and generate barcodes
-						String barcode_html = "";
-						try {
-							String ean = pi_row.get(14);
-							if (!ean.isEmpty()) {
-								BarCode bc = new BarCode();								
-								String barcodeImg64 = bc.encode(ean);
-								barcode_html = "<p class=\"barcode\">" + barcodeImg64 + "</p>";
-								barcode_list.add(barcode_html);
+
+							// --> Extract EAN-13 and generate barcodes
+							try {
+								String ean = pi_row.get(14);
+								if (!ean.isEmpty()) {
+									BarCode bc = new BarCode();								
+									String barcodeImg64 = bc.encode(ean);
+									barcode_html = "<p class=\"barcode\">" + barcodeImg64 + "</p>";
+									barcode_list.add(barcode_html);
+								}
+							} catch(IOException e) {
+								e.printStackTrace();
 							}
-						} catch(IOException e) {
-							e.printStackTrace();
-						}						
+						}
 						
 						// Remove double spaces in title and capitalize
 						String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
