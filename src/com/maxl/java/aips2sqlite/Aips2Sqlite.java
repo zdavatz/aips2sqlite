@@ -122,6 +122,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("gln")) {
 				CmlOptions.GLN_CODES = true;
 			}
+			if (cmd.hasOption("shop")) {
+				CmlOptions.SHOPPING_CART = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -155,6 +158,7 @@ public class Aips2Sqlite {
 		addOption(options, "pinfo", "generate patient info htmls", false, false);
 		addOption(options, "xml", "generate xml file", false, false);	
 		addOption(options, "gln", "generate csv file with Swiss gln codes", false, false);
+		addOption(options, "shop", "generate encrypted files for shopping cart", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -178,6 +182,17 @@ public class Aips2Sqlite {
 			}
 						
 			long startTime = System.currentTimeMillis();
+			
+			// Generate encrypted files for shopping cart
+			if (CmlOptions.SHOPPING_CART==true) {
+				ShoppingCart sc = new ShoppingCart();
+				sc.listFiles(Constants.DIR_SHOPPING);
+				sc.readXls(Constants.DIR_SHOPPING);
+				/*
+				String msg = FileOps.readFromFile(Constants.DIR_SHOPPING + "ibsa_glns_csv.csv");
+				sc.encrypt(msg);
+				*/
+			}
 			
 			// Extract drug interactions information
 			if (CmlOptions.ADD_INTERACTIONS==true) {

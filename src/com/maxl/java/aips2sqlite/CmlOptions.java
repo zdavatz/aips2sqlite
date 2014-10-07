@@ -36,6 +36,7 @@ public class CmlOptions {
 	public static boolean GLN_CODES = false;
 	public static boolean GENERATE_PI = false;
 	public static boolean PLAIN = false;
+	public static boolean SHOPPING_CART = false;
 	public static String OPT_MED_TITLE = "";
 	public static String OPT_MED_REGNR = "";
 	public static String OPT_MED_OWNER = "";

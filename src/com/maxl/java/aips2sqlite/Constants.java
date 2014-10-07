@@ -44,6 +44,8 @@ public class Constants {
 	// GLN Codes (Personen + Betriebe)
 	public static final String FILE_GLN_CODES_PEOPLE = "./downloads/gln_codes_people_xlsx.xlsx";
 	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";
+	// "Shopping" files
+	public static final String DIR_SHOPPING = "./input/shop/";
 	// ****** ATC class xls file (DE != FR) ******
 	// public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";	// 2013
 	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0114_xls.xls";		// 2014
