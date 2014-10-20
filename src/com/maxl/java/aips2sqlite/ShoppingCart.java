@@ -7,24 +7,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -49,6 +38,7 @@ public class ShoppingCart implements java.io.Serializable {
 		List<String> doctor_assort;			// maps list of assortable meds
 		List<String> farmacy_assort;		// maps list of assortable meds
 		List<String> promotion_assort;		// maps list of assortable meds
+		List<Integer> promotion_months;
 		
 		public Conditions(String ean_code, String name, float fep_chf, float gross_chf) {
 			this.ean_code = ean_code;
@@ -58,6 +48,10 @@ public class ShoppingCart implements java.io.Serializable {
 			doctor = new TreeMap<Integer, Float>();
 			farmacy = new TreeMap<Integer, Float>();
 			promotion = new TreeMap<Integer, Float>();
+			doctor_assort = new ArrayList<String>();
+			farmacy_assort = new ArrayList<String>();
+			promotion_assort = new ArrayList<String>();
+			promotion_months = new ArrayList<Integer>();
 		}
 		
 		public void addDiscountDoc(int units, float discount) {
@@ -83,7 +77,11 @@ public class ShoppingCart implements java.io.Serializable {
 		public void setAssortPromo(List<String> assort) {
 			promotion_assort = assort;
 		}
-	}
+		
+		public void addPromoMonth(int month) {
+			promotion_months.add(month);
+		}
+	}		
 	
 	public void listFiles(String path) {
 		File folder = new File(path);
@@ -146,10 +144,21 @@ public class ShoppingCart implements java.io.Serializable {
 							float fep = Float.valueOf(getCellValue(row.getCell(5)));
 							float gross = Float.valueOf(getCellValue(row.getCell(6)));	
 							// Instantiate new med condition
-							Conditions cond = new Conditions(eancode, name, fep, gross);							
+							Conditions cond = new Conditions(eancode, name, fep, gross);								
+							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(gross) + " / ");
+							// Rebates -> comma-separated list
+							extractDiscounts(cond, getCellValue(row.getCell(7)));	// A-Praxis
+							extractDiscounts(cond, getCellValue(row.getCell(8)));	// B-Praxis
+							extractDiscounts(cond, getCellValue(row.getCell(10)));	// A-Apotheke
+							extractDiscounts(cond, getCellValue(row.getCell(11)));	// B-Apotheke
+							extractDiscounts(cond, getCellValue(row.getCell(13)));	// A-Promo-cycle
+							extractDiscounts(cond, getCellValue(row.getCell(14)));	// B-Promo-cycle
+							// Assortiebarkeit
+							extractEans(cond, getCellValue(row.getCell(9)));
+							extractEans(cond, getCellValue(row.getCell(12)));
+							extractEans(cond, getCellValue(row.getCell(15)));							
 							// Add to list of conditions
-							list_conditions.add(cond);
-							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(gross));				
+							list_conditions.add(cond);		
 						}
 					}
 				}
@@ -189,7 +198,7 @@ public class ShoppingCart implements java.io.Serializable {
 		        case Cell.CELL_TYPE_BOOLEAN: return part.getBooleanCellValue() + "";
 		        case Cell.CELL_TYPE_NUMERIC: return String.format("%.2f", part.getNumericCellValue());
 		        case Cell.CELL_TYPE_STRING:	return part.getStringCellValue() + "";
-		        case Cell.CELL_TYPE_BLANK: return "BLANK";
+		        case Cell.CELL_TYPE_BLANK: return "";
 		        case Cell.CELL_TYPE_ERROR: return "ERROR";
 		        case Cell.CELL_TYPE_FORMULA: return "FORMULA";
 		    }
@@ -197,4 +206,41 @@ public class ShoppingCart implements java.io.Serializable {
 		return "";
 	}
 
+	private void extractDiscounts(Conditions c, String discount_str) {
+		if (!discount_str.isEmpty()) {
+			// Promotion-cycles
+			Pattern pattern1 = Pattern.compile("(\\d{2})-(\\d{2})", Pattern.DOTALL);
+			Matcher match1 = pattern1.matcher(discount_str);
+			while (match1.find()) {
+				int month1 = Integer.parseInt(match1.group(1));
+				int month2 = Integer.parseInt(match1.group(2));
+				System.out.println(month1 + "->" + month2);
+				c.addPromoMonth(month1);
+				c.addPromoMonth(month2);
+			}				
+			
+			String[] rebates = discount_str.split("\\s*,\\s*");
+			// Discounts
+			Pattern pattern2 = Pattern.compile("\\((.*?)\\)", Pattern.DOTALL);
+			for (int i=0; i<rebates.length; ++i) {
+		
+				Matcher match2 = pattern2.matcher(rebates[i]);
+				while (match2.find()) {
+					String discount = match2.group(1).replaceAll("%", "");
+					String units = rebates[i].replaceAll("\\(.*\\)","");
+					System.out.print(" " + units + "[" + discount + "%] ");
+				}
+			}
+			System.out.println();
+		}
+	}
+	
+	private void extractEans(Conditions c, String eans_str) {
+		if (!eans_str.isEmpty()) {
+			String[] eans = eans_str.split("\\s*,\\s*");
+			List<String> items = Arrays.asList(eans);
+			System.out.println("Assortierbar mit " + items.size());
+			c.setAssortPromo(items);
+		}
+	}
 }
