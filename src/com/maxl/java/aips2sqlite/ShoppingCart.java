@@ -2,8 +2,10 @@ package com.maxl.java.aips2sqlite;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -98,16 +100,16 @@ public class ShoppingCart implements java.io.Serializable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void readXls(String path) {
+	public void readXls(String dir) {
 		// First check if path exists
-		File f = new File(path);
+		File f = new File(dir);
 		if (!f.exists() || !f.isDirectory()) {
-			System.out.println("Directory " + path + " does not exist!");
+			System.out.println("Directory " + dir + " does not exist!");
 			return;
 		}
 		try {
 			// Load ibsa xls file			
-			FileInputStream ibsa_file = new FileInputStream(path+"ibsa_conditions_xls.xls");
+			FileInputStream ibsa_file = new FileInputStream(dir+"ibsa_conditions_xls.xls");
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 			HSSFWorkbook ibsa_workbook = new HSSFWorkbook(ibsa_file);
 			// Get second sheet from workbook
@@ -168,28 +170,77 @@ public class ShoppingCart implements java.io.Serializable {
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
 			if (list_conditions.size()>0) {
-				ByteArrayOutputStream bout = new ByteArrayOutputStream();	// new byte array
-				ObjectOutputStream sout = new ObjectOutputStream(bout);		// serialization stream header
-				sout.writeObject(list_conditions);							// write object to serialied stream
-				byte[] serializedBytes = bout.toByteArray();
-				encrypted_msg = crypto.encrypt(serializedBytes);
-				System.out.println(Arrays.toString(encrypted_msg));
+				byte[] serializedBytes = serialize(list_conditions);
+				if (serializedBytes!=null) {
+					encrypted_msg = crypto.encrypt(serializedBytes);
+					// System.out.println(Arrays.toString(encrypted_msg));
+				}
 			}
+			// Write to file
+			writeToFile(dir+"ibsa_conditions_msg.msg", encrypted_msg);
+			
+			// Read from file
+			encrypted_msg = readFromFile(dir+"ibsa_conditions_msg.msg");
+
 			// Test: first decrypt, then deserialize
-			byte[] plain_msg = crypto.decrypt(encrypted_msg);
-			ByteArrayInputStream bin = new ByteArrayInputStream(plain_msg);
-			ObjectInputStream sin = new ObjectInputStream(bin);
-			try {
+			if (encrypted_msg!=null) {
+				byte[] plain_msg = crypto.decrypt(encrypted_msg);
 				List<Conditions> lc = new ArrayList<Conditions>();
-				lc = (List<Conditions>)sin.readObject();
-				System.out.println(lc.get(0).ean_code);
-			} catch(Exception e) {
-				e.printStackTrace();
+				lc = (List<Conditions>)deserialize(plain_msg);
+				for (int i=0; i<lc.size(); ++i) {
+					System.out.println(lc.get(i).ean_code + " -> " + lc.get(i).name);
+				}
 			}
 		} catch(IOException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+	
+	private byte[] serialize(Object obj) {
+		try {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();	// new byte array
+			ObjectOutputStream sout = new ObjectOutputStream(bout);		// serialization stream header
+			sout.writeObject(obj);							// write object to serialied stream
+			return (bout.toByteArray());
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private Object deserialize(byte[] byteArray) {
+		try {
+			ByteArrayInputStream bin = new ByteArrayInputStream(byteArray);
+			ObjectInputStream sin = new ObjectInputStream(bin);
+			return sin.readObject();
+		} catch(IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private void writeToFile(String path, byte[] buf) {
+		try {
+			FileOutputStream fos = new FileOutputStream(path);
+			fos.write(buf);
+			fos.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private byte[] readFromFile(String path) {
+		File file = new File(path);
+		byte[] buf = new byte[(int)file.length()];
+		try {
+			DataInputStream dis = new DataInputStream(new FileInputStream(file));
+			dis.readFully(buf);
+			dis.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return buf;
 	}
 	
 	private String getCellValue(Cell part) {
