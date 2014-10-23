@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,68 +21,13 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
+import com.maxl.java.shared.Conditions;
+
 public class ShoppingCart implements java.io.Serializable {
 
 	public ShoppingCart() {
 		
 	}
-	
-	private class Conditions implements java.io.Serializable {
-		
-		String ean_code;
-		String name;
-		float fep_chf;
-		float gross_chf;
-		TreeMap<Integer, Float> doctor;		// maps units to discount (%)
-		TreeMap<Integer, Float> farmacy;	// maps units to discount (%)
-		TreeMap<Integer, Float> promotion;	// maps units to discount (%)
-		List<String> doctor_assort;			// maps list of assortable meds
-		List<String> farmacy_assort;		// maps list of assortable meds
-		List<String> promotion_assort;		// maps list of assortable meds
-		List<Integer> promotion_months;
-		
-		public Conditions(String ean_code, String name, float fep_chf, float gross_chf) {
-			this.ean_code = ean_code;
-			this.name = name;
-			this.fep_chf = fep_chf;
-			this.gross_chf = gross_chf;
-			doctor = new TreeMap<Integer, Float>();
-			farmacy = new TreeMap<Integer, Float>();
-			promotion = new TreeMap<Integer, Float>();
-			doctor_assort = new ArrayList<String>();
-			farmacy_assort = new ArrayList<String>();
-			promotion_assort = new ArrayList<String>();
-			promotion_months = new ArrayList<Integer>();
-		}
-		
-		public void addDiscountDoc(int units, float discount) {
-			doctor.put(units, discount);
-		}
-		
-		public void addDiscountFarma(int units, float discount) {
-			farmacy.put(units, discount);
-		}
-		
-		public void addDiscountPromo(int units, float discount) {
-			promotion.put(units, discount);
-		}
-		
-		public void setAssortDoc(List<String> assort) {
-			doctor_assort = assort;
-		}
-		
-		public void setAssortFarma(List<String> assort) {
-			farmacy_assort = assort;
-		}
-		
-		public void setAssortPromo(List<String> assort) {
-			promotion_assort = assort;
-		}
-		
-		public void addPromoMonth(int month) {
-			promotion_months.add(month);
-		}
-	}		
 	
 	public void listFiles(String path) {
 		File folder = new File(path);
@@ -177,10 +121,10 @@ public class ShoppingCart implements java.io.Serializable {
 				}
 			}
 			// Write to file
-			writeToFile(dir+"ibsa_conditions_msg.msg", encrypted_msg);
+			writeToFile(Constants.DIR_OUTPUT+"ibsa_conditions.ser", encrypted_msg);
 			
 			// Read from file
-			encrypted_msg = readFromFile(dir+"ibsa_conditions_msg.msg");
+			encrypted_msg = readFromFile(Constants.DIR_OUTPUT+"ibsa_conditions.ser");
 
 			// Test: first decrypt, then deserialize
 			if (encrypted_msg!=null) {
