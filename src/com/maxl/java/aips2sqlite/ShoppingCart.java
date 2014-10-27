@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,8 +62,8 @@ public class ShoppingCart implements java.io.Serializable {
 			HSSFSheet ibsa_sheet = ibsa_workbook.getSheetAt(1);
 			// Iterate through all rows
 			Iterator<Row> rowIterator = ibsa_sheet.iterator();
-			// List of conditions for meds
-			List<Conditions> list_conditions = new ArrayList<Conditions>();
+			// Map of ean code to rebate condition
+			Map<String, Conditions> map_conditions = new TreeMap<String, Conditions>();
 			
 			int num_rows = 0;
 			while (rowIterator.hasNext()) {
@@ -93,18 +95,20 @@ public class ShoppingCart implements java.io.Serializable {
 							Conditions cond = new Conditions(eancode, name, fep, gross);								
 							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(gross) + " / ");
 							// Rebates -> comma-separated list
-							extractDiscounts(cond, getCellValue(row.getCell(7)));	// A-Praxis
-							extractDiscounts(cond, getCellValue(row.getCell(8)));	// B-Praxis
-							extractDiscounts(cond, getCellValue(row.getCell(10)));	// A-Apotheke
-							extractDiscounts(cond, getCellValue(row.getCell(11)));	// B-Apotheke
-							extractDiscounts(cond, getCellValue(row.getCell(13)));	// A-Promo-cycle
-							extractDiscounts(cond, getCellValue(row.getCell(14)));	// B-Promo-cycle
+							boolean disc = false;
+							disc |=  extractDiscounts(cond, "A-doc", getCellValue(row.getCell(7)));	// A-Praxis
+							disc |= extractDiscounts(cond, "B-doc", getCellValue(row.getCell(8)));	// B-Praxis
+							disc |= extractDiscounts(cond, "A-farma", getCellValue(row.getCell(10)));	// A-Apotheke
+							disc |= extractDiscounts(cond, "B-farma", getCellValue(row.getCell(11)));	// B-Apotheke
+							disc |= extractDiscounts(cond, "A-promo", getCellValue(row.getCell(13)));	// A-Promo-cycle
+							disc |= extractDiscounts(cond, "B-promo", getCellValue(row.getCell(14)));	// B-Promo-cycle
 							// Assortiebarkeit
 							extractEans(cond, getCellValue(row.getCell(9)));
 							extractEans(cond, getCellValue(row.getCell(12)));
 							extractEans(cond, getCellValue(row.getCell(15)));							
 							// Add to list of conditions
-							list_conditions.add(cond);		
+							if (disc==true)
+								map_conditions.put(eancode, cond);		
 						}
 					}
 				}
@@ -113,8 +117,8 @@ public class ShoppingCart implements java.io.Serializable {
 			// First serialize into a byte array output stream, then encrypt
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
-			if (list_conditions.size()>0) {
-				byte[] serializedBytes = serialize(list_conditions);
+			if (map_conditions.size()>0) {
+				byte[] serializedBytes = serialize(map_conditions);
 				if (serializedBytes!=null) {
 					encrypted_msg = crypto.encrypt(serializedBytes);
 					// System.out.println(Arrays.toString(encrypted_msg));
@@ -129,10 +133,10 @@ public class ShoppingCart implements java.io.Serializable {
 			// Test: first decrypt, then deserialize
 			if (encrypted_msg!=null) {
 				byte[] plain_msg = crypto.decrypt(encrypted_msg);
-				List<Conditions> lc = new ArrayList<Conditions>();
-				lc = (List<Conditions>)deserialize(plain_msg);
-				for (int i=0; i<lc.size(); ++i) {
-					System.out.println(lc.get(i).ean_code + " -> " + lc.get(i).name);
+				Map<String, Conditions> mc = new TreeMap<String, Conditions>();
+				mc = (TreeMap<String, Conditions>)deserialize(plain_msg);
+				for (Map.Entry<String, Conditions> entry : mc.entrySet()) {
+					System.out.println(entry.getKey() + " -> " + entry.getValue().name);
 				}
 			}
 		} catch(IOException e) {
@@ -201,7 +205,8 @@ public class ShoppingCart implements java.io.Serializable {
 		return "";
 	}
 
-	private void extractDiscounts(Conditions c, String discount_str) {
+	private boolean extractDiscounts(Conditions c, String category, String discount_str) {
+		boolean discounted = false;
 		if (!discount_str.isEmpty()) {
 			// Promotion-cycles
 			Pattern pattern1 = Pattern.compile("(\\d{2})-(\\d{2})", Pattern.DOTALL);
@@ -209,32 +214,55 @@ public class ShoppingCart implements java.io.Serializable {
 			while (match1.find()) {
 				int month1 = Integer.parseInt(match1.group(1));
 				int month2 = Integer.parseInt(match1.group(2));
-				System.out.println(month1 + "->" + month2);
+				// System.out.println(month1 + "->" + month2);
 				c.addPromoMonth(month1);
 				c.addPromoMonth(month2);
+				discounted = true;
 			}				
 			
 			String[] rebates = discount_str.split("\\s*,\\s*");
 			// Discounts
 			Pattern pattern2 = Pattern.compile("\\((.*?)\\)", Pattern.DOTALL);
-			for (int i=0; i<rebates.length; ++i) {
-		
+			for (int i=0; i<rebates.length; ++i) {	
 				Matcher match2 = pattern2.matcher(rebates[i]);
 				while (match2.find()) {
-					String discount = match2.group(1).replaceAll("%", "");
-					String units = rebates[i].replaceAll("\\(.*\\)","");
-					System.out.print(" " + units + "[" + discount + "%] ");
+					String u = rebates[i].replaceAll("\\(.*\\)","");
+					String d = match2.group(1).replaceAll("%", "");
+					if (!d.contains("-")) {		// makes sure it's not a promotion cycle!
+						int units = 0;
+						float discount = 0.0f;
+						if (u!=null)
+							units = Integer.valueOf(u);					
+						if (d!=null)
+							discount = Float.valueOf(d);						
+						System.out.println(units + " -> [" + discount + "]");						
+						discounted = true;
+						if (category.equals("A-doc"))
+							c.addDiscountDoc('A', units, discount);
+						else if (category.equals("B-doc"))
+							c.addDiscountDoc('B', units, discount);
+						else if (category.equals("A-farma"))
+							c.addDiscountFarma('A', units, discount);
+						else if (category.equals("B-farma"))
+							c.addDiscountFarma('B', units, discount);
+						else if (category.equals("B-promo"))
+							c.addDiscountPromo('A', units, discount);
+						else if (category.equals("B-promo"))
+							c.addDiscountPromo('B', units, discount);
+						else
+							discounted = false;
+					}
 				}
 			}
-			System.out.println();
 		}
+		return discounted;
 	}
 	
 	private void extractEans(Conditions c, String eans_str) {
 		if (!eans_str.isEmpty()) {
 			String[] eans = eans_str.split("\\s*,\\s*");
 			List<String> items = Arrays.asList(eans);
-			System.out.println("Assortierbar mit " + items.size());
+			// System.out.println("Assortierbar mit " + items.size());
 			c.setAssortPromo(items);
 		}
 	}

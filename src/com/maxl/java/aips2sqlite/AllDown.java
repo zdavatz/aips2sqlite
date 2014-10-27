@@ -156,7 +156,7 @@ public class AllDown {
 			// URL url = new URL("http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls");
 			URL url = new URL("https://www.swissmedic.ch/arzneimittel/00156/00221/00222/00230/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdHx7hGym162epYbg2c_JjKbNoKSn6A");
 			File destination = new File(file_packages_xls);			
-			FileUtils.copyURLToFile(url, destination);
+			FileUtils.copyURLToFile(url, destination, 60000, 60000);
 
 			if (!disp)
 				pb.stopp();
@@ -253,7 +253,7 @@ public class AllDown {
 			
 			URL url = new URL("http://bag.e-mediat.net/SL2007.Web.External/File.axd?file=XMLPublications.zip");
 			File destination = new File("./downloads/tmp/preparations.zip");
-			FileUtils.copyURLToFile(url, destination);
+			FileUtils.copyURLToFile(url, destination, 60000, 60000);
 			
 			unzipToTemp(destination);
 	        
@@ -299,7 +299,7 @@ public class AllDown {
 				
 			if (url!=null) {
 				File destination = new File(file_swiss_drg_xlsx);			
-				FileUtils.copyURLToFile(url, destination);		
+				FileUtils.copyURLToFile(url, destination, 60000, 60000);		
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
@@ -337,7 +337,7 @@ public class AllDown {
 				
 			if (url!=null) {
 				File destination = new File(file_interactions_csv);			
-				FileUtils.copyURLToFile(url, destination);		
+				FileUtils.copyURLToFile(url, destination, 60000, 60000);		
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
@@ -374,7 +374,7 @@ public class AllDown {
 				url = new URL("https://download.epha.ch/cleaned/produkte.json");
 			if (url!=null) {
 				File destination = new File(file_products_json);			
-				FileUtils.copyURLToFile(url, destination);		
+				FileUtils.copyURLToFile(url, destination, 60000, 60000);		
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
@@ -406,7 +406,8 @@ public class AllDown {
 			url = new URL("https://www.medregbm.admin.ch/Publikation/CreateExcelListMedizinalPersons");				
 			if (url!=null) {
 				File destination = new File(file_glncodes_people_xlsx);			
-				FileUtils.copyURLToFile(url, destination);		
+				// FileUtils.copyURLToFile(url, destination);	
+				FileUtils.copyURLToFile(url, destination, 60000, 60000);
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
@@ -417,7 +418,7 @@ public class AllDown {
 			url = new URL("https://www.medregbm.admin.ch/Publikation/CreateExcelListBetriebs");			
 			if (url!=null) {
 				File destination = new File(file_glncodes_companies_xlsx);			
-				FileUtils.copyURLToFile(url, destination);		
+				FileUtils.copyURLToFile(url, destination, 60000, 60000);		
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
