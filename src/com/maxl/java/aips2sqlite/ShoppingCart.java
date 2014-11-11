@@ -96,7 +96,7 @@ public class ShoppingCart implements java.io.Serializable {
 							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(gross) + " / ");
 							// Rebates -> comma-separated list
 							boolean disc = false;
-							disc |=  extractDiscounts(cond, "A-doc", getCellValue(row.getCell(7)));	// A-Praxis
+							disc |= extractDiscounts(cond, "A-doc", getCellValue(row.getCell(7)));	// A-Praxis
 							disc |= extractDiscounts(cond, "B-doc", getCellValue(row.getCell(8)));	// B-Praxis
 							disc |= extractDiscounts(cond, "A-farma", getCellValue(row.getCell(10)));	// A-Apotheke
 							disc |= extractDiscounts(cond, "B-farma", getCellValue(row.getCell(11)));	// B-Apotheke
@@ -107,8 +107,8 @@ public class ShoppingCart implements java.io.Serializable {
 							extractEans(cond, getCellValue(row.getCell(12)));
 							extractEans(cond, getCellValue(row.getCell(15)));							
 							// Add to list of conditions
-							if (disc==true)
-								map_conditions.put(eancode, cond);		
+							// if (disc==true)
+							map_conditions.put(eancode, cond);		
 						}
 					}
 				}
