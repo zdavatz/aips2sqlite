@@ -1,15 +1,17 @@
 package com.maxl.java.aips2sqlite;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -38,15 +40,14 @@ public class ShoppingCart implements java.io.Serializable {
 		for (int i=0; i<list_of_files.length; i++) {
 			if (list_of_files[i].isFile()) {
 				String file = list_of_files[i].getName();
-				if (file.endsWith(".csv") || file.endsWith(".xls")) {
-					System.out.println(file);
+				if (file.endsWith(".csv") || file.endsWith(".xls") || file.endsWith(".json")) {
+					System.out.println("Found file: " + file);
 		        }
 			}
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	public void readXls(String dir) {
+
+	public void encryptConditionsToDisk(String dir, String filename) {
 		// First check if path exists
 		File f = new File(dir);
 		if (!f.exists() || !f.isDirectory()) {
@@ -55,7 +56,7 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 		try {
 			// Load ibsa xls file			
-			FileInputStream ibsa_file = new FileInputStream(dir+"ibsa_conditions_xls.xls");
+			FileInputStream ibsa_file = new FileInputStream(dir + filename + ".xls");
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 			HSSFWorkbook ibsa_workbook = new HSSFWorkbook(ibsa_file);
 			// Get second sheet from workbook
@@ -93,7 +94,7 @@ public class ShoppingCart implements java.io.Serializable {
 							float gross = Float.valueOf(getCellValue(row.getCell(6)));	
 							// Instantiate new med condition
 							Conditions cond = new Conditions(eancode, name, fep, gross);								
-							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(gross) + " / ");
+							// System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(gross) + " / ");
 							// Rebates -> comma-separated list
 							boolean disc = false;
 							disc |= extractDiscounts(cond, "A-doc", getCellValue(row.getCell(7)));	// A-Praxis
@@ -125,11 +126,12 @@ public class ShoppingCart implements java.io.Serializable {
 				}
 			}
 			// Write to file
-			writeToFile(Constants.DIR_OUTPUT+"ibsa_conditions.ser", encrypted_msg);
-			
-			// Read from file
-			encrypted_msg = readFromFile(Constants.DIR_OUTPUT+"ibsa_conditions.ser");
+			writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
+			System.out.println("Saved encrypted file " + filename +".ser");
 
+			// TEST: Read from file
+			/*
+			encrypted_msg = readFromFile(Constants.DIR_OUTPUT + filename + ".ser");
 			// Test: first decrypt, then deserialize
 			if (encrypted_msg!=null) {
 				byte[] plain_msg = crypto.decrypt(encrypted_msg);
@@ -139,11 +141,81 @@ public class ShoppingCart implements java.io.Serializable {
 					System.out.println(entry.getKey() + " -> " + entry.getValue().name);
 				}
 			}
+			*/
 		} catch(IOException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 	}
+	
+	
+	public void encryptGlnsToDisk(String dir, String filename) {
+		// First check if path exists
+		File f = new File(dir);
+		if (!f.exists() || !f.isDirectory()) {
+			System.out.println("Directory " + dir + " does not exist!");
+			return;
+		}
+		try {
+			Map<String, String> gln_map = new TreeMap<String, String>();
+			// Load csv file and dump to map
+			FileInputStream glnCodesCsv = new FileInputStream(Constants.DIR_SHOPPING + filename + ".csv");
+			BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
+			String line;
+			while ((line=br.readLine()) !=null ) {
+				// Semicolon is used as a separator
+				String[] gln = line.split(";");
+				if (gln.length>1) {
+					gln_map.put(gln[0], gln[1]);
+				}
+			}			
+			// First serialize into a byte array output stream, then encrypt
+			Crypto crypto = new Crypto();
+			byte[] encrypted_msg = null;
+			if (gln_map.size()>0) {
+				byte[] serializedBytes = serialize(gln_map);
+				if (serializedBytes!=null) {
+					encrypted_msg = crypto.encrypt(serializedBytes);
+				}
+			}
+			// Write to file
+			writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
+			System.out.println("Saved encrypted file " + filename +".ser");
+			
+			br.close();
+		} catch(IOException e) {
+			e.printStackTrace();			
+		}
+	}
+	
+	public void encryptJsonToDisk(String dir, String filename) {
+		// First check if path exists
+		File f = new File(dir);
+		if (!f.exists() || !f.isDirectory()) {
+			System.out.println("Directory " + dir + " does not exist!");
+			return;
+		}
+		try {
+			File inputFile = new File(Constants.DIR_SHOPPING + filename + ".json");
+			FileInputStream inputStream = new FileInputStream(inputFile);
+	        byte[] serializedBytes = new byte[(int) inputFile.length()];
+	        inputStream.read(serializedBytes);
+	        
+			Crypto crypto = new Crypto();
+			byte[] encrypted_msg = null;
+			if (serializedBytes.length>0) {
+				encrypted_msg = crypto.encrypt(serializedBytes);
+			}
+			// Write to file
+			writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
+			System.out.println("Saved encrypted file " + filename +".ser");
+
+	        inputStream.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		} 
+	}
+	
 	
 	private byte[] serialize(Object obj) {
 		try {
@@ -235,7 +307,7 @@ public class ShoppingCart implements java.io.Serializable {
 							units = Integer.valueOf(u);					
 						if (d!=null)
 							discount = Float.valueOf(d);						
-						System.out.println(units + " -> [" + discount + "]");						
+						// System.out.println(units + " -> [" + discount + "]");						
 						discounted = true;
 						if (category.equals("A-doc"))
 							c.addDiscountDoc('A', units, discount);

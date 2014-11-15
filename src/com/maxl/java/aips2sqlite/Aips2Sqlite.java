@@ -187,11 +187,9 @@ public class Aips2Sqlite {
 			if (CmlOptions.SHOPPING_CART==true) {
 				ShoppingCart sc = new ShoppingCart();
 				sc.listFiles(Constants.DIR_SHOPPING);
-				sc.readXls(Constants.DIR_SHOPPING);
-				/*
-				String msg = FileOps.readFromFile(Constants.DIR_SHOPPING + "ibsa_glns_csv.csv");
-				sc.encrypt(msg);
-				*/
+				sc.encryptConditionsToDisk(Constants.DIR_SHOPPING, "ibsa_conditions");
+				sc.encryptGlnsToDisk(Constants.DIR_SHOPPING, "ibsa_glns");
+				sc.encryptJsonToDisk(Constants.DIR_SHOPPING, "authors");
 			}
 			
 			// Extract drug interactions information
