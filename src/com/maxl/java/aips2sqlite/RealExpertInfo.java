@@ -366,7 +366,7 @@ public class RealExpertInfo {
 
 			startTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
-				System.out.print("- Unmarshalling Refdata Pharma " + CmlOptions.DB_LANGUAGE + "... ");
+				System.out.println("- Unmarshalling Refdata Pharma " + CmlOptions.DB_LANGUAGE + "... ");
 
 			JAXBContext context = JAXBContext.newInstance(Pharma.class);
 			Unmarshaller um = context.createUnmarshaller();
@@ -400,10 +400,13 @@ public class RealExpertInfo {
 						pi_row.set(14, ean_code);
 						// Pharma code
 						pi_row.set(15, pharma_code);
-					} else {
+					} 
+					else {
 						if (CmlOptions.SHOW_ERRORS) {
+							/*
 							System.err.println(">> Does not exist in BAG xls: " + smno8 
-									+ " (" + pharma.getDscr() + ", " + pharma.getAddscr() + ")");
+										+ " (" + pharma.getDscr() + ", " + pharma.getAddscr() + ")");
+							*/
 						}
 					}
 				} else if (ean_code.length() < 13) {
@@ -425,7 +428,7 @@ public class RealExpertInfo {
 
 			startTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
-				System.out.print("- Processing preparations xml... ");
+				System.out.println("- Processing preparations xml... ");
 
 			context = JAXBContext.newInstance(Preparations.class);
 			um = context.createUnmarshaller();
@@ -1407,7 +1410,7 @@ public class RealExpertInfo {
 						// | Exfactory price | Spezialitätenliste, Swissmedic Kategorie, Limitations
 						// | EAN code | Pharma code
 						// Add only if medication is "in Handel"
-						String barcode_html = "";
+						String barcode_html = "";		
 						if (pi_row.get(10).isEmpty()) {
 							m_list_of_packages.add(pi_row.get(1) + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" + pi_row.get(7) + "|" 
 									+ pi_row.get(8) + "|" + pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
