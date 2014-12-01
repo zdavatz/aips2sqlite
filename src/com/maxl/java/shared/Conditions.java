@@ -124,12 +124,24 @@ public class Conditions implements java.io.Serializable {
 		doctor_assort = assort;
 	}
 
+	public List<String> getAssortDoc() {
+		return doctor_assort;
+	}
+	
 	public void setAssortFarma(List<String> assort) {
-		farmacy_assort = assort;
+		farmacy_assort = assort;	
 	}
 
+	public List<String> getAssortFarma() {
+		return farmacy_assort;
+	}
+	
 	public void setAssortPromo(List<String> assort) {
 		promotion_assort = assort;
+	}
+
+	public List<String> getAssortPromo() {
+		return promotion_assort;
 	}
 
 	public void addPromoMonth(int month, char category) {
@@ -167,7 +179,6 @@ public class Conditions implements java.io.Serializable {
 	}
 	
 	public void addPromoTime(int day1, int day2, char category) {
-		System.out.println(day1 + " - " + day2);
 		if (category=='A') {
 			promotion_days_A.add(day1);
 			promotion_days_A.add(day2);			

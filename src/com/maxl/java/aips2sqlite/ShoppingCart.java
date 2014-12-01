@@ -323,7 +323,10 @@ public class ShoppingCart implements java.io.Serializable {
 		if (!eans_str.isEmpty()) {
 			String[] eans = eans_str.split("\\s*,\\s*");
 			List<String> items = Arrays.asList(eans);
-			// System.out.println("Assortierbar mit " + items.size());
+			for (int i=0; i<items.size(); ++i) {
+				if (items.get(i).contains("."))
+					items.set(i, items.get(i).split("\\.")[0]);
+			}
 			if (category.equals("doc"))
 				c.setAssortDoc(items);
 			else if (category.equals("farma"))
