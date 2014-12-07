@@ -47,7 +47,7 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 	}
 	
-	public void encryptConditionsToDisk(String dir, String filename) {
+	public void encryptConditionsToDir(String filename, String dir) {
 		// First check if path exists
 		File f = new File(dir);
 		if (!f.exists() || !f.isDirectory()) {
@@ -336,7 +336,7 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 	}
 	
-	public void encryptGlnsToDisk(String dir, String filename) {
+	public void encryptCsvToDir(String filename, String dir, int skip) {
 		// First check if path exists
 		File f = new File(dir);
 		if (!f.exists() || !f.isDirectory()) {
@@ -346,7 +346,7 @@ public class ShoppingCart implements java.io.Serializable {
 		try {
 			Map<String, String> gln_map = new TreeMap<String, String>();
 			// Load csv file and dump to map
-			FileInputStream glnCodesCsv = new FileInputStream(Constants.DIR_SHOPPING + filename + ".csv");
+			FileInputStream glnCodesCsv = new FileInputStream(dir + "/" + filename + ".csv");
 			BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
 			String line;
 			while ((line=br.readLine()) !=null ) {
@@ -375,7 +375,7 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 	}
 	
-	public void encryptJsonToDisk(String dir, String filename) {
+	public void encryptFileToDir(String filename, String dir) {
 		// First check if path exists
 		File f = new File(dir);
 		if (!f.exists() || !f.isDirectory()) {
@@ -383,7 +383,7 @@ public class ShoppingCart implements java.io.Serializable {
 			return;
 		}
 		try {
-			File inputFile = new File(Constants.DIR_SHOPPING + filename + ".json");
+			File inputFile = new File(dir + "/" + filename);
 			FileInputStream inputStream = new FileInputStream(inputFile);
 	        byte[] serializedBytes = new byte[(int) inputFile.length()];
 	        inputStream.read(serializedBytes);
@@ -402,7 +402,6 @@ public class ShoppingCart implements java.io.Serializable {
 			e.printStackTrace();
 		} 
 	}
-	
 	
 	private byte[] serialize(Object obj) {
 		try {
