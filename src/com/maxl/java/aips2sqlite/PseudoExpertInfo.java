@@ -292,11 +292,7 @@ public class PseudoExpertInfo {
 		List<String> emptyList = new ArrayList<String>();
 		emptyList.add("PSEUDO");
 		emptyList.add("PSEUDO");
-		try {
-			mSqlDB.addDB(mMedi, mAmikoCSS_str, mEanCodes_str, mSectionIds_str, mSectionTitles_str, mEanCodes_str, "", 
-					mSectionPackungen_str, "P", mCustomerId, emptyList, "");
-		} catch (SQLException e ) {
-			System.out.println("SQLException!");
-		}
+		mSqlDB.addExpertDB(mMedi, mAmikoCSS_str, mEanCodes_str, mSectionIds_str, mSectionTitles_str, mEanCodes_str, "", 
+				mSectionPackungen_str, "P", mCustomerId, emptyList, "");
 	}
 }

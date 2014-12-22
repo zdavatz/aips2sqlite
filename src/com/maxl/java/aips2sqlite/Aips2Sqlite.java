@@ -236,13 +236,17 @@ public class Aips2Sqlite {
 		a.downGLNCodesXlsx(Constants.FILE_GLN_CODES_PEOPLE, Constants.FILE_GLN_CODES_COMPANIES);
 	}
 
-	static void generateSQLiteDB() {						
+	static void generateSQLiteDB() {
+
+		// Create database
+		SqlDatabase sql_db = new SqlDatabase();
+		
 		// Read Aips file			
 		List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
 
 		if (CmlOptions.GENERATE_PI==false) {
 			// Process Fachinfos
-			RealExpertInfo fi = new RealExpertInfo(med_list);
+			RealExpertInfo fi = new RealExpertInfo(sql_db, med_list);
 			fi.process();
 		} else {
 			// Process Patienten Info

@@ -53,7 +53,7 @@ public class SqlDatabase {
 		return m_db_file.getAbsolutePath();
 	}
 	
-	public void createDB(String db_lang) throws ClassNotFoundException, SQLException {		
+	public void createExpertDB(String db_lang) throws ClassNotFoundException {		
 		// Initializes org.sqlite.JDBC driver
 		Class.forName("org.sqlite.JDBC");
 
@@ -99,84 +99,101 @@ public class SqlDatabase {
 	        prep = conn.prepareStatement("INSERT INTO amikodb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
 		} catch (IOException e) {
 			System.err.println(">> SqlDatabase: DB file does not exist!");
+			e.printStackTrace();
 		} catch (SQLException e ) {
 			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
 		} 
 	}
 	
-	public void addDB(MedicalInformations.MedicalInformation m) throws SQLException {
-		prep.setString(1, m.getTitle());
-        prep.setString(2, m.getAuthHolder());
-		prep.setString(3, m.getAtcCode());
-        prep.setString(4, m.getSubstances());  
-        prep.addBatch();        
-		conn.setAutoCommit(false);
-        prep.executeBatch();
-        conn.setAutoCommit(true);         
-	}
-
-	public void addDB(MedicalInformations.MedicalInformation m, String packages_str, String regnr_str, String ids_str, 
-			String titles_str, String atc_description_str, String atc_class_str, String pack_info_str, 
-			String add_info_str, int customer_id, List<String> tIndex_list, String indications_str) throws SQLException {
-		if (prep!=null) {
+	public void addExpertDB(MedicalInformations.MedicalInformation m) {
+		try {
 			prep.setString(1, m.getTitle());
 	        prep.setString(2, m.getAuthHolder());
-			prep.setString(3, m.getAtcCode() + ";" + atc_description_str);
-	        prep.setString(4, m.getSubstances());
-	        prep.setString(5, regnr_str);
-	        prep.setString(6, atc_class_str);
-	        prep.setString(7, tIndex_list.get(0));	// therapeutic index
-	        prep.setString(8, tIndex_list.get(1));	// application area	 
-	        prep.setString(9, indications_str);		// indications section
-	        prep.setInt(10, customer_id);	        
-	        prep.setString(11, pack_info_str);
-	        prep.setString(12, add_info_str);
-	        prep.setString(13, ids_str);
-	        prep.setString(14, titles_str);
-	        prep.setString(15, m.getContent()); 
-	        prep.setString(17, packages_str);
+			prep.setString(3, m.getAtcCode());
+	        prep.setString(4, m.getSubstances());  
 	        prep.addBatch();        
 			conn.setAutoCommit(false);
 	        prep.executeBatch();
 	        conn.setAutoCommit(true);         
-		} else {
-			System.out.println("There is no database!");
-			System.exit(0);
-		}			
-	}	
-	
-	public void reorderAlphaDB() throws SQLException {
-        stat.executeUpdate("DROP TABLE IF EXISTS amikodb_ordered;");
-        stat.executeUpdate("CREATE TABLE amikodb_ordered " + table());     
-		stat.executeUpdate("INSERT INTO amikodb_ordered (" + AllRows + ") "
-				+ "SELECT " + AllRows + " FROM amikodb ORDER BY " 
-				+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
-				+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
-				+ "REPLACE(REPLACE(REPLACE(REPLACE("
-				+ "REPLACE(REPLACE(REPLACE(REPLACE("
-				+ "REPLACE(REPLACE(REPLACE(REPLACE("
-				+ "title,"
-				+ "'é','e'),'à','a'),'è','e'),'ê','e'),'É','E'),"
-				+ "'î','i'),'ç','c'),'ä','a'),'ö','o'),'Ä','A'),"
-				+ "'ü','u'),'[','{['),'0','{0'),'1','{1'),'2','{2'),"
-				+ "'3','{3'),'4','{4'),'5','{5'),'6','{6'),"
-				+ "'7','{7'),'8','{8'),'9','{9')"
-				+ " COLLATE NOCASE;");
-        stat.executeUpdate("DROP TABLE IF EXISTS amikodb;");
-        stat.executeUpdate("ALTER TABLE amikodb_ordered RENAME TO amikodb;");
-        stat.executeUpdate("VACUUM;");
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		}
 	}
+
+	public void addExpertDB(MedicalInformations.MedicalInformation m, String packages_str, String regnr_str, String ids_str, 
+			String titles_str, String atc_description_str, String atc_class_str, String pack_info_str, 
+			String add_info_str, int customer_id, List<String> tIndex_list, String indications_str) {
+		try {
+			if (prep!=null) {
+				prep.setString(1, m.getTitle());
+		        prep.setString(2, m.getAuthHolder());
+				prep.setString(3, m.getAtcCode() + ";" + atc_description_str);
+		        prep.setString(4, m.getSubstances());
+		        prep.setString(5, regnr_str);
+		        prep.setString(6, atc_class_str);
+		        prep.setString(7, tIndex_list.get(0));	// therapeutic index
+		        prep.setString(8, tIndex_list.get(1));	// application area	 
+		        prep.setString(9, indications_str);		// indications section
+		        prep.setInt(10, customer_id);	        
+		        prep.setString(11, pack_info_str);
+		        prep.setString(12, add_info_str);
+		        prep.setString(13, ids_str);
+		        prep.setString(14, titles_str);
+		        prep.setString(15, m.getContent()); 
+		        prep.setString(17, packages_str);
+		        prep.addBatch();        
+				conn.setAutoCommit(false);
+		        prep.executeBatch();
+		        conn.setAutoCommit(true);         
+			} else {
+				System.out.println("There is no database!");
+				System.exit(0);
+			}			
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		}
+	}	
 		
 	public void readDB() throws SQLException { 		
 		ResultSet rs = stat.executeQuery("SELECT * FROM amikodb;");
-        while (rs.next()) {
-            System.out.println("title = " + rs.getString("title"));
-            System.out.println("auth = " + rs.getString("auth"));
-            System.out.println("atccode = " + rs.getString("atc"));
-            System.out.println("substances = " + rs.getString("substances"));            
-        }
-        rs.close();
-        conn.close();	
+	    while (rs.next()) {
+	        System.out.println("title = " + rs.getString("title"));
+	        System.out.println("auth = " + rs.getString("auth"));
+	        System.out.println("atccode = " + rs.getString("atc"));
+	        System.out.println("substances = " + rs.getString("substances"));            
+	    }
+	    rs.close();
+	    conn.close();	
+	}
+	
+	public void reorderAlphaDB(String table_name) {
+		try {
+	        stat.executeUpdate("DROP TABLE IF EXISTS " + table_name + "_ordered;");
+	        stat.executeUpdate("CREATE TABLE " + table_name + "_ordered " + table());     
+			stat.executeUpdate("INSERT INTO " + table_name + "_ordered (" + AllRows + ") "
+					+ "SELECT " + AllRows + " FROM " + table_name + " ORDER BY " 
+					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
+					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
+					+ "REPLACE(REPLACE(REPLACE(REPLACE("
+					+ "REPLACE(REPLACE(REPLACE(REPLACE("
+					+ "REPLACE(REPLACE(REPLACE(REPLACE("
+					+ "title,"
+					+ "'é','e'),'à','a'),'è','e'),'ê','e'),'É','E'),"
+					+ "'î','i'),'ç','c'),'ä','a'),'ö','o'),'Ä','A'),"
+					+ "'ü','u'),'[','{['),'0','{0'),'1','{1'),'2','{2'),"
+					+ "'3','{3'),'4','{4'),'5','{5'),'6','{6'),"
+					+ "'7','{7'),'8','{8'),'9','{9')"
+					+ " COLLATE NOCASE;");
+	        stat.executeUpdate("DROP TABLE IF EXISTS " + table_name + ";");
+	        stat.executeUpdate("ALTER TABLE " + table_name + "_ordered RENAME TO " + table_name + ";");
+	        stat.executeUpdate("VACUUM;");
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		}
 	}
 }
 

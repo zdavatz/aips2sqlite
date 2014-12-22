@@ -76,6 +76,9 @@ import com.maxl.java.aips2sqlite.Preparations.Preparation;
 
 public class RealExpertInfo {
 
+	// Main sqlite database
+	SqlDatabase m_sql_db;
+	
 	List<MedicalInformations.MedicalInformation> m_med_list = null;
 
 	// Map to list with all the relevant information
@@ -107,7 +110,8 @@ public class RealExpertInfo {
 	/*
 	 * Constructors
 	 */
-	public RealExpertInfo(List<MedicalInformations.MedicalInformation> med_list) {
+	public RealExpertInfo(SqlDatabase sql_db, List<MedicalInformations.MedicalInformation> med_list) {
+		m_sql_db = sql_db;
 		m_med_list = med_list;
 		
 		// Initialize maps and lists
@@ -732,9 +736,7 @@ public class RealExpertInfo {
 		extractSwissDRGInfo();
 		
 		try {
-			// Create database
-			SqlDatabase sql_db = new SqlDatabase();
-			sql_db.createDB(CmlOptions.DB_LANGUAGE);
+			m_sql_db.createExpertDB(CmlOptions.DB_LANGUAGE);
 			
 			// Load CSS file: used only for self-contained xml files
 			String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
@@ -763,7 +765,7 @@ public class RealExpertInfo {
 			int tot_pseudo_counter = 0;
 			if (CmlOptions.ADD_PSEUDO_FI==true) {
 				String empty_pack_str = "";
-				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(sql_db, CmlOptions.DB_LANGUAGE, empty_pack_str);
+				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(m_sql_db, CmlOptions.DB_LANGUAGE, empty_pack_str);
 				// Process
 				tot_pseudo_counter = pseudo_fi.process();
 				System.out.println("");
@@ -1222,8 +1224,8 @@ public class RealExpertInfo {
 							String packages_str = "";
 							for (String s : m_list_of_packages)
 								packages_str += s;
-							sql_db.addDB( m, packages_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
-									m_pack_section_str, orggen_str, customer_id, mTyIndex_list, section_indications );
+							m_sql_db.addExpertDB(m, packages_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
+									m_pack_section_str, orggen_str, customer_id, mTyIndex_list, section_indications);
 							
 							med_counter++;
 						}
@@ -1245,7 +1247,7 @@ public class RealExpertInfo {
 			System.out.println("--------------------------------------------");
 			
 			// Reorder DB alphabetically
-			sql_db.reorderAlphaDB();
+			m_sql_db.reorderAlphaDB("amikodb");
 			
 			if (CmlOptions.ZIP_BIG_FILES==true) {
 				FileOps.zipToFile("./output/", "amiko_db_full_idx_" + CmlOptions.DB_LANGUAGE + ".db");
@@ -1347,8 +1349,6 @@ public class RealExpertInfo {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (SQLException e ) {
-			System.out.println("SQLException!");
 		} catch (ClassNotFoundException e) {
 			System.out.println("ClassNotFoundException!");
 		}	

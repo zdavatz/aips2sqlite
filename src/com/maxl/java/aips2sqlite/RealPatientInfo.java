@@ -50,7 +50,7 @@ import org.jsoup.select.Elements;
 import com.maxl.java.aips2sqlite.Preparations.Preparation;
 
 public class RealPatientInfo {
-
+	
 	List<MedicalInformations.MedicalInformation> m_med_list = null;
 	
 	// Map to list with all the relevant information
