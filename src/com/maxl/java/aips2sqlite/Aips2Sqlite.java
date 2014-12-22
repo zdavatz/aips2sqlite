@@ -188,8 +188,8 @@ public class Aips2Sqlite {
 				ShoppingCart sc = new ShoppingCart();
 				sc.listFiles(Constants.DIR_SHOPPING);
 				sc.encryptConditionsToDir("ibsa_conditions", Constants.DIR_SHOPPING);
-				sc.encryptCsvToDir("ibsa_glns", Constants.DIR_SHOPPING, 0);
-				sc.encryptCsvToDir("access.ami", Constants.DIR_SHOPPING, 0);
+				sc.encryptCsvToDir("moosberger_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0);
+				sc.encryptCsvToDir("access.ami", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0);
 				sc.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
 			}
 			

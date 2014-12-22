@@ -18,23 +18,20 @@ public class GlnCodes {
 	
 	XSSFSheet m_gln_codes_people_sheet = null;
 	XSSFSheet m_gln_codes_companies_sheet = null;
-	Map<String, String> m_gln_codes_studer = null;
+	Map<String, String> m_gln_codes_moos = null;
+	Map<String, String> m_gln_codes_complete = null;
 	
 	public GlnCodes() {
-		// Load files
+		// Load medreg files
 		m_gln_codes_people_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_PEOPLE, 0);
 		m_gln_codes_companies_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_COMPANIES, 0);
-		// Studer Marketing
-		m_gln_codes_studer = readFromCsvToMap(Constants.DIR_SHOPPING + "ibsa_glns.csv");
+		// Moosberger
+		m_gln_codes_moos = readFromCsvToMap(Constants.DIR_SHOPPING + "moosberger_glns.csv");
+		// Complete list of gln_codes
+		m_gln_codes_complete = new TreeMap<String, String>();
 	}
 	
 	public void generateCsvFile() {						
-		String csv_file = "";
-
-		// Counters
-		int unique_gln_found = 0;
-		int multiple_gln_found = 0;
-		
 		long startTime = System.currentTimeMillis();
 		if (CmlOptions.SHOW_LOGS)
 			System.out.print("- Generating GLN codes csv file... ");		
@@ -70,27 +67,17 @@ public class GlnCodes {
 					selbst_disp = row.getCell(8).getStringCellValue();
 				if (row.getCell(9)!=null) 
 					bet_mittel = row.getCell(9).getStringCellValue();
-				
+		
 				if (type.matches(".*[AÄaä]rzt.*"))
 					type = "Arzt";		
-				
-				csv_file += gln_person + "|" + family_name + "|" + first_name + "|" + plz 
-						+ "|" + location + "||" + type + "|" + selbst_disp + "|" + bet_mittel + "\n"; 
-				
-				if (m_gln_codes_studer.containsKey(gln_person)) {
-					String cat = m_gln_codes_studer.get(gln_person);
-					if (!cat.contains(";Arzt"))
-						unique_gln_found++;
-					else
-						multiple_gln_found++;
-					m_gln_codes_studer.put(gln_person, cat + ";Arzt");
+		
+				if (!gln_person.isEmpty()) {
+					m_gln_codes_complete.put(gln_person, family_name + "|" + first_name + "|" + plz 
+							+ "|" + location + "||" + type + "|" + selbst_disp + "|" + bet_mittel);
 				}
-				
-				System.out.print("\r- Generating GLN codes csv file... " + num_rows);
 			}
 			num_rows++;
 		}
-		int num_rows_person_file = num_rows;
 		
 		// Process companies' file
 		rowIterator = m_gln_codes_companies_sheet.iterator();
@@ -123,7 +110,7 @@ public class GlnCodes {
 					number = row.getCell(4).getStringCellValue().trim();
 				if (row.getCell(9)!=null) 
 					type = row.getCell(9).getStringCellValue();
-				
+
 				if (type.matches(".*Apotheke.*"))
 					type = "Apotheke";		
 				else if (type.matches(".*[Ss]pital.*"))
@@ -133,51 +120,72 @@ public class GlnCodes {
 				else if (type.matches(".*[Bb]ehörde.*"))
 					type = "Behörde";
 				
-				csv_file += gln_company + "|" + name_1 + "|" + name_2 + "|" + plz 
-						+ "|" + location + "|" + street + " " + number + "|" + type + "||\n";
-				
-				if (m_gln_codes_studer.containsKey(gln_company)) {
-					String cat = m_gln_codes_studer.get(gln_company);
-					if (!cat.contains(";Betrieb"))
-						unique_gln_found++;
-					else
-						multiple_gln_found++;
-					m_gln_codes_studer.put(gln_company, cat + ";Betrieb");
+				if (!gln_company.isEmpty()) {
+					m_gln_codes_complete.put(gln_company, name_1 + "|" + name_2 + "|" + plz 
+							+ "|" + location + "|" + street + " " + number + "|" + type + "||");
 				}
-				
-				System.out.print("\r- Generating GLN codes csv file... " + num_rows + "   ");
 			}
 			num_rows++;
 		}
 		
+		// Loop through the Moosberger file
+		for (Map.Entry<String, String> entry : m_gln_codes_moos.entrySet()) {
+			String gln = entry.getKey();
+			String cat = entry.getValue();	// e.g. "A;Arzt" or "B;Drogerie"
+			String type = "";
+			if (m_gln_codes_complete.containsKey(gln)) {
+				String t[] = cat.split(";");
+				// Replace type string with "Drogerie"
+				if (t[1].matches(".*[Dd]rogerie.*")) {
+					type = "Drogerie";
+					System.out.println("-> Exists in med reg file: " + gln + " -> " + type);
+				} else if (t[1].matches(".*[Gg]rossist.*")) {
+					type = "Grossist";
+					System.out.println("-> Exists in med reg file: " + gln + " -> " + type);
+				}
+			} else {
+				String t[] = cat.split(";");				
+				if (t.length>1) {
+					if (t[1].matches(".*[AÄaä]rzt.*"))
+						type = "Arzt";	
+					else if (t[1].matches(".*[Aa]potheke.*"))
+						type = "Apotheke";		
+					else if (t[1].matches(".*[Ss]pital.*"))
+						type = "Spital";
+					else if (t[1].matches(".*[Dd]rogerie.*"))
+						type = "Drogerie";
+					else if (t[1].matches(".*[Gg]rossist.*"))
+						type = "Grossist";
+				}
+				m_gln_codes_complete.put(gln, "|||||" + type + "||");
+			}
+		}
 		// Write to file
-		FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT, "gln_codes_csv.csv");
+		int rows = writeMapToCsv(m_gln_codes_complete, '|', "gln_codes_csv.csv", "");		
 		// ... and zip it
-		FileOps.zipToFile(Constants.DIR_OUTPUT, "gln_codes_csv.csv");
+		FileOps.zipToFile(Constants.DIR_OUTPUT, "gln_codes_csv.csv");	
 		
-		// Write map to file
-		String add_str = "GLN codes found in Studer file: " + (m_gln_codes_studer.size()-1) 
-				+ "\nGLN codes not found in Studer file: " + (m_gln_codes_studer.size()-1-unique_gln_found)				
-				+ "\nUnique matched GLN codes found in Studer file: " + unique_gln_found 
-				+ "\nMultiple matched GLN codes found in Studer file: " + multiple_gln_found
-				+ "\n";
-		writeMapToCsv(m_gln_codes_studer, "gln_codes_complete.csv", add_str);
-		writeUnmatchedGLNcodesToFile(m_gln_codes_studer, "gln_codes_unmatched.csv");
+		// Generate gln_codes -> customer category map, which will be serialized and encrypted
 		
 		
 		long stopTime = System.currentTimeMillis();
 		if (CmlOptions.SHOW_LOGS) {
-			System.out.println("- Processed " + (num_rows+num_rows_person_file) + " rows in "
+			System.out.println("- Processed " + rows + " rows in "
 					+ (stopTime - startTime) / 1000.0f + " sec");
 		}
 	}
 	
-	private void writeMapToCsv(Map<String, String> map, String file_name, String add_str) {
+	private int writeMapToCsv(Map<String, String> map, char separator, String file_name, String add_str) {
 		String csv_file = add_str;
+		int num_rows = 0;
 		for (Map.Entry<String, String> entry : map.entrySet()) {
-			csv_file += entry.getKey() + ";" + entry.getValue() + "\n";
+			csv_file += entry.getKey() + separator + entry.getValue() + "\n";
+			num_rows++;
+			System.out.print("\r- Generating GLN codes csv file... " + num_rows + "   ");
 		}
+		System.out.println();
 		FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT, file_name);
+		return num_rows;
 	}
 	
 	private void writeUnmatchedGLNcodesToFile(Map<String, String> map, String file_name) {
@@ -201,10 +209,11 @@ public class GlnCodes {
 			String line;
 			while ((line = br.readLine()) != null) {
 				String token[] = line.split(";");
-				if (token.length>1) {
+				if (token.length>2) {
 					if (map.containsKey(token[0]))
 						System.out.println("GLN code exists already!");
-					map.put(token[0], token[1]);
+					// token[1]: class (A/B), token[2]: type
+					map.put(token[0], token[1] + ";" + token[2]);
 				}
 			}
 			br.close();

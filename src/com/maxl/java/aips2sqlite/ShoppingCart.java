@@ -73,19 +73,31 @@ public class ShoppingCart implements java.io.Serializable {
 				  1: Präparatname
 				  2: EAN code
 				  5: FEP inkl. MWSt.
-				  6: FAB exkl. MWSt.
-				  7: Arztpraxis B
-				  8: Artzpraxis A
-				  9: assortierbar mit, comma-separated list
-				 10: Apotheke B
-				 11: Apotheke A
-				 12: assortierbar mit, comma-separated list
-				 13: Promotionszyklus B
-				 14: Promotionszyklus A
-				 15: assortierbar mit, comma-separated list
-				 16: Spital C
-				 17: Spital B
-				 18: Spital A
+				  6: FAP exkl. MWSt.
+				  7: MWSt.
+				  8: visible Arzt, Apotheke
+				  9: visible Drogerie
+				 10: visible Spital
+				 11: visible Grosshandel
+				 12: B-Arztpraxis
+				 13: A-Artzpraxis
+				 14: assortierbar mit, comma-separated list
+				 15: B-Apotheke
+				 16: A-Apotheke
+				 17: assortierbar mit, comma-separated list
+				 18: Promotionszyklus B-Apotheke
+				 19: Promotionszyklus A-Apotheke
+				 20: assortierbar mit, comma-separated list
+				 21: B-Drogerie
+				 22: A-Drogerie
+				 23: assortierbar mit, comma-separated list
+				 24: Promotionszyklus, B-Drogerie
+				 25: Promotionszyklus, A-Drogerie
+				 26: assortierbar mit, comma-separated list				 
+				 27: C-Spital
+				 28: B-Spital
+				 29: A-Spital
+				 30: assortierbar mit, comma-separated list
 				*/
 				if (num_rows>1) {
 					if (row.getCell(2)!=null) {
@@ -94,42 +106,55 @@ public class ShoppingCart implements java.io.Serializable {
 							// EAN code read in as "float"!
                             eancode = eancode.substring(0, eancode.length()-3);
 							String name = getCellValue(row.getCell(1)).replaceAll("\\*", "").trim();
-							float fep = Float.valueOf(getCellValue(row.getCell(5)));
-							float fap = Float.valueOf(getCellValue(row.getCell(6)));	
+							float fep = 0.0f;
+							if (!getCellValue(row.getCell(5)).isEmpty())
+								fep = Float.valueOf(getCellValue(row.getCell(5)));
+							float fap = 0.0f;
+							if (!getCellValue(row.getCell(6)).isEmpty())							
+								fap = Float.valueOf(getCellValue(row.getCell(6)));	
 							// Instantiate new med condition
 							Conditions cond = new Conditions(eancode, name, fep, fap);								
 							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(fap) + " / ");							
 
 							// Rebates
 							try {
-								extractDiscounts(cond, "B-doc", getCellValue(row.getCell(7)));	// B-Praxis
-								extractDiscounts(cond, "A-doc", getCellValue(row.getCell(8)));	// A-Praxis		
-								extractDiscounts(cond, "B-farma", getCellValue(row.getCell(10)));	// B-Apotheke
-								extractDiscounts(cond, "A-farma", getCellValue(row.getCell(11)));	// A-Apotheke
-								extractDiscounts(cond, "B-promo", getCellValue(row.getCell(13)));	// B-Promo-cycle
-								extractDiscounts(cond, "A-promo", getCellValue(row.getCell(14)));	// A-Promo-cycle
-								extractDiscounts(cond, "C-hospital", getCellValue(row.getCell(16)));	// C-hospital
-								extractDiscounts(cond, "B-hospital", getCellValue(row.getCell(17)));	// B-hospital
-								extractDiscounts(cond, "A-hospital", getCellValue(row.getCell(18)));	// A-hospital
+								extractDiscounts(cond, "B-doctor", getCellValue(row.getCell(12)));	// B-Arztpraxis
+								extractDiscounts(cond, "A-doctor", getCellValue(row.getCell(13)));	// A-Arztpraxis		
+								extractDiscounts(cond, "B-pharmacy", getCellValue(row.getCell(15)));	// B-Apotheke
+								extractDiscounts(cond, "A-pharmacy", getCellValue(row.getCell(16)));	// A-Apotheke
+								extractDiscounts(cond, "B-pharmacy-promo", getCellValue(row.getCell(18)));	// B-Apotheke promo-cycle
+								extractDiscounts(cond, "A-pharmacy-promo", getCellValue(row.getCell(19)));	// A-Apotheke promo-cycle
+								extractDiscounts(cond, "B-drugstore", getCellValue(row.getCell(21)));	// B-Drogerie
+								extractDiscounts(cond, "A-drugstore", getCellValue(row.getCell(22)));	// A-Drogerie
+								extractDiscounts(cond, "B-drugstore-promo", getCellValue(row.getCell(24)));	// B-Drogerie promo-cycle
+								extractDiscounts(cond, "A-drugstore-promo", getCellValue(row.getCell(25)));	// A-Drogerie promo-cycle
+								extractDiscounts(cond, "C-hospital", getCellValue(row.getCell(27)));	// C-Spital
+								extractDiscounts(cond, "B-hospital", getCellValue(row.getCell(28)));	// B-Spital
+								extractDiscounts(cond, "A-hospital", getCellValue(row.getCell(29)));	// A-Spital
 								// Assortiebarkeit
-								extractAssort(cond, "doc", getCellValue(row.getCell(9)));
-								extractAssort(cond, "farma", getCellValue(row.getCell(12)));
-								extractAssort(cond, "promo", getCellValue(row.getCell(15)));							
+								extractAssort(cond, "doctor", getCellValue(row.getCell(14)));
+								extractAssort(cond, "pharmacy", getCellValue(row.getCell(17)));
+								extractAssort(cond, "pharma-promo", getCellValue(row.getCell(20)));							
+								extractAssort(cond, "drugstore", getCellValue(row.getCell(23)));
+								extractAssort(cond, "drugstore-promo", getCellValue(row.getCell(26)));
+								extractAssort(cond, "hospital", getCellValue(row.getCell(30)));								
 							} catch(Exception e) {
 								System.out.println(">> Exception while processing Excel-File " + filename);
 								System.out.println(">> Check " + eancode + " -> " +name);
 								e.printStackTrace();
 								System.exit(-1);
 							}
+
 							// Test
-							TreeMap<Integer, Float> test = cond.getDiscountPromo('A');
+							/*
+							TreeMap<Integer, Float> test = cond.getDiscountPharmacy('A', true);
 							for (Map.Entry<Integer, Float> entry : test.entrySet()) {
 								int unit = entry.getKey();
 								float discount = entry.getValue();								
-								// System.out.print(unit + " -> " + discount + "  ");
+								System.out.print(unit + " -> " + discount + "  ");
 							}
-							// System.out.println()
-							
+							System.out.println();
+							*/
 							// Add to list of conditions
 							map_conditions.put(eancode, cond);		
 						}
@@ -170,119 +195,137 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 	}
 	
-	private boolean extractDiscounts(Conditions c, String category, String discount_str) {
-		boolean discounted = false;
+	private void extractDiscounts(Conditions c, String category, String discount_str) {
 		if (!discount_str.isEmpty()) {
-			// Promotion-cycles
-			if (category.equals("A-promo") || category.equals("B-promo")) {
-				// Extract complex date
-				Pattern date_pattern1 = Pattern.compile("\\b(\\d{2}).(\\d{2}).(\\d{4})-(\\d{2})\\b", Pattern.DOTALL);
-				Matcher date_match1 = date_pattern1.matcher(discount_str);					
-				while (date_match1.find()) {
-					int day1 = Integer.parseInt(date_match1.group(1));
-					int month1 = Integer.parseInt(date_match1.group(2));
-					int year1 = Integer.parseInt(date_match1.group(3));
-					int month2 = Integer.parseInt(date_match1.group(4));
-					// System.out.println(day1 + "." + month1 + "." + year1 + "->" + month2);
-					if (month1<month2) {
-						int d1 = (new DateTime(year1, month1, day1, 0, 0, 0)).getDayOfYear();
-						int d2 = 0;
-						if (month2<12)
-							d2 = (new DateTime(year1, month2+1, 1, 0, 0, 0)).getDayOfYear();						
-						else // December 31st
-							d2 = (new DateTime(year1, 12, 31, 0, 0, 0)).getDayOfYear();
-						if (category.equals("A-promo")) {
-							for (int m=month1; m<=month2; ++m)
-								c.addPromoMonth(m, 'A');
-							c.addPromoTime(d1, d2, 'A');
-						}
-						if (category.equals("B-promo")) {
-							for (int m=month1; m<=month2; ++m)
-								c.addPromoMonth(m, 'B');
-							c.addPromoTime(d1, d2, 'B');
-						}				
+			// All regex patterns
+			Pattern date_pattern1 = Pattern.compile("\\b(\\d{2}).(\\d{2}).(\\d{4})-(\\d{2})\\b", Pattern.DOTALL);
+			Pattern date_pattern2 = Pattern.compile("\\b(\\d{2})-(\\d{2})\\b", Pattern.DOTALL);
+			Pattern rebate_pattern1 = Pattern.compile("([0-9/.:]+)\\((.*?)\\)", Pattern.DOTALL);
+			Pattern rebate_pattern2 = Pattern.compile("\\((.*?)\\)", Pattern.DOTALL);	
+			Pattern rebate_pattern3 = Pattern.compile("([0-9]+):([0-9]+)(:[0-9]+)?", Pattern.DOTALL);
+
+			// *** Complex date regex ***
+			Matcher date_match1 = date_pattern1.matcher(discount_str);	
+			while (date_match1.find()) {
+				int day1 = Integer.parseInt(date_match1.group(1));
+				int month1 = Integer.parseInt(date_match1.group(2));
+				int year1 = Integer.parseInt(date_match1.group(3));
+				int month2 = Integer.parseInt(date_match1.group(4));
+				if (month1<month2) {
+					int d1 = (new DateTime(year1, month1, day1, 0, 0, 0)).getDayOfYear();
+					int d2 = 0;
+					if (month2<12)
+						d2 = (new DateTime(year1, month2+1, 1, 0, 0, 0)).getDayOfYear();						
+					else // December 31st
+						d2 = (new DateTime(year1, 12, 31, 0, 0, 0)).getDayOfYear();
+					System.out.println("# complex date -> from " + d1 + " to " + d2);						
+					if (category.equals("A-pharmacy-promo") || category.equals("B-pharmacy-promo")) {
+						for (int m=month1; m<=month2; ++m)
+							c.addPromoMonth("pharmacy", category.charAt(0), m);
+						c.addPromoTime("pharmacy", category.charAt(0), d1, d2);
 					}
-					discounted = true;
+					if (category.equals("B-drugstore-promo") || category.equals("B-drugstore-promo")) {
+						for (int m=month1; m<=month2; ++m)
+							c.addPromoMonth("drugstore", category.charAt(0), m);
+						c.addPromoTime("drugstore", category.charAt(0), d1, d2);
+					}				
 				}
-				// Extract simple date
-				Pattern date_pattern2 = Pattern.compile("\\b(\\d{2})-(\\d{2})\\b", Pattern.DOTALL);
-				Matcher date_match2 = date_pattern2.matcher(discount_str);
-				while (date_match2.find()) {
-					int month1 = Integer.parseInt(date_match2.group(1));
-					int month2 = Integer.parseInt(date_match2.group(2));
-					// System.out.println(month1 + "->" + month2);
-					if (month1<month2) {
-						DateTime curr_dt = new DateTime();
-						int curr_year = curr_dt.getYear();
-						int d1 = (new DateTime(curr_year, month1, 1, 0, 0, 0)).getDayOfYear();
-						int d2 = 0;
-						if (month2<12)
-							d2 = (new DateTime(curr_year, month2+1, 1, 0, 0, 0)).getDayOfYear();
-						else	// Januar 1st
-							d2 = (new DateTime(curr_year, 12, 31, 0, 0, 0)).getDayOfYear();
-						if (category.equals("A-promo")) {
-							for (int m=month1; m<=month2; ++m)
-								c.addPromoMonth(m, 'A');
-							c.addPromoTime(d1, d2, 'A');
-						}
-						if (category.equals("B-promo")) {
-							for (int m=month1; m<=month2; ++m)
-								c.addPromoMonth(m, 'B');
-							c.addPromoTime(d1, d2, 'B');
-						}				
+			}
+			// *** Simple date regex ***
+			Matcher date_match2 = date_pattern2.matcher(discount_str);
+			while (date_match2.find()) {
+				int month1 = Integer.parseInt(date_match2.group(1));
+				int month2 = Integer.parseInt(date_match2.group(2));
+				if (month1<month2) {
+					DateTime curr_dt = new DateTime();
+					int curr_year = curr_dt.getYear();
+					int d1 = (new DateTime(curr_year, month1, 1, 0, 0, 0)).getDayOfYear();
+					int d2 = 0;
+					if (month2<12)
+						d2 = (new DateTime(curr_year, month2+1, 1, 0, 0, 0)).getDayOfYear();
+					else	// Januar 1st
+						d2 = (new DateTime(curr_year, 12, 31, 0, 0, 0)).getDayOfYear();
+					System.out.println("# simple date -> from " + d1 + " to " + d2);		
+					if (category.equals("A-pharmacy-promo") || category.equals("B-pharmacy-promo")) {
+						for (int m=month1; m<=month2; ++m)
+							c.addPromoMonth("pharmacy", category.charAt(0), m);
+						c.addPromoTime("pharmacy", category.charAt(0), d1, d2);
 					}
-					discounted = true;
+					if (category.equals("B-drugstore-promo") || category.equals("B-drugstore-promo")) {
+						for (int m=month1; m<=month2; ++m)
+							c.addPromoMonth("drugstore", category.charAt(0), m);
+						c.addPromoTime("drugstore", category.charAt(0), d1, d2);
+					}					
 				}
-			} else {			
-				// Split comma-separated list
-				String[] rebates = discount_str.split("\\s*,\\s*");
-				// Extract discounts: check for parentheses discounts
-				Pattern pattern2 = Pattern.compile("([0-9/]+)\\((.*?)\\)", Pattern.DOTALL);
-				Pattern pattern3 = Pattern.compile("\\((.*?)\\)", Pattern.DOTALL);
-				// Loop through all elements of the list
-				for (int i=0; i<rebates.length; ++i) {	
-					Matcher match2 = pattern2.matcher(rebates[i]);
-					if (match2.matches()) {
-						// Get units by removing parentheses
-						String units = rebates[i].replaceAll("\\(.*\\)","");
-						// Get discount as content of the parentheses
-						Matcher match3 = pattern3.matcher(rebates[i]);
-						match3.find();
-						String discount = match3.group(1).replaceAll("%", "");
-						// Extract all units 
-						// Note: discount can also be <0!
-						if (units.contains("/")) {
-							String single_unit[] = units.split("/");
-							for (int j=0; j<single_unit.length; ++j) {
-								discounted |= addDiscount(c, category, single_unit[j], discount);
+			}
+			
+			// Split comma-separated list
+			String[] rebates = discount_str.split("\\s*,\\s*");	
+			// Loop through all elements of the list
+			for (int i=0; i<rebates.length; ++i) {		
+				// *** units(discount in %) pattern ***
+				Matcher rebate_match1 = rebate_pattern1.matcher(rebates[i]);
+				if (rebate_match1.matches()) {
+					System.out.println("# rebate -> " + rebates[i]);	
+					// Get units by removing parentheses
+					String units = rebates[i].replaceAll("\\(.*\\)","");
+					// Get discount as content of the parentheses
+					Matcher rebate_match2 = rebate_pattern2.matcher(rebates[i]);
+					rebate_match2.find();
+					String discount = rebate_match2.group(1).replaceAll("%", "");
+					// Extract all units 
+					// Note: discount can also be <0!
+					if (units!=null) {				
+						Matcher rebate_match3 = rebate_pattern3.matcher(units);
+						if (rebate_match3.matches()) {
+							int step = 10;
+							if (rebate_match3.groupCount()==3) {
+								if (rebate_match3.group(3)!=null) {
+									String s = rebate_match3.group(3);
+									step = Integer.valueOf(s.replaceAll(":",""));
+								}
+							}
+							int from = Integer.valueOf(rebate_match3.group(1));
+							int to = Integer.valueOf(rebate_match3.group(2));
+							// Increment units to 100 in steps of 10								
+							for (int k=from; k<=to; k+=step) {
+								String single_unit = String.format("%d", k);
+								addDiscount(c, category, single_unit, discount);
 							}
 						} else {
-							if (units!=null) {								
-								int u = Integer.valueOf(units);	
-								// Check if number of units is limited to <=100 and its a "loner"
-								if (u<=100 && rebates.length==1) {
-									// Increment units to 100 in steps of 10								
-									for (int k=u; k<=100; k+=10) {
-										String single_unit = String.format("%d", k);
-										discounted |= addDiscount(c, category, single_unit, discount);
-									}
-								} else {
-									// Do not increment...
-									String single_unit = String.format("%d", u);
-									discounted |= addDiscount(c, category, single_unit, discount);
-								}	
-							}
+							int u = Integer.valueOf(units);	
+							// Check if number of units is limited to <=100 and its a "loner"
+							if (u<=100 && rebates.length==1) {
+								// Increment units to 100 in steps of 10								
+								for (int k=u; k<=100; k+=10) {
+									String single_unit = String.format("%d", k);
+									addDiscount(c, category, single_unit, discount);
+								}
+							}	
 						}
-					} else {
-						// Found "Muster"! Barrabatt = -100%
-						String units = rebates[i];
-						// System.out.println("Muster -> " + units);
-						discounted |= addDiscount(c, category, units, "-100");
+						continue;
 					}
+				} 
+				if (rebates[i].matches("([0-9.]+)")) {
+					String units = rebates[i];
+					int u = Float.valueOf(units).intValue();	
+					if (u==1 || u==2) {
+						// Found "Muster"! Barrabatt = -100%
+						units = String.format("%d", u);
+						System.out.println("# muster -> " + units);						
+						addDiscount(c, category, units, "-100");
+					} else {
+						// Loners are filled up to 100 units with a 10er increment
+						System.out.println("# loner -> " + u);						
+						for (int k=u; k<=100; k+=10) {
+							String single_unit = String.format("%d", k);
+							addDiscount(c, category, single_unit, "0");
+						}
+					}
+					continue;					
 				}
 			}
 		}
-		return discounted;
 	}
 	
 	private boolean addDiscount(Conditions c, String category, String u, String d) {
@@ -291,22 +334,30 @@ public class ShoppingCart implements java.io.Serializable {
 		int units = 0;
 		float discount = 0.0f;
 		if (u!=null)
-			units = Integer.valueOf(u);					
+			units = (Float.valueOf(u)).intValue();					
 		if (d!=null)
 			discount = Float.valueOf(d);	
 		
-		if (category.equals("B-doc"))
-			c.addDiscountDoc('B', units, discount);
-		else if (category.equals("A-doc"))
-			c.addDiscountDoc('A', units, discount);
-		else if (category.equals("B-farma"))
-			c.addDiscountFarma('B', units, discount);
-		else if (category.equals("A-farma"))
-			c.addDiscountFarma('A', units, discount);
-		else if (category.equals("B-promo"))
-			c.addDiscountPromo('B', units, discount);
-		else if (category.equals("A-promo"))
-			c.addDiscountPromo('A', units, discount);
+		if (category.equals("B-doctor"))
+			c.addDiscountDoctor('B', units, discount);
+		else if (category.equals("A-doctor"))
+			c.addDiscountDoctor('A', units, discount);
+		else if (category.equals("B-pharmacy"))
+			c.addDiscountPharmacy('B', units, discount, false);
+		else if (category.equals("A-pharmacy"))
+			c.addDiscountPharmacy('A', units, discount, false);
+		else if (category.equals("B-pharma-promo"))
+			c.addDiscountPharmacy('B', units, discount, true);
+		else if (category.equals("A-pharma-promo"))
+			c.addDiscountPharmacy('A', units, discount, true);
+		else if (category.equals("B-drugstore"))
+			c.addDiscountDrugstore('B', units, discount, false);
+		else if (category.equals("A-drugstore"))
+			c.addDiscountDrugstore('A', units, discount, false);
+		else if (category.equals("B-drugstore-promo"))
+			c.addDiscountDrugstore('B', units, discount, true);
+		else if (category.equals("A-drugstore-promo"))
+			c.addDiscountDrugstore('A', units, discount, true);		
 		else if (category.equals("C-hospital"))
 			c.addDiscountHospital('C', units, discount);
 		else if (category.equals("B-hospital"))
@@ -327,26 +378,28 @@ public class ShoppingCart implements java.io.Serializable {
 				if (items.get(i).contains("."))
 					items.set(i, items.get(i).split("\\.")[0]);
 			}
-			if (category.equals("doc"))
-				c.setAssortDoc(items);
-			else if (category.equals("farma"))
-				c.setAssortFarma(items);
-			else if (category.equals("hospital"))
-				c.setAssortPromo(items);
+			c.setAssort(category, items);
 		}
 	}
 	
-	public void encryptCsvToDir(String filename, String dir, int skip) {
-		// First check if path exists
-		File f = new File(dir);
+	public void encryptCsvToDir(String in_filename, String in_dir, 
+			String out_filename, String out_dir, int skip) {
+		// First check if paths exist
+		File f = new File(in_dir);
 		if (!f.exists() || !f.isDirectory()) {
-			System.out.println("Directory " + dir + " does not exist!");
+			System.out.println("Directory " + in_dir + " does not exist!");
+			return;
+		}
+		// First check if path exists
+		f = new File(out_dir);
+		if (!f.exists() || !f.isDirectory()) {
+			System.out.println("Directory " + out_dir + " does not exist!");
 			return;
 		}
 		try {
 			Map<String, String> gln_map = new TreeMap<String, String>();
 			// Load csv file and dump to map
-			FileInputStream glnCodesCsv = new FileInputStream(dir + "/" + filename + ".csv");
+			FileInputStream glnCodesCsv = new FileInputStream(in_dir + "/" + in_filename + ".csv");
 			BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
 			String line;
 			while ((line=br.readLine()) !=null ) {
@@ -366,8 +419,8 @@ public class ShoppingCart implements java.io.Serializable {
 				}
 			}
 			// Write to file
-			writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
-			System.out.println("Saved encrypted file " + filename +".ser");
+			writeToFile(out_dir + out_filename +".ser", encrypted_msg);
+			System.out.println("Saved encrypted file " + out_filename +".ser");
 			
 			br.close();
 		} catch(IOException e) {

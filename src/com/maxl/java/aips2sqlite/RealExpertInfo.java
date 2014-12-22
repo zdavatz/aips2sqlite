@@ -732,7 +732,6 @@ public class RealExpertInfo {
 		extractSwissDRGInfo();
 		
 		try {
-
 			// Create database
 			SqlDatabase sql_db = new SqlDatabase();
 			sql_db.createDB(CmlOptions.DB_LANGUAGE);

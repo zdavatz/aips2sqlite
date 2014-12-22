@@ -1,6 +1,7 @@
 package com.maxl.java.shared;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -12,208 +13,222 @@ public class Conditions implements java.io.Serializable {
 	public String name;
 	public float fep_chf;
 	public float fap_chf;
-	TreeMap<Integer, Float> doctor_A;		// maps units to discount (%)
-	TreeMap<Integer, Float> farmacy_A;		// maps units to discount (%)
-	TreeMap<Integer, Float> promotion_A;	// maps units to discount (%)
-	TreeMap<Integer, Float> doctor_B;		// maps units to discount (%)
-	TreeMap<Integer, Float> farmacy_B;		// maps units to discount (%)
-	TreeMap<Integer, Float> promotion_B;	// maps units to discount (%)
-	TreeMap<Integer, Float> hospital_A;
-	TreeMap<Integer, Float> hospital_B;
-	TreeMap<Integer, Float> hospital_C;
-	List<Integer> promotion_months_A;
-	List<Integer> promotion_months_B;	
-	List<Integer> promotion_days_A;
-	List<Integer> promotion_days_B;
-	List<String> doctor_assort;				// maps list of assortable meds
-	List<String> farmacy_assort;			// maps list of assortable meds
-	List<String> promotion_assort;			// maps list of assortable meds
-
+	HashMap<Character, TreeMap<Integer, Float>> doctor;			  // arzt
+	HashMap<Character, TreeMap<Integer, Float>> pharmacy;		  // apotheke
+	HashMap<Character, TreeMap<Integer, Float>> pharmacy_promo;	  // promotion apotheke
+	HashMap<Character, TreeMap<Integer, Float>> drugstore;		  // drogerie
+	HashMap<Character, TreeMap<Integer, Float>> drugstore_promo;  // promotion drogerie
+	HashMap<Character, TreeMap<Integer, Float>> hospital;		  // spital
+	HashMap<Character, List<Integer>> pharmacy_promo_months;
+	HashMap<Character, List<Integer>> drugstore_promo_months;
+	HashMap<Character, List<Integer>> pharmacy_promo_days;		
+	HashMap<Character, List<Integer>> drugstore_promo_days;		
+	TreeMap<String, List<String>> assort;
+	
 	public Conditions(String ean_code, String name, float fep_chf, float fap_chf) {
 		this.ean_code = ean_code;
 		this.name = name;
 		this.fep_chf = fep_chf;
 		this.fap_chf = fap_chf;		
-		doctor_A = new TreeMap<Integer, Float>();
-		farmacy_A = new TreeMap<Integer, Float>();
-		promotion_A = new TreeMap<Integer, Float>();
-		doctor_B = new TreeMap<Integer, Float>();
-		farmacy_B = new TreeMap<Integer, Float>();
-		promotion_B = new TreeMap<Integer, Float>();	
-		hospital_A = new TreeMap<Integer, Float>();
-		hospital_B = new TreeMap<Integer, Float>();
-		hospital_C = new TreeMap<Integer, Float>();		
-		promotion_months_A = new ArrayList<Integer>();
-		promotion_months_B = new ArrayList<Integer>();
-		promotion_days_A = new ArrayList<Integer>();
-		promotion_days_B = new ArrayList<Integer>();
-		doctor_assort = new ArrayList<String>();
-		farmacy_assort = new ArrayList<String>();
-		promotion_assort = new ArrayList<String>();
+		doctor = new HashMap<Character, TreeMap<Integer, Float>>();
+		pharmacy = new HashMap<Character, TreeMap<Integer, Float>>();
+		pharmacy_promo = new HashMap<Character, TreeMap<Integer, Float>>();
+		drugstore = new HashMap<Character, TreeMap<Integer, Float>>();
+		drugstore_promo = new HashMap<Character, TreeMap<Integer, Float>>();
+		hospital = new HashMap<Character, TreeMap<Integer, Float>>();
+		pharmacy_promo_months = new HashMap<Character, List<Integer>>();
+		drugstore_promo_months = new HashMap<Character, List<Integer>>();
+		pharmacy_promo_days = new HashMap<Character, List<Integer>>();	
+		drugstore_promo_days = new HashMap<Character, List<Integer>>();	
+		assort = new TreeMap<String, List<String>>();
 	}
 
-	public void addDiscountDoc(char category, int units, float discount) {
-		if (category=='A')
-			doctor_A.put(units, discount);
-		else if (category=='B')
-			doctor_B.put(units, discount);
-	}
-
-	public TreeMap<Integer, Float> getDiscountDoc(char category) {
-		if (category=='A')
-			return doctor_A;
-		else if (category=='B')
-			return doctor_B;
+	public void addDiscountDoctor(char category, int units, float discount) {
+		TreeMap<Integer, Float> reb = null;
+		if (doctor.get(category)!=null)
+			reb = doctor.get(category);
 		else
-			return null;
+			reb = new TreeMap<Integer, Float>();
+		reb.put(units, discount);
+		doctor.put(category, reb);
+	}
+
+	public TreeMap<Integer, Float> getDiscountDoctor(char category) {		
+		return doctor.get(category);
+	}
+
+	public void addDiscountPharmacy(char category, int units, float discount, boolean promo) {
+		TreeMap<Integer, Float> reb = null;
+		if (promo==false) {
+			if (pharmacy.get(category)!=null)
+				reb = pharmacy.get(category);
+			else
+				reb = new TreeMap<Integer, Float>();
+			reb.put(units, discount);
+			pharmacy.put(category, reb);
+		} else {
+			if (pharmacy_promo.get(category)!=null)
+				reb = pharmacy_promo.get(category);
+			else
+				reb = new TreeMap<Integer, Float>();
+			reb.put(units, discount);
+			pharmacy_promo.put(category, reb);
+		}
+	}
+
+	public TreeMap<Integer, Float> getDiscountPharmacy(char category, boolean promo) {
+		if (promo==false)
+			return pharmacy.get(category);
+		else
+			return pharmacy_promo.get(category);
+	}
+
+	public void addDiscountDrugstore(char category, int units, float discount, boolean promo) {
+		TreeMap<Integer, Float> reb = null;
+		if (promo==false) {
+			if (drugstore.get(category)!=null)
+				reb = drugstore.get(category);
+			else
+				reb = new TreeMap<Integer, Float>();
+			reb.put(units, discount);
+			drugstore.put(category, reb);
+		} else {
+			if (drugstore_promo.get(category)!=null)
+				reb = drugstore_promo.get(category);
+			else
+				reb = new TreeMap<Integer, Float>();
+			reb.put(units, discount);
+			drugstore_promo.put(category, reb);
+		}
+	}
+
+	public TreeMap<Integer, Float> getDiscountDrugstore(char category, boolean promo) {
+		if (promo==false)
+			return drugstore.get(category);
+		else
+			return drugstore_promo.get(category);
 	}
 	
-	public void addDiscountFarma(char category, int units, float discount) {
-		if (category=='A')
-			farmacy_A.put(units, discount);
-		else if (category=='B')
-			farmacy_B.put(units, discount);
-	}
-
-	public TreeMap<Integer, Float> getDiscountFarma(char category) {
-		if (category=='A')
-			return farmacy_A;
-		else if (category=='B')
-			return farmacy_B;
-		else
-			return null;
-	}
-	
-	public void addDiscountPromo(char category, int units, float discount) {
-		if (category=='A')
-			promotion_A.put(units, discount);
-		else if (category=='B')
-			promotion_B.put(units, discount);
-	}
-
-	public TreeMap<Integer, Float> getDiscountPromo(char category) {
-		if (category=='A')
-			return promotion_A;
-		else if (category=='B')
-			return promotion_B;
-		else
-			return null;
-	}
-
 	public void addDiscountHospital(char category, int units, float discount) {
-		if (category=='A')
-			hospital_A.put(units, discount);
-		else if (category=='B')
-			hospital_B.put(units, discount);
-		else if (category=='C')
-			hospital_C.put(units, discount);
+		TreeMap<Integer, Float> reb = null;
+		if (hospital.get(category)!=null)
+			reb = hospital.get(category);
+		else
+			reb = new TreeMap<Integer, Float>();
+		reb.put(units, discount);
+		hospital.put(category, reb);
 	}
 
 	public TreeMap<Integer, Float> getDiscountHospital(char category) {
-		if (category=='A')
-			return hospital_A;
-		else if (category=='B')
-			return hospital_B;
-		else if (category=='C')
-			return hospital_C;
-		else
-			return null;
+		return hospital.get(category);
 	}	
 	
-	public void setAssortDoc(List<String> assort) {
-		doctor_assort = assort;
+	public void setAssort(String customer_type, List<String> ass) {
+		assort.put(customer_type, ass);
 	}
 
-	public List<String> getAssortDoc() {
-		return doctor_assort;
+	public List<String> getAssort(String customer_type) {
+		return assort.get(customer_type);
 	}
 	
-	public void setAssortFarma(List<String> assort) {
-		farmacy_assort = assort;	
-	}
-
-	public List<String> getAssortFarma() {
-		return farmacy_assort;
-	}
-	
-	public void setAssortPromo(List<String> assort) {
-		promotion_assort = assort;
-	}
-
-	public List<String> getAssortPromo() {
-		return promotion_assort;
-	}
-
-	public void addPromoMonth(int month, char category) {
-		if (category=='A')
-			promotion_months_A.add(month);
-		else if (category=='B')
-			promotion_months_B.add(month);
+	public void addPromoMonth(String customer_type, char category, int month) {
+		List<Integer> m = null;
+		if (customer_type.equals("pharmacy")) {
+			if (pharmacy_promo_months.get(category)!=null)
+				m = pharmacy_promo_months.get(category);
+			else
+				m = new ArrayList<Integer>();
+			m.add(month);
+			pharmacy_promo_months.put(category, m);
+		} else if (customer_type.equals("drugstore")) {
+			if (drugstore_promo_months.get(category)!=null)
+				m = drugstore_promo_months.get(category);
+			else
+				m = new ArrayList<Integer>();
+			m.add(month);
+			drugstore_promo_months.put(category, m);
+		}
 	}
 		
-	public boolean isPromoMonth(int month, char category) {
-		if (category=='A')
-			return promotion_months_A.contains(month);
-		else if (category=='B')
-			return promotion_months_B.contains(month);
-		else 
+	public boolean isPromoMonth(String customer_type, char category, int month) {
+		if (customer_type.equals("pharmacy"))
+			return pharmacy_promo_months.get(category).contains(month);
+		else if (customer_type.equals("drugstore"))
+			return drugstore_promo_months.get(category).contains(month);
+		else
 			return false;
 	}
 	
-	public List<Integer> getPromoMonths(char category) {
-		if (category=='A')
-			return promotion_months_A;
-		else if (category=='B')
-			return promotion_months_B;
-		return null;
+	public List<Integer> getPromoMonths(String customer_type, char category) {
+		if (customer_type.equals("pharmacy"))
+			return pharmacy_promo_months.get(category);
+		else if (customer_type.equals("drugstore"))
+			return drugstore_promo_months.get(category);
+		else 
+			return null;
 	}
 	
-	public void printPromoMonths(char category) {
-		if (category=='A') {
-			for (int m : promotion_months_A)
-				System.out.println("Promotion month A = " + m);
-		} else if (category=='B') {
-			for (int m : promotion_months_B)
-				System.out.println("Promotion month B = " + m);
+	public void printPromoMonths(String customer_type, char category) {
+		if (customer_type.equals("pharmacy")) {
+			for (int m : pharmacy_promo_months.get(category))
+				System.out.println(category + "-pharmacy promotion month = " + m);		
+		} else if (customer_type.equals("drugstore")) {
+			for (int m : pharmacy_promo_months.get(category))
+				System.out.println(category + "-drugstore promotion month = " + m);					
 		}
 	}
 	
-	public void addPromoTime(int day1, int day2, char category) {
-		if (category=='A') {
-			promotion_days_A.add(day1);
-			promotion_days_A.add(day2);			
-		} else if (category=='B') {
-			promotion_days_B.add(day1);
-			promotion_days_B.add(day2);			
+	public void addPromoTime(String customer_type, char category, int day1, int day2) {
+		List<Integer> d = null;
+		if (customer_type.equals("pharmacy")) {
+			if (pharmacy_promo_days.get(category)!=null)
+				d = pharmacy_promo_days.get(category);
+			else
+				d = new ArrayList<Integer>();
+			d.add(day1);
+			d.add(day2);
+			pharmacy_promo_days.put(category, d);
+		} else if (customer_type.equals("drugstore")) {
+			if (drugstore_promo_days.get(category)!=null)
+				d = drugstore_promo_days.get(category);
+			else
+				d = new ArrayList<Integer>();
+			d.add(day1);
+			d.add(day2);
+			drugstore_promo_days.put(category, d);			
 		}
 	}
 
-	public boolean isPromoTime(char category) {
+	public boolean isPromoTime(String customer_type, char category) {
 		DateTime current_dt = new DateTime();
 		int day_of_year = current_dt.getDayOfYear();
-		if (category=='A') {
-			for (int i=0; i<promotion_days_A.size(); i+=2) {
-				if (day_of_year>=promotion_days_A.get(i) && day_of_year<promotion_days_A.get(i))
+		if (customer_type.equals("pharmacy")) {
+			for (int i=0; i<pharmacy_promo_days.get(category).size(); i+=2) {
+				List<Integer> d = pharmacy_promo_days.get(category);
+				if (day_of_year>=d.get(i) && day_of_year<d.get(i)) {
 					return true;
-			}
-		} else if (category=='B') {
-			for (int i=0; i<promotion_days_B.size(); i+=2) {
-				if (day_of_year>=promotion_days_B.get(i) && day_of_year<promotion_days_B.get(i))
+				}
+			}			
+		} else if (customer_type.equals("drugstore")) {
+			for (int i=0; i<drugstore_promo_days.get(category).size(); i+=2) {
+				List<Integer> d = drugstore_promo_days.get(category);
+				if (day_of_year>=d.get(i) && day_of_year<d.get(i)) {
 					return true;
-			}
-	}
+				}
+			}						
+		}
 		return false;
 	}
 	
-	public void printPromoTime(char category) {
-		if (category=='A') {
-			for (int i=0; i<promotion_days_A.size(); i+=2) {
-				System.out.println("Promotion day A = [" + promotion_days_A.get(i) + ", " + promotion_days_A.get(i+1) + "]");
-			}
-		} else if (category=='B') {
-			for (int i=0; i<promotion_days_B.size(); i+=2) {
-				System.out.println("Promotion day B = [" + promotion_days_B.get(i) + ", " + promotion_days_B.get(i+1) + "]");
-			}
+	public void printPromoTime(String customer_type, char category) {
+		if (customer_type.equals("pharmacy")) {
+			List<Integer> d = pharmacy_promo_days.get(category);			
+			for (int i=0; i<d.size(); i+=2)
+				System.out.println(category + "-pharmacy promo days = [" + d.get(i) + ", " + d.get(i+1) + "]");				
+		} else if (customer_type.equals("drugstore")) {
+			List<Integer> d = drugstore_promo_days.get(category);			
+			for (int i=0; i<d.size(); i+=2)
+				System.out.println(category + "-drugstore promo days = [" + d.get(i) + ", " + d.get(i+1) + "]");							
 		}
 	}
 }
