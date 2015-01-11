@@ -189,6 +189,7 @@ public class Conditions implements java.io.Serializable {
 			d.add(day2);
 			pharmacy_promo_days.put(category, d);
 		} else if (customer_type.equals("drugstore")) {
+			System.out.println(category + " -> " + day1 + "-" + day2);
 			if (drugstore_promo_days.get(category)!=null)
 				d = drugstore_promo_days.get(category);
 			else
@@ -203,32 +204,40 @@ public class Conditions implements java.io.Serializable {
 		DateTime current_dt = new DateTime();
 		int day_of_year = current_dt.getDayOfYear();
 		if (customer_type.equals("pharmacy")) {
-			for (int i=0; i<pharmacy_promo_days.get(category).size(); i+=2) {
-				List<Integer> d = pharmacy_promo_days.get(category);
-				if (day_of_year>=d.get(i) && day_of_year<d.get(i)) {
-					return true;
-				}
-			}			
+			if (pharmacy_promo_days.containsKey(category)) {
+				for (int i=0; i<pharmacy_promo_days.get(category).size(); i+=2) {
+					List<Integer> d = pharmacy_promo_days.get(category);
+					if (day_of_year>=d.get(i) && day_of_year<d.get(i)) {
+						return true;
+					}
+				}			
+			}
 		} else if (customer_type.equals("drugstore")) {
-			for (int i=0; i<drugstore_promo_days.get(category).size(); i+=2) {
-				List<Integer> d = drugstore_promo_days.get(category);
-				if (day_of_year>=d.get(i) && day_of_year<d.get(i)) {
-					return true;
-				}
-			}						
+			if (drugstore_promo_days.containsKey(category)) {
+				for (int i=0; i<drugstore_promo_days.get(category).size(); i+=2) {
+					List<Integer> d = drugstore_promo_days.get(category);
+					if (day_of_year>=d.get(i) && day_of_year<d.get(i)) {
+						return true;
+					}
+				}						
+			}
 		}
 		return false;
 	}
 	
 	public void printPromoTime(String customer_type, char category) {
 		if (customer_type.equals("pharmacy")) {
-			List<Integer> d = pharmacy_promo_days.get(category);			
-			for (int i=0; i<d.size(); i+=2)
-				System.out.println(category + "-pharmacy promo days = [" + d.get(i) + ", " + d.get(i+1) + "]");				
+			if (pharmacy_promo_days.containsKey(category)) {
+				List<Integer> d = pharmacy_promo_days.get(category);			
+				for (int i=0; i<d.size(); i+=2)
+					System.out.println(category + "-pharmacy promo days = [" + d.get(i) + ", " + d.get(i+1) + "]");				
+			}
 		} else if (customer_type.equals("drugstore")) {
-			List<Integer> d = drugstore_promo_days.get(category);			
-			for (int i=0; i<d.size(); i+=2)
-				System.out.println(category + "-drugstore promo days = [" + d.get(i) + ", " + d.get(i+1) + "]");							
+			if (drugstore_promo_days.containsKey(category)) {
+				List<Integer> d = drugstore_promo_days.get(category);			
+				for (int i=0; i<d.size(); i+=2)
+					System.out.println(category + "-drugstore promo days = [" + d.get(i) + ", " + d.get(i+1) + "]");							
+			}
 		}
 	}
 }

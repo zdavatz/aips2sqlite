@@ -27,7 +27,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,25 +83,32 @@ public class RealExpertInfo {
 	// Map to list with all the relevant information
 	// HashMap is faster, but TreeMap is sort by the key :)
 	private static Map<String, ArrayList<String>> m_package_info;
-
+	
 	// Map to Swiss DRG: atc code -> (dosage class, price)
 	private static Map<String, ArrayList<String>> m_swiss_drg_info;
-	private static Map<String, String> m_swiss_drg_footnote;
+	
+	private static Map<String, String> m_swiss_drg_footnote;	
 	
 	// Map to string of atc classes, key is the ATC-code or any of its substrings
 	private static Map<String, String> m_atc_map;
-
+	
 	// Map from swissmedic no.5 to atc codes
-	private static Map<String, String> m_smn5_atc_map;
+	private static Map<String, String> m_smn5_atc_map;	
 	
 	// Map to string of additional info, key is the SwissmedicNo5
-	private static Map<String, String> m_add_info_map;
+	private static Map<String, String> m_add_info_map;	
 	
 	// Packages string used for "shopping" purposes (will contain ean code, pharma codes, prices etc.) 
-	private List<String> m_list_of_packages = null;	
+	private List<String> m_list_of_packages = null;		
 	
+	// List of ean codes
+	private List<String> m_list_of_eancodes = null;	
+	
+	// Map of products
+	private Map<String, Product> m_map_products = null;	
+
 	// Package section string
-	private static String m_pack_section_str = "";
+	private static String m_pack_info_str = "";
 	
 	// Stop word hashset
 	HashSet<String> m_stop_words_hash = null;
@@ -110,9 +116,11 @@ public class RealExpertInfo {
 	/*
 	 * Constructors
 	 */
-	public RealExpertInfo(SqlDatabase sql_db, List<MedicalInformations.MedicalInformation> med_list) {
+	public RealExpertInfo(SqlDatabase sql_db, List<MedicalInformations.MedicalInformation> med_list, 
+			Map<String, Product> map_products) {
 		m_sql_db = sql_db;
 		m_med_list = med_list;
+		m_map_products = map_products;
 		
 		// Initialize maps and lists
 		m_package_info = new TreeMap<String, ArrayList<String>>();
@@ -122,6 +130,7 @@ public class RealExpertInfo {
 		m_smn5_atc_map = new TreeMap<String, String>();
 		m_add_info_map = new TreeMap<String, String>();
 		m_list_of_packages = new ArrayList<String>();
+		m_list_of_eancodes = new ArrayList<String>();
 	}
 	
 	/*
@@ -736,8 +745,6 @@ public class RealExpertInfo {
 		extractSwissDRGInfo();
 		
 		try {
-			m_sql_db.createExpertDB(CmlOptions.DB_LANGUAGE);
-			
 			// Load CSS file: used only for self-contained xml files
 			String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
 					
@@ -765,7 +772,7 @@ public class RealExpertInfo {
 			int tot_pseudo_counter = 0;
 			if (CmlOptions.ADD_PSEUDO_FI==true) {
 				String empty_pack_str = "";
-				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(m_sql_db, CmlOptions.DB_LANGUAGE, empty_pack_str);
+				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(m_sql_db, CmlOptions.DB_LANGUAGE, m_map_products);
 				// Process
 				tot_pseudo_counter = pseudo_fi.process();
 				System.out.println("");
@@ -1138,12 +1145,13 @@ public class RealExpertInfo {
 							 */
 							List<String> mTyIndex_list = new ArrayList<String>();
 							m_list_of_packages.clear();
+							m_list_of_eancodes.clear();
 							String mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, regnr_str, html_sanitized, mTyIndex_list);
 								
 							m.setContent(mContent_str);
 								
 							// Check if mPackSection_str is empty AND command line option PLAIN is not active
-							if (CmlOptions.PLAIN==false && m_pack_section_str.isEmpty()) {	
+							if (CmlOptions.PLAIN==false && m_pack_info_str.isEmpty()) {	
 								errors++;
 								if (CmlOptions.GENERATE_REPORTS) {
 									parse_errors.append("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
@@ -1224,8 +1232,15 @@ public class RealExpertInfo {
 							String packages_str = "";
 							for (String s : m_list_of_packages)
 								packages_str += s;
-							m_sql_db.addExpertDB(m, packages_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, 
-									m_pack_section_str, orggen_str, customer_id, mTyIndex_list, section_indications);
+							String eancodes_str = "";
+							for (String e : m_list_of_eancodes)
+								eancodes_str += (e + ", ");
+							if (!eancodes_str.isEmpty() && eancodes_str.length()>2)
+								eancodes_str = eancodes_str.substring(0, eancodes_str.length()-2);
+							
+							m_sql_db.addExpertDB(m, packages_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, m_pack_info_str, 
+									orggen_str, customer_id, mTyIndex_list, section_indications);
+							m_sql_db.addProductDB(m, packages_str, eancodes_str, m_pack_info_str);							
 							
 							med_counter++;
 						}
@@ -1245,9 +1260,6 @@ public class RealExpertInfo {
 			System.out.println("--------------------------------------------");
 			System.out.println("Total number of pseudo Fachinfos: " + tot_pseudo_counter);
 			System.out.println("--------------------------------------------");
-			
-			// Reorder DB alphabetically
-			m_sql_db.reorderAlphaDB("amikodb");
 			
 			if (CmlOptions.ZIP_BIG_FILES==true) {
 				FileOps.zipToFile("./output/", "amiko_db_full_idx_" + CmlOptions.DB_LANGUAGE + ".db");
@@ -1349,8 +1361,6 @@ public class RealExpertInfo {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			System.out.println("ClassNotFoundException!");
 		}	
 	}
 	
@@ -1408,19 +1418,40 @@ public class RealExpertInfo {
 						// Präparatname | Package size | Package unit | Public price
 						// | Exfactory price | Spezialitätenliste, Swissmedic Kategorie, Limitations
 						// | EAN code | Pharma code
-						// Add only if medication is "in Handel"
 						String barcode_html = "";		
-						if (pi_row.get(10).isEmpty()) {
-							m_list_of_packages.add(pi_row.get(1) + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" + pi_row.get(7) + "|" 
-									+ pi_row.get(8) + "|" + pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
-									+ pi_row.get(14) + "|" + pi_row.get(15) + "\n");
-
+						String pup = pi_row.get(7);	// public price
+						String efp = pi_row.get(8);	// exfactory price		
+						String fep = "";						
+						String fap = "";
+						String vat = "";
+						String eancode = pi_row.get(14);
+						int visible = 0xff;
+						// Exctract fep and fap pricing information
+						// FAP = Fabrikabgabepreis = EFP?
+						// FEP = Fachhandelseinkaufspreis
+						// EFP = FAP < FEP < PUP
+						if (m_map_products!=null && eancode!=null && m_map_products.containsKey(eancode)) {
+							Product product = m_map_products.get(eancode);
+							if (product.fap>0.0f)
+								fap = String.format("CHF %.2f", product.fap);							
+							if (product.fep>0.0f)
+								fep = String.format("CHF %.2f", product.fep);
+							if (product.vat>0.0f)
+								vat = String.format("%.2f", product.vat);
+							visible = product.visible;
+						}
+						// Add only if medication is "in Handel" -> check pi_row.get(10)						
+						if (pi_row.get(10).isEmpty()) {		
+							m_list_of_packages.add(pi_row.get(1) + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" 
+									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
+									+ pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
+									+ eancode + "|" + pi_row.get(15) + "|" + visible + "\n");
+							m_list_of_eancodes.add(eancode);
 							// --> Extract EAN-13 and generate barcodes
 							try {
-								String ean = pi_row.get(14);
-								if (!ean.isEmpty()) {
+								if (!eancode.isEmpty()) {
 									BarCode bc = new BarCode();								
-									String barcodeImg64 = bc.encode(ean);
+									String barcodeImg64 = bc.encode(eancode);
 									barcode_html = "<p class=\"barcode\">" + barcodeImg64 + "</p>";
 									barcode_list.add(barcode_html);
 								}
@@ -1435,12 +1466,13 @@ public class RealExpertInfo {
 						medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");						
 						// --> Add "ausser Handel" information
 						String withdrawn_str = "";
-						if (pi_row.get(10).length() > 0)
+						if (pi_row.get(10).length()>0)
 							withdrawn_str = ", " + pi_row.get(10);
-						// --> Add public price information
-						if (pi_row.get(7).length() > 0) {
+						// --> Add ex factory price information
+						String price = !efp.isEmpty() ? efp : fep;				
+						if (price.length()>0) {
 							// The rest of the package information
-							String append_str = ", " + pi_row.get(7) 
+							String append_str = ", " + price 
 									+ withdrawn_str + " [" + pi_row.get(5) 
 									+ pi_row.get(11) + pi_row.get(12) 
 									+ flagsb_str + orggen_str + "]";
@@ -1456,7 +1488,7 @@ public class RealExpertInfo {
 							// @maxl (10.01.2014): Price for swissmedicNo8 pack is not listed in bag_preparations.xml!!
 							//
 							pinfo_str.add("<p class=\"spacing1\">"
-										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>" + barcode_html);
+										+ medtitle + withdrawn_str + " [" + pi_row.get(5) + "]</p>" + barcode_html);
 						}
 						
 						// --> Add "tindex_str" and "application_str" (see
@@ -1506,14 +1538,14 @@ public class RealExpertInfo {
 			}				
 			
 			// Generate a html-deprived string file
-			m_pack_section_str = p_str.replaceAll("<p class=\"spacing1\">[<](/)?img[^>]*[>]</p>", ""); 
-			m_pack_section_str = m_pack_section_str.replaceAll("<p class=\"barcode\">[<](/)?img[^>]*[>]</p>", ""); 			
-			m_pack_section_str = m_pack_section_str.replaceAll("\\<p.*?\\>", "");
-			m_pack_section_str = m_pack_section_str.replaceAll("<\\/p\\>", "\n");
+			m_pack_info_str = p_str.replaceAll("<p class=\"spacing1\">[<](/)?img[^>]*[>]</p>", ""); 
+			m_pack_info_str = m_pack_info_str.replaceAll("<p class=\"barcode\">[<](/)?img[^>]*[>]</p>", ""); 			
+			m_pack_info_str = m_pack_info_str.replaceAll("\\<p.*?\\>", "");
+			m_pack_info_str = m_pack_info_str.replaceAll("<\\/p\\>", "\n");
 					
 			// Remove last \n
-			if (m_pack_section_str.length() > 0)
-				m_pack_section_str = m_pack_section_str.substring(0, m_pack_section_str.length() - 1);
+			if (m_pack_info_str.length() > 0)
+				m_pack_info_str = m_pack_info_str.substring(0, m_pack_info_str.length() - 1);
 	
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);
 			Element div7800 = doc.select("[id=Section7800]").first();

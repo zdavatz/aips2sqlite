@@ -27,37 +27,27 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SqlDatabase {
-
-	private String AllRows = "title, auth, atc, substances, regnrs, atc_class, " +
+	
+	private String AllAmikoDBRows = "title, auth, atc, substances, regnrs, atc_class, " +
         		"tindex_str, application_str, indications_str, " +
         		"customer_id, pack_info_str, " +
         		"add_info_str, ids_str, titles_str, content, style_str, packages";
+	private String AllProductDBRows = "title, author, eancodes, pack_info_str, packages";
 	
 	private File m_db_file;
 	private Connection conn;
 	private Statement stat;
-	private PreparedStatement prep;
+	private PreparedStatement m_prep_amikodb, m_prep_productdb;
 	
-	private String table() {
-		return "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, atc_class TEXT, " +
-	        		"tindex_str TEXT, application_str TEXT, indications_str TEXT, " +
-	        		"customer_id INTEGER, pack_info_str TEXT, " + 
-	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, style_str TEXT, packages TEXT);";
-	}
-	
-	public String getDBFile() {
-		return m_db_file.getAbsolutePath();
-	}
-	
-	public void createExpertDB(String db_lang) throws ClassNotFoundException {		
-		// Initializes org.sqlite.JDBC driver
-		Class.forName("org.sqlite.JDBC");
-
+	public SqlDatabase(String db_lang) {
 		try {
+			// Initializes org.sqlite.JDBC driver
+			Class.forName("org.sqlite.JDBC");
+
 			// Touch db file if it does not exist
 			String db_url = System.getProperty("user.dir") + "/output/amiko_db_full_idx_" + db_lang + ".db";			
 			File db_file = new File(db_url);
@@ -76,30 +66,111 @@ public class SqlDatabase {
 	        // Create android metadata table
 			stat.executeUpdate("DROP TABLE IF EXISTS android_metadata;");
 	        stat.executeUpdate("CREATE TABLE android_metadata (locale TEXT default 'en_US');"); 	
-	        stat.executeUpdate("INSERT INTO android_metadata VALUES ('en_US');");	        
-
-			// Create SQLite database
-	        stat.executeUpdate("DROP TABLE IF EXISTS amikodb;");
-	        stat.executeUpdate("CREATE TABLE amikodb " + table());
-	        // Create indices
-	        stat.executeUpdate("CREATE INDEX idx_title ON amikodb(title);");
-	        stat.executeUpdate("CREATE INDEX idx_auth ON amikodb(auth);");
-	        stat.executeUpdate("CREATE INDEX idx_atc ON amikodb(atc);");
-	        stat.executeUpdate("CREATE INDEX idx_substances ON amikodb(substances);");
-	        stat.executeUpdate("CREATE INDEX idx_regnrs ON amikodb(regnrs);");
-	        stat.executeUpdate("CREATE INDEX idx_atc_class ON amikodb(atc_class);");
-	        	        
-			/*
-	        // Create virtual table	   
-	        stat.executeUpdate("DROP TABLE IF EXISTS amikodb_fts");	        
-	        stat.executeUpdate("CREATE VIRTUAL TABLE amikodb_fts USING FTS3(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, " +
-	        		"ids_str TEXT, titles_str TEXT, style TEXT, content TEXT);");
-	        */		        
-	        prep = conn.prepareStatement("INSERT INTO amikodb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
+	        stat.executeUpdate("INSERT INTO android_metadata VALUES ('en_US');");	
+	        
+	        // Create main expert table
+	        createExpertDB();
+	        // Create product table
+	        createProductDB();
+	        
 		} catch (IOException e) {
 			System.err.println(">> SqlDatabase: DB file does not exist!");
 			e.printStackTrace();
+		} catch (ClassNotFoundException e ) {
+			System.err.println(">> SqlDatabase: ClassNotFoundException!");
+			e.printStackTrace();			
+		} catch (SQLException e ) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		} 
+	}
+	
+	public void finalize() {
+		// Reorder tables alphabetically
+		reorderAlphaDB("amikodb");
+		reorderAlphaDB("productdb");
+		// 
+		vacuum();
+	}
+	
+	public List<String> listProducts() {
+		List<String> packages = new ArrayList<String>();		
+		
+		try {
+			stat = conn.createStatement();
+			String query = "select packages from amikodb";
+			ResultSet rs = stat.executeQuery(query);
+			while (rs.next()) {
+				packages.add(rs.getString(1));
+			} 
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in listProducts!");
+		}
+		
+		return packages;
+	}
+	
+	private String expertTable() {
+		return "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+	        		"title TEXT, auth TEXT, atc TEXT, substances TEXT, regnrs TEXT, atc_class TEXT, " +
+	        		"tindex_str TEXT, application_str TEXT, indications_str TEXT, " +
+	        		"customer_id INTEGER, pack_info_str TEXT, " + 
+	        		"add_info_str TEXT, ids_str TEXT, titles_str TEXT, content TEXT, style_str TEXT, packages TEXT);";
+	}
+
+	private String productTable() {
+		return "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+	        		"title TEXT, author TEXT, eancodes TEXT, pack_info_str TEXT, packages TEXT);";
+	}
+	
+	public String getDBFile() {
+		return m_db_file.getAbsolutePath();
+	}
+	
+	public void createExpertDB()  {		       
+		try {
+			// Create SQLite database
+	        stat.executeUpdate("DROP TABLE IF EXISTS amikodb;");
+	        stat.executeUpdate("CREATE TABLE amikodb " + expertTable());
+	        // Create indexes
+	        createTableIndexes("amikodb");
+	        // Insert statement	
+	        m_prep_amikodb = conn.prepareStatement("INSERT INTO amikodb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
+		} catch (SQLException e ) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		} 
+	}
+	
+	public void createProductDB() {		
+		try {			
+			// Create product table
+	        stat.executeUpdate("DROP TABLE IF EXISTS productdb;");
+	        stat.executeUpdate("CREATE TABLE productdb " + productTable());
+	        // Create indexes
+	        createTableIndexes("productdb");
+	        // Insert statement
+	        m_prep_productdb = conn.prepareStatement("INSERT INTO productdb VALUES (null, ?, ?, ?, ?, ?);");	       			           
+		} catch (SQLException e ) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		} 
+	}
+	
+	public void createTableIndexes(String table_name) {
+		try {
+	        if (table_name.equals("amikodb")) {
+		        stat.executeUpdate("CREATE INDEX idx_title ON amikodb(title);");
+		        stat.executeUpdate("CREATE INDEX idx_auth ON amikodb(auth);");
+		        stat.executeUpdate("CREATE INDEX idx_atc ON amikodb(atc);");
+		        stat.executeUpdate("CREATE INDEX idx_substances ON amikodb(substances);");
+		        stat.executeUpdate("CREATE INDEX idx_regnrs ON amikodb(regnrs);");
+		        stat.executeUpdate("CREATE INDEX idx_atc_class ON amikodb(atc_class);");
+	        } else if (table_name.equals("productdb")) {
+		        stat.executeUpdate("CREATE INDEX idx_prod_title ON productdb(title);");
+		        stat.executeUpdate("CREATE INDEX idx_prod_author ON productdb(author);");
+		        stat.executeUpdate("CREATE INDEX idx_prod_eancodes ON productdb(eancodes);");
+	        }
 		} catch (SQLException e ) {
 			System.err.println(">> SqlDatabase: SQLException!");
 			e.printStackTrace();
@@ -108,13 +179,13 @@ public class SqlDatabase {
 	
 	public void addExpertDB(MedicalInformations.MedicalInformation m) {
 		try {
-			prep.setString(1, m.getTitle());
-	        prep.setString(2, m.getAuthHolder());
-			prep.setString(3, m.getAtcCode());
-	        prep.setString(4, m.getSubstances());  
-	        prep.addBatch();        
+			m_prep_amikodb.setString(1, m.getTitle());
+			m_prep_amikodb.setString(2, m.getAuthHolder());
+			m_prep_amikodb.setString(3, m.getAtcCode());
+			m_prep_amikodb.setString(4, m.getSubstances());  
+			m_prep_amikodb.addBatch();        
 			conn.setAutoCommit(false);
-	        prep.executeBatch();
+			m_prep_amikodb.executeBatch();
 	        conn.setAutoCommit(true);         
 		} catch (SQLException e) {
 			System.err.println(">> SqlDatabase: SQLException!");
@@ -126,26 +197,26 @@ public class SqlDatabase {
 			String titles_str, String atc_description_str, String atc_class_str, String pack_info_str, 
 			String add_info_str, int customer_id, List<String> tIndex_list, String indications_str) {
 		try {
-			if (prep!=null) {
-				prep.setString(1, m.getTitle());
-		        prep.setString(2, m.getAuthHolder());
-				prep.setString(3, m.getAtcCode() + ";" + atc_description_str);
-		        prep.setString(4, m.getSubstances());
-		        prep.setString(5, regnr_str);
-		        prep.setString(6, atc_class_str);
-		        prep.setString(7, tIndex_list.get(0));	// therapeutic index
-		        prep.setString(8, tIndex_list.get(1));	// application area	 
-		        prep.setString(9, indications_str);		// indications section
-		        prep.setInt(10, customer_id);	        
-		        prep.setString(11, pack_info_str);
-		        prep.setString(12, add_info_str);
-		        prep.setString(13, ids_str);
-		        prep.setString(14, titles_str);
-		        prep.setString(15, m.getContent()); 
-		        prep.setString(17, packages_str);
-		        prep.addBatch();        
+			if (m_prep_amikodb!=null) {
+				m_prep_amikodb.setString(1, m.getTitle());
+				m_prep_amikodb.setString(2, m.getAuthHolder());
+				m_prep_amikodb.setString(3, m.getAtcCode() + ";" + atc_description_str);
+				m_prep_amikodb.setString(4, m.getSubstances());
+				m_prep_amikodb.setString(5, regnr_str);
+				m_prep_amikodb.setString(6, atc_class_str);
+				m_prep_amikodb.setString(7, tIndex_list.get(0));	// therapeutic index
+				m_prep_amikodb.setString(8, tIndex_list.get(1));	// application area	 
+				m_prep_amikodb.setString(9, indications_str);		// indications section
+				m_prep_amikodb.setInt(10, customer_id);	        
+				m_prep_amikodb.setString(11, pack_info_str);
+				m_prep_amikodb.setString(12, add_info_str);
+				m_prep_amikodb.setString(13, ids_str);
+				m_prep_amikodb.setString(14, titles_str);
+				m_prep_amikodb.setString(15, m.getContent()); 
+				m_prep_amikodb.setString(17, packages_str);
+				m_prep_amikodb.addBatch();        
 				conn.setAutoCommit(false);
-		        prep.executeBatch();
+				m_prep_amikodb.executeBatch();
 		        conn.setAutoCommit(true);         
 			} else {
 				System.out.println("There is no database!");
@@ -157,6 +228,53 @@ public class SqlDatabase {
 		}
 	}	
 		
+	public void addExpertDB(String title, String author, String eancode_str, int customer_id, 
+			String pack_info_str, String packages_str) {
+		try {
+			if (m_prep_amikodb!=null) {
+				m_prep_amikodb.setString(1, title);
+				m_prep_amikodb.setString(2, author);
+				m_prep_amikodb.setString(5, eancode_str);
+				m_prep_amikodb.setInt(10, customer_id);	        
+				m_prep_amikodb.setString(11, pack_info_str);
+				m_prep_amikodb.setString(17, packages_str);
+				m_prep_amikodb.addBatch();        
+				conn.setAutoCommit(false);
+				m_prep_amikodb.executeBatch();
+		        conn.setAutoCommit(true);         
+			} else {
+				System.out.println("There is no database!");
+				System.exit(0);
+			}			
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		}
+	}
+	
+	public void addProductDB(MedicalInformations.MedicalInformation m, String packages_str, String eancodes_str, 
+			String pack_info_str) {
+		try {
+			if (m_prep_productdb!=null) {
+				m_prep_productdb.setString(1, m.getTitle());
+				m_prep_productdb.setString(2, m.getAuthHolder());
+				m_prep_productdb.setString(3, eancodes_str);
+				m_prep_productdb.setString(4, pack_info_str);
+				m_prep_productdb.setString(5, packages_str);			
+				m_prep_productdb.addBatch();        
+				conn.setAutoCommit(false);
+				m_prep_productdb.executeBatch();
+		        conn.setAutoCommit(true);         
+			} else {
+				System.out.println("There is no database!");
+				System.exit(0);
+			}			
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		}
+	}	
+	
 	public void readDB() throws SQLException { 		
 		ResultSet rs = stat.executeQuery("SELECT * FROM amikodb;");
 	    while (rs.next()) {
@@ -172,8 +290,15 @@ public class SqlDatabase {
 	public void reorderAlphaDB(String table_name) {
 		try {
 	        stat.executeUpdate("DROP TABLE IF EXISTS " + table_name + "_ordered;");
-	        stat.executeUpdate("CREATE TABLE " + table_name + "_ordered " + table());     
-			stat.executeUpdate("INSERT INTO " + table_name + "_ordered (" + AllRows + ") "
+	        String AllRows = "";
+	        if (table_name.equals("amikodb")) {
+	        	stat.executeUpdate("CREATE TABLE " + table_name + "_ordered " + expertTable());     
+	        	AllRows = AllAmikoDBRows;
+	        } else if (table_name.equals("productdb")) {
+	        	stat.executeUpdate("CREATE TABLE " + table_name + "_ordered " + productTable());  
+	        	AllRows = AllProductDBRows;
+	        }
+	        stat.executeUpdate("INSERT INTO " + table_name + "_ordered (" + AllRows + ") "
 					+ "SELECT " + AllRows + " FROM " + table_name + " ORDER BY " 
 					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
@@ -189,7 +314,16 @@ public class SqlDatabase {
 					+ " COLLATE NOCASE;");
 	        stat.executeUpdate("DROP TABLE IF EXISTS " + table_name + ";");
 	        stat.executeUpdate("ALTER TABLE " + table_name + "_ordered RENAME TO " + table_name + ";");
-	        stat.executeUpdate("VACUUM;");
+	        createTableIndexes(table_name);
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException!");
+			e.printStackTrace();
+		}
+	}
+	
+	public void vacuum() {
+		try {
+			stat.executeUpdate("VACUUM;");
 		} catch (SQLException e) {
 			System.err.println(">> SqlDatabase: SQLException!");
 			e.printStackTrace();

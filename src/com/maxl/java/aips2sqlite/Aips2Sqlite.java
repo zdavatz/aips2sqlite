@@ -22,7 +22,9 @@ package com.maxl.java.aips2sqlite;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -175,24 +177,7 @@ public class Aips2Sqlite {
 		}
 		
 		System.out.println("");
-		if (!CmlOptions.DB_LANGUAGE.isEmpty()) {
-			if (CmlOptions.SHOW_LOGS) {
-				System.out.println("");
-				System.out.println("- Generating sqlite database... ");
-			}
-						
-			long startTime = System.currentTimeMillis();
-			
-			// Generate encrypted files for shopping cart
-			if (CmlOptions.SHOPPING_CART==true) {
-				ShoppingCart sc = new ShoppingCart();
-				sc.listFiles(Constants.DIR_SHOPPING);
-				sc.encryptConditionsToDir("ibsa_conditions", Constants.DIR_SHOPPING);
-				sc.encryptCsvToDir("moosberger_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0);
-				sc.encryptCsvToDir("access.ami", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0);
-				sc.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
-			}
-			
+		if (!CmlOptions.DB_LANGUAGE.isEmpty()) {	
 			// Extract drug interactions information
 			if (CmlOptions.ADD_INTERACTIONS==true) {
 				Interactions inter = new Interactions(CmlOptions.DB_LANGUAGE);
@@ -206,8 +191,27 @@ public class Aips2Sqlite {
 				glns.generateCsvFile();
 			}
 			
+			// Pointer to product map, extraction order = insertion order
+			Map<String, Product> map_products = new LinkedHashMap<String, Product>();
+			
+			// Generate encrypted files for shopping cart
+			if (CmlOptions.SHOPPING_CART==true) {
+				ShoppingCart sc = new ShoppingCart(map_products);
+				sc.listFiles(Constants.DIR_SHOPPING);
+				sc.encryptConditionsToDir("ibsa_conditions", Constants.DIR_SHOPPING);
+				sc.encryptCsvToDir("moosberger_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 2);
+				sc.encryptCsvToDir("access.ami", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 3);
+				sc.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
+			}			
+			
+			if (CmlOptions.SHOW_LOGS) {
+				System.out.println("");
+				System.out.println("- Generating sqlite database... ");
+			}						
+			long startTime = System.currentTimeMillis();
+
 			// Generates SQLite database - function should return the number of entries
-			generateSQLiteDB();
+			generateSQLiteDB(map_products);
 			
 			if (CmlOptions.SHOW_LOGS) {
 				long stopTime = System.currentTimeMillis();
@@ -218,6 +222,32 @@ public class Aips2Sqlite {
 		System.exit(0);
 	}
 
+	static void generateSQLiteDB(Map<String, Product> map_products) {
+		// Create sqlite main database
+		SqlDatabase sql_db = new SqlDatabase(CmlOptions.DB_LANGUAGE);
+		
+		// Read Aips file			
+		List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
+		
+		if (CmlOptions.GENERATE_PI==false) {
+			// Process Fachinfos
+			RealExpertInfo fi = new RealExpertInfo(sql_db, med_list, map_products);
+			fi.process();
+		} else {
+			// Process Patienten Info
+			RealPatientInfo pi = new RealPatientInfo(med_list);
+			pi.process();
+		}
+	
+		if (CmlOptions.SHOPPING_CART==true) {
+			AddProductInfo api = new AddProductInfo(sql_db, map_products);
+			api.process();
+		}
+		
+		// Finalize tables and close db
+		sql_db.finalize();
+	}	
+		
 	static void allDown() {
 		AllDown a = new AllDown();
 
@@ -234,27 +264,9 @@ public class Aips2Sqlite {
 		a.downEPhaProductsJson("DE", Constants.FILE_EPHA_PRODUCTS_DE_JSON);
 		a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);	
 		a.downGLNCodesXlsx(Constants.FILE_GLN_CODES_PEOPLE, Constants.FILE_GLN_CODES_COMPANIES);
+		a.downIBSA(Constants.FILE_MOOSBERGER);		
 	}
-
-	static void generateSQLiteDB() {
-
-		// Create database
-		SqlDatabase sql_db = new SqlDatabase();
-		
-		// Read Aips file			
-		List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
-
-		if (CmlOptions.GENERATE_PI==false) {
-			// Process Fachinfos
-			RealExpertInfo fi = new RealExpertInfo(sql_db, med_list);
-			fi.process();
-		} else {
-			// Process Patienten Info
-			RealPatientInfo pi = new RealPatientInfo(med_list);
-			pi.process();
-		}
-	}	
-			
+	
 	static List<MedicalInformations.MedicalInformation> readAipsFile() {
 		List<MedicalInformations.MedicalInformation> med_list = null;
 		try {

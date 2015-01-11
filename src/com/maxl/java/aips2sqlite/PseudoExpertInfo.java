@@ -23,11 +23,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,23 +47,37 @@ public class PseudoExpertInfo {
 	private static final String FILE_PSEUDO_INFO_DIR = "./input/pseudo/";
 
 	private SqlDatabase mSqlDB = null;
+	
 	private String mLanguage = "";
-	private String mAmikoCSS_str = "";
 	
 	private ArrayList<String> mSectionContent;
+	
 	private ArrayList<String> mSectionTitles;
+	
 	private ArrayList<String> mBarCodes = new ArrayList<String>();	
+
+	private Map<String, Product> m_map_products = null;	
+	// Packages string used for "shopping" purposes (will contain ean code, pharma codes, prices etc.) 
+	private List<String> m_list_of_packages = null;
+	
 	private MedicalInformations.MedicalInformation mMedi;
+
 	private String mEanCodes_str = "";
+	
 	private String mSectionIds_str = "";
+	
 	private String mSectionTitles_str = "";
-	private String mSectionPackungen_str = "";
+	
+	// Package section string
+	private String m_pack_info_str = "";
+	
 	private int mCustomerId;
 	
-	public PseudoExpertInfo(SqlDatabase sqlDB, String language, String amikoCSS_str) {		
+	public PseudoExpertInfo(SqlDatabase sqlDB, String language, Map<String, Product> map_products) {		
 		mSqlDB = sqlDB;
 		mLanguage = language;
-		mAmikoCSS_str = amikoCSS_str;
+		m_map_products = map_products;
+		m_list_of_packages = new ArrayList<String>();
 		// This sets the customer id (as of yet unused)
 		mCustomerId = 2;
 	}
@@ -112,8 +126,8 @@ public class PseudoExpertInfo {
 		mSectionContent = new ArrayList<String>();
 		mSectionTitles = new ArrayList<String>();
 		mBarCodes = new ArrayList<String>();
-		List<String> barcode_list = new ArrayList<String>();
-		
+		m_list_of_packages = new ArrayList<String>();
+
 		String mediTitle = "";
 		String mediAuthor = "";
 		String mediPseudoTag = "";
@@ -175,7 +189,7 @@ public class PseudoExpertInfo {
 				}
 				prevParaText = paraText;
 			}
-		
+			
 			// Get section titles + sections + ean codes
 			boolean isSectionPackungen = false;
 			int numSection = 0;
@@ -185,7 +199,7 @@ public class PseudoExpertInfo {
 			mEanCodes_str = "";
 			mSectionIds_str = "section1,";
 			mSectionTitles_str = mediTitle + ",";
-			mSectionPackungen_str = "";
+			m_pack_info_str = "";
 			// This is the EAN code pattern
 			Pattern pattern = Pattern.compile("^[0-9]{13}");			
 			// Loop through it, identifying medication title, author, section titles and corresponding titles
@@ -225,6 +239,42 @@ public class PseudoExpertInfo {
 						String eanCode = matcher.group();
 						mEanCodes_str += (eanCode + ", ");
 						if (!eanCode.isEmpty()) {
+							String pup = "";
+							String efp = "";
+							String fep = "";						
+							String fap = "";
+							String vat = "";
+							String size = "";
+							String units = "";
+							String swissmedic_cat = "";
+							String pharma_code = "";
+							int visible = 0xff;
+							// Exctract fep and fap pricing information
+							// FAP = Fabrikabgabepreis = EFP?
+							// FEP = Fachhandelseinkaufspreis
+							// EFP = FAP < FEP < PUP							
+							if (m_map_products!=null && eanCode!=null && m_map_products.containsKey(eanCode)) {
+								Product product = m_map_products.get(eanCode);
+								if (product.fap>0.0f)
+									fap = String.format("CHF %.2f", product.fap);							
+								if (product.fep>0.0f)
+									fep = String.format("CHF %.2f", product.fep);
+								if (product.vat>0.0f)
+									vat = String.format("%.2f", product.vat);
+								if (product.size!=null && !product.size.isEmpty())
+									size = product.size;
+								if (product.units!=null && product.units.length>0)
+									units = product.units[0];
+								if (product.swissmedic_cat!=null && !product.swissmedic_cat.isEmpty())
+									swissmedic_cat = product.swissmedic_cat;
+								if (product.pharmacode!=null && !product.pharmacode.isEmpty())
+									pharma_code = product.pharmacode;
+								visible = product.visible;
+							}
+							m_list_of_packages.add(mediTitle + "|" + size + "|" + units + "|" 
+									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
+									+ swissmedic_cat + ",,|" + eanCode + "|" + pharma_code + "|" + visible + "\n");
+							// Generate bar codes
 							BarCode bc = new BarCode();								
 							String barcodeImg64 = bc.encode(eanCode);
 							mBarCodes.add("<p class=\"spacing1\">" + barcodeImg64 + "</p>");
@@ -233,7 +283,7 @@ public class PseudoExpertInfo {
 					}
 					// Generate section Packungen for search result
 					if (isSectionPackungen)
-						mSectionPackungen_str += (paraText + "\n");
+						m_pack_info_str += (paraText + "\n");
 				}
 			}				
 			/*
@@ -246,8 +296,8 @@ public class PseudoExpertInfo {
 			if (!mEanCodes_str.isEmpty())
 				mEanCodes_str = mEanCodes_str.substring(0, mEanCodes_str.length()-2);	
 			// Remove last \n from mSectionPackungen_str
-			if (!mSectionPackungen_str.isEmpty())
-				mSectionPackungen_str = mSectionPackungen_str.substring(0, mSectionPackungen_str.length()-1);
+			if (!m_pack_info_str.isEmpty())
+				m_pack_info_str = m_pack_info_str.substring(0, m_pack_info_str.length()-1);
 			
 			// Set title, autor
 			mMedi.setTitle(mediTitle);
@@ -292,7 +342,12 @@ public class PseudoExpertInfo {
 		List<String> emptyList = new ArrayList<String>();
 		emptyList.add("PSEUDO");
 		emptyList.add("PSEUDO");
-		mSqlDB.addExpertDB(mMedi, mAmikoCSS_str, mEanCodes_str, mSectionIds_str, mSectionTitles_str, mEanCodes_str, "", 
-				mSectionPackungen_str, "P", mCustomerId, emptyList, "");
+		
+		String packages_str = "";
+		for (String s : m_list_of_packages)
+			packages_str += s;
+		
+		mSqlDB.addExpertDB(mMedi, packages_str, mEanCodes_str, mSectionIds_str, mSectionTitles_str, mEanCodes_str, "", m_pack_info_str, 
+				"P", mCustomerId, emptyList, "");
 	}
 }

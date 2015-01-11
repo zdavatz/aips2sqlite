@@ -28,11 +28,14 @@ import org.joda.time.DateTime;
 import com.maxl.java.shared.Conditions;
 
 public class ShoppingCart implements java.io.Serializable {
-
-	public ShoppingCart() {
-		
-	}
 	
+	boolean Debug = false;
+	Map<String, Product> map_products = null;
+	
+	public ShoppingCart(Map<String, Product> map_products) {
+		this.map_products = map_products;
+	}
+		
 	public void listFiles(String path) {
 		File folder = new File(path);
 		File[] list_of_files = folder.listFiles(); 
@@ -71,73 +74,116 @@ public class ShoppingCart implements java.io.Serializable {
 				Row row = rowIterator.next();
 				/*
 				  1: Präparatname
-				  2: EAN code
-				  5: FEP inkl. MWSt.
-				  6: FAP exkl. MWSt.
-				  7: MWSt.
-				  8: visible Arzt, Apotheke
-				  9: visible Drogerie
-				 10: visible Spital
-				 11: visible Grosshandel
-				 12: B-Arztpraxis
-				 13: A-Artzpraxis
-				 14: assortierbar mit, comma-separated list
-				 15: B-Apotheke
-				 16: A-Apotheke
+				  2: Units
+				  3: Gal. form (DE)
+				  4: Gal. form (FR)
+				  5: EAN code
+				  8: FEP inkl. MWSt.
+				  9: FAP exkl. MWSt.
+				 10: MWSt.
+				 11: visible Arzt, Apotheke
+				 12: visible Drogerie
+				 13: visible Spital
+				 14: visible Grosshandel
+				 15: B-Arztpraxis
+				 16: A-Artzpraxis
 				 17: assortierbar mit, comma-separated list
-				 18: Promotionszyklus B-Apotheke
-				 19: Promotionszyklus A-Apotheke
+				 18: B-Apotheke
+				 19: A-Apotheke
 				 20: assortierbar mit, comma-separated list
-				 21: B-Drogerie
-				 22: A-Drogerie
+				 21: Promotionszyklus B-Apotheke
+				 22: Promotionszyklus A-Apotheke
 				 23: assortierbar mit, comma-separated list
-				 24: Promotionszyklus, B-Drogerie
-				 25: Promotionszyklus, A-Drogerie
-				 26: assortierbar mit, comma-separated list				 
-				 27: C-Spital
-				 28: B-Spital
-				 29: A-Spital
-				 30: assortierbar mit, comma-separated list
+				 24: B-Drogerie
+				 25: A-Drogerie
+				 26: assortierbar mit, comma-separated list
+				 27: Promotionszyklus, B-Drogerie
+				 28: Promotionszyklus, A-Drogerie
+				 29: assortierbar mit, comma-separated list				 
+				 30: C-Spital
+				 31: B-Spital
+				 32: A-Spital
+				 33: assortierbar mit, comma-separated list
 				*/
+
 				if (num_rows>1) {
-					if (row.getCell(2)!=null) {
-						String eancode = getCellValue(row.getCell(2));
+					if (row.getCell(5)!=null) {
+						String eancode = getCellValue(row.getCell(5));
 						if (eancode!=null && eancode.length()==16) {
 							// EAN code read in as "float"!
                             eancode = eancode.substring(0, eancode.length()-3);
 							String name = getCellValue(row.getCell(1)).replaceAll("\\*", "").trim();
 							float fep = 0.0f;
-							if (!getCellValue(row.getCell(5)).isEmpty())
-								fep = Float.valueOf(getCellValue(row.getCell(5)));
+							if (!getCellValue(row.getCell(8)).isEmpty())
+								fep = Float.valueOf(getCellValue(row.getCell(8)));
 							float fap = 0.0f;
-							if (!getCellValue(row.getCell(6)).isEmpty())							
-								fap = Float.valueOf(getCellValue(row.getCell(6)));	
+							if (!getCellValue(row.getCell(9)).isEmpty())							
+								fap = Float.valueOf(getCellValue(row.getCell(9)));	
+							float vat = 8.0f;	// [%]
+							if (!getCellValue(row.getCell(10)).isEmpty())
+								vat = Float.valueOf(getCellValue(row.getCell(10)));
+							// 11: doctors, pharmacy; 12: drugstore; 13: hospital; 14: wholesaler
+							int visibility = 0x00;	// article visible to no customer group
+							if (!getCellValue(row.getCell(11)).toLowerCase().isEmpty())
+								if (getCellValue(row.getCell(11)).equals("x"))
+									visibility |= 0x08;
+							if (!getCellValue(row.getCell(12)).toLowerCase().isEmpty())
+								if (getCellValue(row.getCell(12)).equals("x"))
+									visibility |= 0x04;
+							if (!getCellValue(row.getCell(13)).toLowerCase().isEmpty())
+								if (getCellValue(row.getCell(13)).equals("x"))
+									visibility |= 0x02;
+							if (!getCellValue(row.getCell(14)).isEmpty())
+								if (getCellValue(row.getCell(14)).toLowerCase().equals("x"))
+									visibility |= 0x01;							
+							Product product = new Product();
+							product.processed = false;
+							product.title = name;
+							product.author = "IBSA Institut Biochimique SA";
+							product.size = getCellValue(row.getCell(2));
+							product.units[0] = getCellValue(row.getCell(3));
+							product.units[1] = getCellValue(row.getCell(4));
+							if (product.units[0]!=null)
+								product.units[0] = product.units[0].trim();
+							if (product.units[1]!=null)
+								product.units[1] = product.units[1].trim();
+							product.eancode = eancode;
+							String pharmacode = getCellValue(row.getCell(6));
+							if (pharmacode!=null && pharmacode.length()>3)
+								product.pharmacode = pharmacode.substring(0, pharmacode.length()-3);
+							product.swissmedic_cat = getCellValue(row.getCell(7));
+							product.fep = fep;
+							product.fap = fap;
+							product.vat = vat;
+							product.visible = visibility;
+							map_products.put(eancode, product);
+							
 							// Instantiate new med condition
-							Conditions cond = new Conditions(eancode, name, fep, fap);								
-							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(fap) + " / ");							
+							Conditions cond = new Conditions(eancode, name, fep, fap);	
+							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(fap) + " / " + Float.toString(vat));							
 
 							// Rebates
 							try {
-								extractDiscounts(cond, "B-doctor", getCellValue(row.getCell(12)));	// B-Arztpraxis
-								extractDiscounts(cond, "A-doctor", getCellValue(row.getCell(13)));	// A-Arztpraxis		
-								extractDiscounts(cond, "B-pharmacy", getCellValue(row.getCell(15)));	// B-Apotheke
-								extractDiscounts(cond, "A-pharmacy", getCellValue(row.getCell(16)));	// A-Apotheke
-								extractDiscounts(cond, "B-pharmacy-promo", getCellValue(row.getCell(18)));	// B-Apotheke promo-cycle
-								extractDiscounts(cond, "A-pharmacy-promo", getCellValue(row.getCell(19)));	// A-Apotheke promo-cycle
-								extractDiscounts(cond, "B-drugstore", getCellValue(row.getCell(21)));	// B-Drogerie
-								extractDiscounts(cond, "A-drugstore", getCellValue(row.getCell(22)));	// A-Drogerie
-								extractDiscounts(cond, "B-drugstore-promo", getCellValue(row.getCell(24)));	// B-Drogerie promo-cycle
-								extractDiscounts(cond, "A-drugstore-promo", getCellValue(row.getCell(25)));	// A-Drogerie promo-cycle
-								extractDiscounts(cond, "C-hospital", getCellValue(row.getCell(27)));	// C-Spital
-								extractDiscounts(cond, "B-hospital", getCellValue(row.getCell(28)));	// B-Spital
-								extractDiscounts(cond, "A-hospital", getCellValue(row.getCell(29)));	// A-Spital
+								extractDiscounts(cond, "B-doctor", getCellValue(row.getCell(15)));			// B-Arztpraxis
+								extractDiscounts(cond, "A-doctor", getCellValue(row.getCell(16)));			// A-Arztpraxis		
+								extractDiscounts(cond, "B-pharmacy", getCellValue(row.getCell(18)));		// B-Apotheke
+								extractDiscounts(cond, "A-pharmacy", getCellValue(row.getCell(19)));		// A-Apotheke
+								extractDiscounts(cond, "B-pharmacy-promo", getCellValue(row.getCell(21)));	// B-Apotheke promo-cycle
+								extractDiscounts(cond, "A-pharmacy-promo", getCellValue(row.getCell(22)));	// A-Apotheke promo-cycle
+								extractDiscounts(cond, "B-drugstore", getCellValue(row.getCell(24)));		// B-Drogerie
+								extractDiscounts(cond, "A-drugstore", getCellValue(row.getCell(25)));		// A-Drogerie
+								extractDiscounts(cond, "B-drugstore-promo", getCellValue(row.getCell(27)));	// B-Drogerie promo-cycle
+								extractDiscounts(cond, "A-drugstore-promo", getCellValue(row.getCell(28)));	// A-Drogerie promo-cycle
+								extractDiscounts(cond, "C-hospital", getCellValue(row.getCell(30)));		// C-Spital
+								extractDiscounts(cond, "B-hospital", getCellValue(row.getCell(31)));		// B-Spital
+								extractDiscounts(cond, "A-hospital", getCellValue(row.getCell(32)));		// A-Spital
 								// Assortiebarkeit
-								extractAssort(cond, "doctor", getCellValue(row.getCell(14)));
-								extractAssort(cond, "pharmacy", getCellValue(row.getCell(17)));
-								extractAssort(cond, "pharma-promo", getCellValue(row.getCell(20)));							
-								extractAssort(cond, "drugstore", getCellValue(row.getCell(23)));
-								extractAssort(cond, "drugstore-promo", getCellValue(row.getCell(26)));
-								extractAssort(cond, "hospital", getCellValue(row.getCell(30)));								
+								extractAssort(cond, "doctor", getCellValue(row.getCell(17)));
+								extractAssort(cond, "pharmacy", getCellValue(row.getCell(20)));
+								extractAssort(cond, "pharmacy-promo", getCellValue(row.getCell(23)));							
+								extractAssort(cond, "drugstore", getCellValue(row.getCell(26)));
+								extractAssort(cond, "drugstore-promo", getCellValue(row.getCell(29)));
+								extractAssort(cond, "hospital", getCellValue(row.getCell(33)));								
 							} catch(Exception e) {
 								System.out.println(">> Exception while processing Excel-File " + filename);
 								System.out.println(">> Check " + eancode + " -> " +name);
@@ -218,13 +264,14 @@ public class ShoppingCart implements java.io.Serializable {
 						d2 = (new DateTime(year1, month2+1, 1, 0, 0, 0)).getDayOfYear();						
 					else // December 31st
 						d2 = (new DateTime(year1, 12, 31, 0, 0, 0)).getDayOfYear();
-					System.out.println("# complex date -> from " + d1 + " to " + d2);						
+					if (Debug)
+						System.out.println("# complex date -> from " + d1 + " to " + d2);						
 					if (category.equals("A-pharmacy-promo") || category.equals("B-pharmacy-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("pharmacy", category.charAt(0), m);
 						c.addPromoTime("pharmacy", category.charAt(0), d1, d2);
 					}
-					if (category.equals("B-drugstore-promo") || category.equals("B-drugstore-promo")) {
+					if (category.equals("A-drugstore-promo") || category.equals("B-drugstore-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("drugstore", category.charAt(0), m);
 						c.addPromoTime("drugstore", category.charAt(0), d1, d2);
@@ -245,13 +292,14 @@ public class ShoppingCart implements java.io.Serializable {
 						d2 = (new DateTime(curr_year, month2+1, 1, 0, 0, 0)).getDayOfYear();
 					else	// Januar 1st
 						d2 = (new DateTime(curr_year, 12, 31, 0, 0, 0)).getDayOfYear();
-					System.out.println("# simple date -> from " + d1 + " to " + d2);		
+					if (Debug)
+						System.out.println("# simple date -> from " + d1 + " to " + d2);		
 					if (category.equals("A-pharmacy-promo") || category.equals("B-pharmacy-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("pharmacy", category.charAt(0), m);
 						c.addPromoTime("pharmacy", category.charAt(0), d1, d2);
 					}
-					if (category.equals("B-drugstore-promo") || category.equals("B-drugstore-promo")) {
+					if (category.equals("A-drugstore-promo") || category.equals("B-drugstore-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("drugstore", category.charAt(0), m);
 						c.addPromoTime("drugstore", category.charAt(0), d1, d2);
@@ -266,7 +314,8 @@ public class ShoppingCart implements java.io.Serializable {
 				// *** units(discount in %) pattern ***
 				Matcher rebate_match1 = rebate_pattern1.matcher(rebates[i]);
 				if (rebate_match1.matches()) {
-					System.out.println("# rebate -> " + rebates[i]);	
+					if (Debug)
+						System.out.println("# rebate -> " + rebates[i]);	
 					// Get units by removing parentheses
 					String units = rebates[i].replaceAll("\\(.*\\)","");
 					// Get discount as content of the parentheses
@@ -287,7 +336,7 @@ public class ShoppingCart implements java.io.Serializable {
 							}
 							int from = Integer.valueOf(rebate_match3.group(1));
 							int to = Integer.valueOf(rebate_match3.group(2));
-							// Increment units to 100 in steps of 10								
+							// Increment units to max in steps of step (default=10)								
 							for (int k=from; k<=to; k+=step) {
 								String single_unit = String.format("%d", k);
 								addDiscount(c, category, single_unit, discount);
@@ -301,7 +350,10 @@ public class ShoppingCart implements java.io.Serializable {
 									String single_unit = String.format("%d", k);
 									addDiscount(c, category, single_unit, discount);
 								}
-							}	
+							} else {
+								String single_unit = String.format("%d", u);
+								addDiscount(c, category, single_unit, discount);
+							}
 						}
 						continue;
 					}
@@ -312,13 +364,22 @@ public class ShoppingCart implements java.io.Serializable {
 					if (u==1 || u==2) {
 						// Found "Muster"! Barrabatt = -100%
 						units = String.format("%d", u);
-						System.out.println("# muster -> " + units);						
+						if (Debug)
+							System.out.println("# muster -> " + units);						
 						addDiscount(c, category, units, "-100");
 					} else {
 						// Loners are filled up to 100 units with a 10er increment
-						System.out.println("# loner -> " + u);						
-						for (int k=u; k<=100; k+=10) {
-							String single_unit = String.format("%d", k);
+						if (rebates.length==1) {
+							if (Debug)
+								System.out.println("# loner to 100 -> " + u);	
+							for (int k=u; k<=100; k+=10) {
+								String single_unit = String.format("%d", k);
+								addDiscount(c, category, single_unit, "0");
+							}
+						} else {							
+							if (Debug)
+								System.out.println("# single loner -> " + u);	
+							String single_unit = String.format("%d", u);
 							addDiscount(c, category, single_unit, "0");
 						}
 					}
@@ -383,7 +444,7 @@ public class ShoppingCart implements java.io.Serializable {
 	}
 	
 	public void encryptCsvToDir(String in_filename, String in_dir, 
-			String out_filename, String out_dir, int skip) {
+			String out_filename, String out_dir, int skip, int cols) {
 		// First check if paths exist
 		File f = new File(in_dir);
 		if (!f.exists() || !f.isDirectory()) {
@@ -405,8 +466,11 @@ public class ShoppingCart implements java.io.Serializable {
 			while ((line=br.readLine()) !=null ) {
 				// Semicolon is used as a separator
 				String[] gln = line.split(";");
-				if (gln.length>1) {
-					gln_map.put(gln[0], gln[1]);
+				if (gln.length>(cols-1)) {
+					if (cols==2)
+						gln_map.put(gln[0], gln[1]);
+					else if (cols==3)
+						gln_map.put(gln[0], gln[1]+";"+gln[2]);
 				}
 			}			
 			// First serialize into a byte array output stream, then encrypt

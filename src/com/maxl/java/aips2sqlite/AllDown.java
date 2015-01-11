@@ -19,16 +19,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package com.maxl.java.aips2sqlite;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -40,7 +44,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.security.cert.X509Certificate;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPBody;
@@ -58,6 +61,10 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
@@ -429,6 +436,76 @@ public class AllDown {
 				pb.stopp();			
 			System.err.println(" Exception: in 'downGLNCodesXlsx'");
 			e.printStackTrace();
+		}
+	}
+	
+	public void downIBSA(String file_ibsa) {
+		String fl = "";
+		String fp = "";
+		String fs = "";
+		try {
+			FileInputStream glnCodesCsv = new FileInputStream(Constants.DIR_SHOPPING + "/access.ami.csv");
+			BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
+			String line;
+			while ((line=br.readLine()) !=null ) {
+				// Semicolon is used as a separator
+				String[] gln = line.split(";");
+				if (gln.length>2) {
+					if (gln[0].equals("IbsaAmiko")) {
+						fl = gln[0];
+						fp = gln[1];
+						fs = gln[2];
+					}
+				}
+			}		
+			br.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		FTPClient ftp_client = new FTPClient();				
+		try {
+			ftp_client.connect(fs, 21);
+			ftp_client.login(fl, fp);
+			ftp_client.enterLocalPassiveMode();
+			ftp_client.changeWorkingDirectory("data");
+			ftp_client.setFileType(FTP.BINARY_FILE_TYPE);
+
+			int reply = ftp_client.getReplyCode();
+			if (!FTPReply.isPositiveCompletion(reply)) {
+				ftp_client.disconnect();
+				System.err.println("FTP server refused connection.");
+				return;
+			}
+
+			System.out.println("- Connected to server " + fs + "...");
+			 //get list of filenames
+            FTPFile[] ftpFiles = ftp_client.listFiles(); 
+            
+            if (ftpFiles != null && ftpFiles.length > 0) {
+            	String remote_file = "Konditionen.csv";
+            	OutputStream os = new FileOutputStream(Constants.DIR_SHOPPING + "/" + file_ibsa);
+            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+
+            	boolean done = ftp_client.retrieveFile(remote_file, os);
+            	if (done)
+            		System.out.println("file downloaded successfully.");
+            	else
+            		System.out.println("error.");
+            	os.close();
+            }
+		} catch (IOException ex) {
+			System.out.println("Error: " + ex.getMessage());
+			ex.printStackTrace();
+		} finally {
+			try {
+				if (ftp_client.isConnected()) {
+					ftp_client.logout();
+					ftp_client.disconnect();
+				}
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 	

@@ -20,6 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package com.maxl.java.aips2sqlite;
 
 public class Constants {
+	// Download directory
+	public static final String DIR_DOWNLOAD = "./downloads/";
 	// Output directory
 	public static final String DIR_OUTPUT = "./output/";
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
@@ -44,6 +46,8 @@ public class Constants {
 	// GLN Codes (Personen + Betriebe)
 	public static final String FILE_GLN_CODES_PEOPLE = "./downloads/gln_codes_people_xlsx.xlsx";
 	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";
+	// File IBSA
+	public static final String FILE_MOOSBERGER = "moosberger_glns.csv";
 	// "Shopping" files
 	public static final String DIR_SHOPPING = "./input/shop/";
 	// ****** ATC class xls file (DE != FR) ******
@@ -69,6 +73,6 @@ public class Constants {
 	public static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";
 	
 	// Version of the generated database 
-	public static final String FI_DB_VERSION = "1.3.0";	
-	public static final String PI_DB_VERSION = "1.0.1";
+	public static final String FI_DB_VERSION = "1.4.0";	
+	public static final String PI_DB_VERSION = "1.1.0";
 }
