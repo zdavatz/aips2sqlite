@@ -29,7 +29,7 @@ import com.maxl.java.shared.Conditions;
 
 public class ShoppingCart implements java.io.Serializable {
 	
-	boolean Debug = false;
+	boolean Debug = true;
 	Map<String, Product> map_products = null;
 	
 	public ShoppingCart(Map<String, Product> map_products) {
@@ -346,10 +346,12 @@ public class ShoppingCart implements java.io.Serializable {
 								addDiscount(c, category, single_unit, discount);
 							}
 						} else {
-							int u = Integer.valueOf(units);	
+							int u = Integer.valueOf(units);						
 							// Check if number of units is limited to <=100 and its a "loner"
-							if (u<=100 && rebates.length==1) {
-								// Increment units to 100 in steps of 10								
+							if (u<=100 && i==(rebates.length-1)) {
+								// Increment units to 100 in steps of 10
+								if (Debug)
+									System.out.println("# last loner " + u + " to 100");
 								for (int k=u; k<=100; k+=10) {
 									String single_unit = String.format("%d", k);
 									addDiscount(c, category, single_unit, discount);
@@ -373,11 +375,12 @@ public class ShoppingCart implements java.io.Serializable {
 						addDiscount(c, category, units, "-100");
 					} else {
 						// Loners are filled up to 100 units with a 10er increment
-						if (rebates.length==1) {
+						if (rebates.length==1 || i==(rebates.length-1)) {
 							if (Debug)
-								System.out.println("# loner to 100 -> " + u);	
+								System.out.println("# loner -> " + u + " to 100");	
 							for (int k=u; k<=100; k+=10) {
 								String single_unit = String.format("%d", k);
+								// No discount
 								addDiscount(c, category, single_unit, "0");
 							}
 						} else {							
