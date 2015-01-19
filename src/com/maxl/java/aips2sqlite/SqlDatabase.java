@@ -234,7 +234,11 @@ public class SqlDatabase {
 			if (m_prep_amikodb!=null) {
 				m_prep_amikodb.setString(1, title);
 				m_prep_amikodb.setString(2, author);
+				m_prep_amikodb.setString(3, "NON-AIPS;" + eancode_str);
+				m_prep_amikodb.setString(4, title);
 				m_prep_amikodb.setString(5, eancode_str);
+				m_prep_amikodb.setString(7, "NON-AIPS");
+				m_prep_amikodb.setString(8, "NON-AIPS");	 
 				m_prep_amikodb.setInt(10, customer_id);	        
 				m_prep_amikodb.setString(11, pack_info_str);
 				m_prep_amikodb.setString(17, packages_str);

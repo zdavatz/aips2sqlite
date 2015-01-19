@@ -33,6 +33,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -439,7 +441,7 @@ public class AllDown {
 		}
 	}
 	
-	public void downIBSA(String file_ibsa) {
+	public void downIBSA() {
 		String fl = "";
 		String fp = "";
 		String fs = "";
@@ -482,17 +484,23 @@ public class AllDown {
 			 //get list of filenames
             FTPFile[] ftpFiles = ftp_client.listFiles(); 
             
-            if (ftpFiles != null && ftpFiles.length > 0) {
-            	String remote_file = "Konditionen.csv";
-            	OutputStream os = new FileOutputStream(Constants.DIR_SHOPPING + "/" + file_ibsa);
-            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
-
-            	boolean done = ftp_client.retrieveFile(remote_file, os);
-            	if (done)
-            		System.out.println("file downloaded successfully.");
-            	else
-            		System.out.println("error.");
-            	os.close();
+            List<String> list_remote_files = Arrays.asList("Konditionen.csv", "Targeting_diff.csv");
+            List<String> list_local_files = Arrays.asList(Constants.FILE_MOOSBERGER, Constants.FILE_TARGETING);
+            
+            if (ftpFiles!=null && ftpFiles.length>0) {
+            	int index = 0;
+            	for (String remote_file : list_remote_files) {
+	            	OutputStream os = new FileOutputStream(Constants.DIR_SHOPPING + "/" + list_local_files.get(index));
+	            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+	
+	            	boolean done = ftp_client.retrieveFile(remote_file, os);
+	            	if (done)
+	            		System.out.println("file downloaded successfully.");
+	            	else
+	            		System.out.println("error.");
+	            	os.close();
+	            	index++;
+            	}
             }
 		} catch (IOException ex) {
 			System.out.println("Error: " + ex.getMessage());

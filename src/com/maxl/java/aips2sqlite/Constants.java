@@ -48,6 +48,7 @@ public class Constants {
 	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";
 	// File IBSA
 	public static final String FILE_MOOSBERGER = "moosberger_glns.csv";
+	public static final String FILE_TARGETING = "targeting_glns.csv";
 	// "Shopping" files
 	public static final String DIR_SHOPPING = "./input/shop/";
 	// ****** ATC class xls file (DE != FR) ******

@@ -78,7 +78,9 @@ public class ShoppingCart implements java.io.Serializable {
 				  3: Gal. form (DE)
 				  4: Gal. form (FR)
 				  5: EAN code
-				  8: FEP inkl. MWSt.
+				  6: Pharma code
+				  7: Reg.
+				  8: FEP exkl. MWSt.
 				  9: FAP exkl. MWSt.
 				 10: MWSt.
 				 11: visible Arzt, Apotheke
@@ -139,10 +141,12 @@ public class ShoppingCart implements java.io.Serializable {
 							Product product = new Product();
 							product.processed = false;
 							product.title = name;
-							product.author = "IBSA Institut Biochimique SA";
-							product.size = getCellValue(row.getCell(2));
-							product.units[0] = getCellValue(row.getCell(3));
-							product.units[1] = getCellValue(row.getCell(4));
+							product.author = "IBSA Institut Biochimique SA";	// Currently only one company
+							product.size = getCellValue(row.getCell(2));		// Packungsgrösse
+							if (product.size!=null && product.size.endsWith(".00"))
+								product.size = product.size.substring(0, product.size.length()-3);
+							product.units[0] = getCellValue(row.getCell(3));	// Galenische Form (DE)
+							product.units[1] = getCellValue(row.getCell(4));	// Galenische Form (FR)
 							if (product.units[0]!=null)
 								product.units[0] = product.units[0].trim();
 							if (product.units[1]!=null)
@@ -160,7 +164,7 @@ public class ShoppingCart implements java.io.Serializable {
 							
 							// Instantiate new med condition
 							Conditions cond = new Conditions(eancode, name, fep, fap);	
-							System.out.println(eancode + " -> " + name + " / " + Float.toString(fep) + " / " + Float.toString(fap) + " / " + Float.toString(vat));							
+							System.out.println(eancode + " -> " + name + " " + product.size + ", " + product.units[0]);							
 
 							// Rebates
 							try {
@@ -443,7 +447,7 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 	}
 	
-	public void encryptCsvToDir(String in_filename, String in_dir, 
+	public void encryptCsvToDir(String in_filename_1, String in_filename_2, String in_dir, 
 			String out_filename, String out_dir, int skip, int cols) {
 		// First check if paths exist
 		File f = new File(in_dir);
@@ -459,20 +463,44 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 		try {
 			Map<String, String> gln_map = new TreeMap<String, String>();
-			// Load csv file and dump to map
-			FileInputStream glnCodesCsv = new FileInputStream(in_dir + "/" + in_filename + ".csv");
-			BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
-			String line;
-			while ((line=br.readLine()) !=null ) {
-				// Semicolon is used as a separator
-				String[] gln = line.split(";");
-				if (gln.length>(cols-1)) {
-					if (cols==2)
-						gln_map.put(gln[0], gln[1]);
-					else if (cols==3)
-						gln_map.put(gln[0], gln[1]+";"+gln[2]);
+			// Load csv file and dump to map			
+			{
+				FileInputStream glnCodesCsv = new FileInputStream(in_dir + "/" + in_filename_1 + ".csv");
+				BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
+				String line;
+				while ((line=br.readLine()) !=null ) {
+					// Semicolon is used as a separator
+					String[] gln = line.split(";");
+					if (gln.length>(cols-1)) {
+						if (cols==2)
+							gln_map.put(gln[0], gln[1]);
+						else if (cols==3)
+							gln_map.put(gln[0], gln[1]+";"+gln[2]);
+					}
+				}			
+				glnCodesCsv.close();				
+				br.close();
+			}
+			// Used when files are merged
+			{
+				if (!in_filename_2.isEmpty()) {
+					FileInputStream glnCodesCsv = new FileInputStream(in_dir + "/" + in_filename_2 + ".csv");
+					BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
+					String line;
+					while ((line=br.readLine()) !=null ) {
+						// Semicolon is used as a separator
+						String[] gln = line.split(";");
+						if (!gln_map.containsKey(gln[0]) && gln.length>(cols-1)) {
+							if (cols==2)
+								gln_map.put(gln[0], gln[1]);
+							else if (cols==3)
+								gln_map.put(gln[0], gln[1]+";"+gln[2]);
+						}
+					}	
+					glnCodesCsv.close();
+					br.close();
 				}
-			}			
+			}
 			// First serialize into a byte array output stream, then encrypt
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
@@ -485,8 +513,6 @@ public class ShoppingCart implements java.io.Serializable {
 			// Write to file
 			writeToFile(out_dir + out_filename +".ser", encrypted_msg);
 			System.out.println("Saved encrypted file " + out_filename +".ser");
-			
-			br.close();
 		} catch(IOException e) {
 			e.printStackTrace();			
 		}

@@ -189,7 +189,6 @@ public class Conditions implements java.io.Serializable {
 			d.add(day2);
 			pharmacy_promo_days.put(category, d);
 		} else if (customer_type.equals("drugstore")) {
-			System.out.println(category + " -> " + day1 + "-" + day2);
 			if (drugstore_promo_days.get(category)!=null)
 				d = drugstore_promo_days.get(category);
 			else

@@ -19,6 +19,7 @@ public class GlnCodes {
 	XSSFSheet m_gln_codes_people_sheet = null;
 	XSSFSheet m_gln_codes_companies_sheet = null;
 	Map<String, String> m_gln_codes_moos = null;
+	Map<String, String> m_gln_codes_targeting = null;
 	Map<String, String> m_gln_codes_complete = null;
 	
 	public GlnCodes() {
@@ -27,8 +28,46 @@ public class GlnCodes {
 		m_gln_codes_companies_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_COMPANIES, 0);
 		// Moosberger
 		m_gln_codes_moos = readFromCsvToMap(Constants.DIR_SHOPPING + "moosberger_glns.csv");
+		m_gln_codes_targeting = readFromCsvToMap(Constants.DIR_SHOPPING + "targeting_glns.csv");
 		// Complete list of gln_codes
 		m_gln_codes_complete = new TreeMap<String, String>();
+	}
+	
+	private void processGlns(String gln, String cat) {
+		String type = "";
+		if (m_gln_codes_complete.containsKey(gln)) {
+			String t[] = cat.split(";");
+			if (t[1].matches(".*[Dd]rogerie.*")) {
+				// Replace type string with "Drogerie"
+				type = "Drogerie";
+				System.out.println("-> Exists in med reg file: " + gln + " -> " + type);
+			} else if (t[1].matches(".*[Gg]rossist.*")) {
+				// Replace type string with "Grosist"
+				type = "Grossist";
+				System.out.println("-> Exists in med reg file: " + gln + " -> " + type);
+			}
+		} else {
+			if (gln.length()==13) {
+				String t[] = cat.split(";");				
+				if (t.length>1) {
+					if (t[1].matches(".*[AÄaä]rzt.*"))
+						type = "Arzt";	
+					else if (t[1].matches(".*[Pp]hysiotherap.*"))
+						type = "Physio";
+					else if (t[1].matches(".*[Aa]potheke.*"))
+						type = "Apotheke";		
+					else if (t[1].matches(".*[Ss]pital.*"))
+						type = "Spital";
+					else if (t[1].matches(".*[Dd]rogerie.*"))
+						type = "Drogerie";
+					else if (t[1].matches(".*[Gg]rossist.*"))
+						type = "Grossist";
+				}
+				m_gln_codes_complete.put(gln, "|||||" + type + "||");
+			} else {
+				System.out.println("Found wrong GLN code: " + gln);
+			}
+		}
 	}
 	
 	public void generateCsvFile() {						
@@ -128,46 +167,20 @@ public class GlnCodes {
 			num_rows++;
 		}
 		
-		// Loop through the Moosberger file
+		// Loop through the moosberger_glns file
 		for (Map.Entry<String, String> entry : m_gln_codes_moos.entrySet()) {
-			String gln = entry.getKey();
-			String cat = entry.getValue();	// e.g. "A;Arzt" or "B;Drogerie"
-			String type = "";
-			if (m_gln_codes_complete.containsKey(gln)) {
-				String t[] = cat.split(";");
-				// Replace type string with "Drogerie"
-				if (t[1].matches(".*[Dd]rogerie.*")) {
-					type = "Drogerie";
-					System.out.println("-> Exists in med reg file: " + gln + " -> " + type);
-				} else if (t[1].matches(".*[Gg]rossist.*")) {
-					type = "Grossist";
-					System.out.println("-> Exists in med reg file: " + gln + " -> " + type);
-				}
-			} else {
-				String t[] = cat.split(";");				
-				if (t.length>1) {
-					if (t[1].matches(".*[AÄaä]rzt.*"))
-						type = "Arzt";	
-					else if (t[1].matches(".*[Aa]potheke.*"))
-						type = "Apotheke";		
-					else if (t[1].matches(".*[Ss]pital.*"))
-						type = "Spital";
-					else if (t[1].matches(".*[Dd]rogerie.*"))
-						type = "Drogerie";
-					else if (t[1].matches(".*[Gg]rossist.*"))
-						type = "Grossist";
-				}
-				m_gln_codes_complete.put(gln, "|||||" + type + "||");
-			}
+			processGlns(entry.getKey(), entry.getValue());
 		}
+		// Loop through the targeting_glns file
+		for (Map.Entry<String, String> entry : m_gln_codes_targeting.entrySet()) {
+			processGlns(entry.getKey(), entry.getValue());
+		}	
+				
 		// Write to file
 		int rows = writeMapToCsv(m_gln_codes_complete, '|', "gln_codes_csv.csv", "");		
 		// ... and zip it
 		FileOps.zipToFile(Constants.DIR_OUTPUT, "gln_codes_csv.csv");	
-		
-		// Generate gln_codes -> customer category map, which will be serialized and encrypted
-		
-		
+
 		long stopTime = System.currentTimeMillis();
 		if (CmlOptions.SHOW_LOGS) {
 			System.out.println("- Processed " + rows + " rows in "

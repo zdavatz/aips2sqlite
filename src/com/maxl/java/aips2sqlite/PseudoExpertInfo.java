@@ -270,8 +270,9 @@ public class PseudoExpertInfo {
 								if (product.pharmacode!=null && !product.pharmacode.isEmpty())
 									pharma_code = product.pharmacode;
 								visible = product.visible;
-							}
-							m_list_of_packages.add(mediTitle + "|" + size + "|" + units + "|" 
+							}						
+							m_list_of_packages.add(mediTitle.toUpperCase() + ", " + units + " " + size + "|" 
+									+ size + "|" + units + "|" 
 									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
 									+ swissmedic_cat + ",,|" + eanCode + "|" + pharma_code + "|" + visible + "\n");
 							// Generate bar codes
