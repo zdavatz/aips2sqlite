@@ -127,6 +127,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("shop")) {
 				CmlOptions.SHOPPING_CART = true;
 			}
+			if (cmd.hasOption("onlyshop")) {
+				CmlOptions.ONLY_SHOPPING_CART = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -161,6 +164,7 @@ public class Aips2Sqlite {
 		addOption(options, "xml", "generate xml file", false, false);	
 		addOption(options, "gln", "generate csv file with Swiss gln codes", false, false);
 		addOption(options, "shop", "generate encrypted files for shopping cart", false, false);
+		addOption(options, "onlyshop", "skip generation of sqlite database", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -195,7 +199,7 @@ public class Aips2Sqlite {
 			Map<String, Product> map_products = new LinkedHashMap<String, Product>();
 			
 			// Generate encrypted files for shopping cart
-			if (CmlOptions.SHOPPING_CART==true) {
+			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true) {
 				ShoppingCart sc = new ShoppingCart(map_products);
 				sc.listFiles(Constants.DIR_SHOPPING);
 				sc.encryptConditionsToDir("ibsa_conditions", Constants.DIR_SHOPPING);
@@ -203,19 +207,21 @@ public class Aips2Sqlite {
 				sc.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 3);
 				sc.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
 			}			
-			
-			if (CmlOptions.SHOW_LOGS) {
-				System.out.println("");
-				System.out.println("- Generating sqlite database... ");
-			}						
-			long startTime = System.currentTimeMillis();
 
-			// Generates SQLite database - function should return the number of entries
-			generateSQLiteDB(map_products);
-			
-			if (CmlOptions.SHOW_LOGS) {
-				long stopTime = System.currentTimeMillis();
-				System.out.println("- Generated sqlite database in " + (stopTime - startTime) / 1000.0f + " sec");
+			if (CmlOptions.ONLY_SHOPPING_CART==false) {
+				if (CmlOptions.SHOW_LOGS) {
+					System.out.println("");
+					System.out.println("- Generating sqlite database... ");
+				}						
+				long startTime = System.currentTimeMillis();
+	
+				// Generates SQLite database - function should return the number of entries
+				generateSQLiteDB(map_products);
+				
+				if (CmlOptions.SHOW_LOGS) {
+					long stopTime = System.currentTimeMillis();
+					System.out.println("- Generated sqlite database in " + (stopTime - startTime) / 1000.0f + " sec");
+				}
 			}
 		}
 

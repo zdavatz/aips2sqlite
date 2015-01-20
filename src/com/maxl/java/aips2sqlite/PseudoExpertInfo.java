@@ -271,7 +271,7 @@ public class PseudoExpertInfo {
 									pharma_code = product.pharmacode;
 								visible = product.visible;
 							}						
-							m_list_of_packages.add(mediTitle.toUpperCase() + ", " + units + " " + size + "|" 
+							m_list_of_packages.add(mediTitle.toUpperCase() + ", " + units + ", " + size + "|" 
 									+ size + "|" + units + "|" 
 									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
 									+ swissmedic_cat + ",,|" + eanCode + "|" + pharma_code + "|" + visible + "\n");

@@ -88,8 +88,8 @@ public class AddProductInfo {
 				String fep = String.format("CHF %.2f", p.fep);	// Fachhandelseinkaufspreis	
 				// 
 				author = p.author;
-				pack_info_str += name.toUpperCase() + ", " + u + " " + size + ", " + fap + " [" + swissmedic_cat + "]\n";
-				packages_str += name.toUpperCase() + ", " + u + " " + size + "|" + p.size + "|" + u + "|" 
+				pack_info_str += name.toUpperCase() + ", " + u + ", " + size + ", " + fap + " [" + swissmedic_cat + "]\n";
+				packages_str += name.toUpperCase() + ", " + u + ", " + size + "|" + p.size + "|" + u + "|" 
 						+ p.efp + "|" + p.pp + "|" + fap + "|" + fep + "|" + String.format("%.2f", p.vat) + "|"
 						+ p.swissmedic_cat + ",,|" + p.eancode + "|" + p.pharmacode + "|" + p.visible + "\n";
 				eancode_str += p.eancode + ", ";

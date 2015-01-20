@@ -163,7 +163,7 @@ public class ShoppingCart implements java.io.Serializable {
 							map_products.put(eancode, product);
 							
 							// Instantiate new med condition
-							Conditions cond = new Conditions(eancode, name, fep, fap);	
+							Conditions cond = new Conditions(eancode, name.toUpperCase() + ", " + product.units[0] + ", " + product.size, fep, fap);	
 							System.out.println(eancode + " -> " + name + " " + product.size + ", " + product.units[0]);							
 
 							// Rebates
