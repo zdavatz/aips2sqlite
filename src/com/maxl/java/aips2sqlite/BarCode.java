@@ -68,6 +68,18 @@ public class BarCode {
         return imageString;
     }	
 	
+    public int getChecksum(String eanStr) {
+    	int val=0;   	
+    	for (int i=0; i<eanStr.length(); i++)
+    		val += ((int)Integer.parseInt(eanStr.charAt(i)+""))*((i%2==0)?1:3);
+
+        int checksum_digit = 10 - (val % 10);
+        if (checksum_digit == 10) 
+        	checksum_digit = 0;	
+        
+        return checksum_digit;
+    }
+    
 	public String encode(String eanStr) throws IOException {
 		String barcodeBase64 = "";
 		

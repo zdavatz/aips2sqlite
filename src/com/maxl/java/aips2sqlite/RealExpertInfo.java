@@ -261,7 +261,7 @@ public class RealExpertInfo {
 						pack.add(speciality_str); 	// 11
 						pack.add(plimitation_str); 	// 12
 						pack.add(add_info_str); 	// 13
-						// 22.03.2014: EAN-13 barcodes - initialization
+						// 22.03.2014: EAN-13 barcodes - initialization - check digit is missing!
 						ean_code_str = "7680" + swissmedic_no8;
 						pack.add(ean_code_str); 	// 14
 						pack.add(pharma_code_str);	// 15
@@ -391,9 +391,9 @@ public class RealExpertInfo {
 				String ean_code = pharma.getGtin();
 				String pharma_code = pharma.getPhar();
 				if (ean_code.length() == 13) {
-					smno8 = ean_code.substring(4, 12);
+					smno8 = ean_code.substring(4, 12);									
 					// Extract pharma corresponding to swissmedicno8 (source: swissmedic package file)
-					ArrayList<String> pi_row = m_package_info.get(smno8);
+					ArrayList<String> pi_row = m_package_info.get(smno8);					
 					// Replace sequence_name
 					if (pi_row != null) {
 						// Präparatname + galenische Form
@@ -416,10 +416,8 @@ public class RealExpertInfo {
 					} 
 					else {
 						if (CmlOptions.SHOW_ERRORS) {
-							/*
 							System.err.println(">> Does not exist in BAG xls: " + smno8 
 										+ " (" + pharma.getDscr() + ", " + pharma.getAddscr() + ")");
-							*/
 						}
 					}
 				} else if (ean_code.length() < 13) {
@@ -771,7 +769,6 @@ public class RealExpertInfo {
 			 */
 			int tot_pseudo_counter = 0;
 			if (CmlOptions.ADD_PSEUDO_FI==true) {
-				String empty_pack_str = "";
 				PseudoExpertInfo pseudo_fi = new PseudoExpertInfo(m_sql_db, CmlOptions.DB_LANGUAGE, m_map_products);
 				// Process
 				tot_pseudo_counter = pseudo_fi.process();
@@ -1440,24 +1437,37 @@ public class RealExpertInfo {
 								vat = String.format("%.2f", product.vat);
 							visible = product.visible;
 						}
+
+						// Some articles are listed in swissmedic_packages file but are not in the refdata file
+						if (pi_row.get(10).equals("a.H.")) {
+							pi_row.set(10, "ev.nn.i.H.");							
+						}
+						if (pi_row.get(10).equals("p.c.")) {
+							pi_row.set(10, "ev.ep.e.c.");							
+						}						
+											
 						// Add only if medication is "in Handel" -> check pi_row.get(10)						
-						if (pi_row.get(10).isEmpty()) {		
-							m_list_of_packages.add(pi_row.get(1) + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" 
-									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
-									+ pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
-									+ eancode + "|" + pi_row.get(15) + "|" + visible + "\n");
-							m_list_of_eancodes.add(eancode);
-							// --> Extract EAN-13 and generate barcodes
+						if (pi_row.get(10).isEmpty() || pi_row.get(10).equals("ev.nn.i.H.") || pi_row.get(10).equals("ev.ep.e.c.")) {
+							// --> Extract EAN-13 or EAN-12 and generate barcodes							
 							try {
 								if (!eancode.isEmpty()) {
-									BarCode bc = new BarCode();								
+									BarCode bc = new BarCode();																	
+									if (eancode.length()==12) {
+										int cs = bc.getChecksum(eancode);
+										eancode += cs;
+									}
 									String barcodeImg64 = bc.encode(eancode);
 									barcode_html = "<p class=\"barcode\">" + barcodeImg64 + "</p>";
 									barcode_list.add(barcode_html);
 								}
 							} catch(IOException e) {
 								e.printStackTrace();
-							}
+							}							
+							m_list_of_packages.add(pi_row.get(1) + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" 
+									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
+									+ pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
+									+ eancode + "|" + pi_row.get(15) + "|" + visible + "\n");
+							m_list_of_eancodes.add(eancode);
 						}
 						
 						// Remove double spaces in title and capitalize
