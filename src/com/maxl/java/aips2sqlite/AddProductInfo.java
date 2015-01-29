@@ -17,6 +17,14 @@ public class AddProductInfo {
 		m_map_products = map_products;
 	}
 	
+	private String na() {
+		if (CmlOptions.DB_LANGUAGE.equals("de"))
+			return "k.A.";
+		else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+			return "p.c.";
+		return "";
+	}
+	
 	public void process() {
 		
 		System.out.println("Processing all non-swissmedic xml products ...");	
@@ -32,6 +40,7 @@ public class AddProductInfo {
 						String title = p[0].trim();
 						if (title.toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())) {
 							String eancode = p[9].trim();	
+							// Check if eancode has been already processed
 							if (m_map_products.containsKey(eancode)) {
 								Product product = m_map_products.get(eancode);
 								product.processed = true;
@@ -51,7 +60,7 @@ public class AddProductInfo {
 				if (p.processed==false) {
 					String title = p.title.trim();
 					if (p.fep>0.0f || p.fap>0.0f) {
-						System.out.println("not found: " + title + " -> " + p.eancode);						
+						System.out.println("not found in aips xml: " + title + " -> " + p.eancode);						
 						List<Product> list_of_products = null;
 						if (map_of_medis.containsKey(title))
 							list_of_products = map_of_medis.get(title);
@@ -74,16 +83,16 @@ public class AddProductInfo {
 			for (Product p : list_of_products) {
 				// Not necessary to check the price again -- it's done above
 				String u = p.units[0];
-				if (CmlOptions.DB_LANGUAGE.equals("fd"))
+				if (CmlOptions.DB_LANGUAGE.equals("fr"))
 					u = p.units[1];
 				if (u.isEmpty())
-					u = "k.A.";
+					u = na();
 				String size = p.size;
 				if (size.isEmpty())
-					size = "k.A.";
+					size = na();
 				String swissmedic_cat = p.swissmedic_cat;
 				if (swissmedic_cat.isEmpty())
-					swissmedic_cat = "k.A.";
+					swissmedic_cat = na();
 				String fap = String.format("CHF %.2f", p.fap);	// Fabrikabgabepreis
 				String fep = String.format("CHF %.2f", p.fep);	// Fachhandelseinkaufspreis	
 				// 

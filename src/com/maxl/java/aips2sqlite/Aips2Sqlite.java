@@ -252,6 +252,10 @@ public class Aips2Sqlite {
 		
 		// Finalize tables and close db
 		sql_db.finalize();
+		
+		// If requested zip the whole thing
+		if (CmlOptions.ZIP_BIG_FILES==true)
+			FileOps.zipToFile("./output/", "amiko_db_full_idx_" + CmlOptions.DB_LANGUAGE + ".db");		
 	}	
 		
 	static void allDown() {

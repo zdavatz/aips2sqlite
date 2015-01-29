@@ -1258,10 +1258,6 @@ public class RealExpertInfo {
 			System.out.println("Total number of pseudo Fachinfos: " + tot_pseudo_counter);
 			System.out.println("--------------------------------------------");
 			
-			if (CmlOptions.ZIP_BIG_FILES==true) {
-				FileOps.zipToFile("./output/", "amiko_db_full_idx_" + CmlOptions.DB_LANGUAGE + ".db");
-			}
-			
 			if (CmlOptions.XML_FILE==true) {
 				fi_complete_xml = html_utils.addHeaderToXml("kompendium", fi_complete_xml);
 				// Write kompendium xml file to disk
