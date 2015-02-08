@@ -29,6 +29,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class SqlDatabase {
 	
@@ -98,7 +100,7 @@ public class SqlDatabase {
 		
 		try {
 			stat = conn.createStatement();
-			String query = "select packages from amikodb";
+			String query = "SELECT packages FROM amikodb";
 			ResultSet rs = stat.executeQuery(query);
 			while (rs.next()) {
 				packages.add(rs.getString(1));
@@ -108,6 +110,32 @@ public class SqlDatabase {
 		}
 		
 		return packages;
+	}
+	
+	public Map<Long, String> mapMedis(String author) {
+		Map<Long, String> map_of_medis = new TreeMap<Long, String>();
+		
+		try {
+			String auth = author.toLowerCase();
+			stat = conn.createStatement();
+			String query = "SELECT _id, packages FROM amikodb WHERE auth LIKE " + "'" + auth + "%'";	
+			ResultSet rs = stat.executeQuery(query);
+			while (rs.next()) {
+				map_of_medis.put(rs.getLong(1), rs.getString(2));
+			} 
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in mapMedis!");
+		}
+		
+		return map_of_medis;		
+	}
+	
+	public void deleteEntry(Long index) {
+		try {
+			stat.executeUpdate("DELETE FROM amikodb WHERE _id=" + index);
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in deleteEntry!");
+		}
 	}
 	
 	private String expertTable() {
@@ -306,13 +334,13 @@ public class SqlDatabase {
 					+ "SELECT " + AllRows + " FROM " + table_name + " ORDER BY " 
 					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
-					+ "REPLACE(REPLACE(REPLACE(REPLACE("
+					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "title,"
 					+ "'é','e'),'à','a'),'è','e'),'ê','e'),'É','E'),"
 					+ "'î','i'),'ç','c'),'ä','a'),'ö','o'),'Ä','A'),"
-					+ "'ü','u'),'[','{['),'0','{0'),'1','{1'),'2','{2'),"
+					+ "'ü','u'),'(','{('),'[','{['),'0','{0'),'1','{1'),'2','{2'),"
 					+ "'3','{3'),'4','{4'),'5','{5'),'6','{6'),"
 					+ "'7','{7'),'8','{8'),'9','{9')"
 					+ " COLLATE NOCASE;");

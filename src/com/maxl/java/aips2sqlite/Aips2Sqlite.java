@@ -248,6 +248,7 @@ public class Aips2Sqlite {
 		if (CmlOptions.SHOPPING_CART==true) {
 			AddProductInfo api = new AddProductInfo(sql_db, map_products);
 			api.process();
+			api.clean("ibsa");
 		}
 		
 		// Finalize tables and close db

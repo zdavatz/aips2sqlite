@@ -31,6 +31,7 @@ public class AddProductInfo {
 		
 		// List all products in 'db', compare with products in 'map_products', flag packages found
 		List<String> list_of_packages = m_sql_db.listProducts();
+		// Loop through list of packages
 		for (String pack : list_of_packages) {
 			String packs[] = pack.split("\n");
 			for (int i=0; i<packs.length; ++i) {
@@ -57,6 +58,8 @@ public class AddProductInfo {
 		for (Map.Entry<String, Product> entry : m_map_products.entrySet()) {
 			Product p = entry.getValue();
 			if (p.title.toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())) {
+				// Find articles that are NOT in the aips xml
+				// ... these articles must be grouped using the "same" name
 				if (p.processed==false) {
 					String title = p.title.trim();
 					if (p.fep>0.0f || p.fap>0.0f) {
@@ -73,6 +76,7 @@ public class AddProductInfo {
 			}
 		}
 		
+		// Add all the non found products to the main sqlite db
 		for (Map.Entry<String, List<Product>> entry : map_of_medis.entrySet()) {
 			String name = entry.getKey().trim();
 			List<Product> list_of_products = entry.getValue();
@@ -107,5 +111,32 @@ public class AddProductInfo {
 				eancode_str = eancode_str.substring(0, eancode_str.length()-2);
 			m_sql_db.addExpertDB(name, author, eancode_str, 2, pack_info_str, packages_str);			
 		}	
+	}
+	
+	void clean(String author) {
+		List<Long> list_of_delete = new ArrayList<Long>();
+		// List all medis of author in sqlite db)
+		Map<Long, String> map_of_medis = m_sql_db.mapMedis(author);
+		// For each medi, check if ean code is in map_products
+		for (Map.Entry<Long, String> medi : map_of_medis.entrySet()) {
+			Long index = medi.getKey();
+			String packages = medi.getValue();
+			list_of_delete.add(index);
+			for (Map.Entry<String, Product> product : m_map_products.entrySet()) {
+				// As soon as one hit is found, break
+				if (packages.contains(product.getKey())) {
+					list_of_delete.remove(index);
+					break;					
+				}
+			}
+		}
+		// Delete unmatched entries
+		if (list_of_delete.size()>0) {
+			System.out.println("Deleted the following packages...");
+			for (Long idx : list_of_delete) {
+				System.out.println(map_of_medis.get(idx));
+				m_sql_db.deleteEntry(idx);
+			}
+		}
 	}
 }
