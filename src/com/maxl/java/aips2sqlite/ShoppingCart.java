@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -68,94 +69,129 @@ public class ShoppingCart implements java.io.Serializable {
 			Iterator<Row> rowIterator = ibsa_sheet.iterator();
 			// Map of ean code to rebate condition
 			Map<String, Conditions> map_conditions = new TreeMap<String, Conditions>();
+			// Map of ean code to visibility flag
+			Map<String, Integer> map_visibility = new TreeMap<String, Integer>();
 			
+			// First round to extract list of products (eancodes) visible for particular customer group
 			int num_rows = 0;
+			while (rowIterator.hasNext()) {
+				Row row = rowIterator.next();
+				if (num_rows>1) {
+					if (row.getCell(7)!=null) {
+						String eancode = getCellValue(row.getCell(7));
+						if (eancode!=null && eancode.length()==16) {
+                            eancode = eancode.substring(0, eancode.length()-3);
+							// 13: doctors, pharmacy; 14: drugstore; 15: hospital; 16: wholesaler
+							int visibility = 0x00;	// article visible to no customer group
+							if (!getCellValue(row.getCell(13)).toLowerCase().isEmpty())
+								if (getCellValue(row.getCell(13)).equals("x"))
+									visibility |= 0x08;
+							if (!getCellValue(row.getCell(14)).toLowerCase().isEmpty())
+								if (getCellValue(row.getCell(14)).equals("x"))
+									visibility |= 0x04;
+							if (!getCellValue(row.getCell(15)).toLowerCase().isEmpty())
+								if (getCellValue(row.getCell(15)).equals("x"))
+									visibility |= 0x02;
+							if (!getCellValue(row.getCell(16)).isEmpty())
+								if (getCellValue(row.getCell(16)).toLowerCase().equals("x"))
+									visibility |= 0x01;	
+							map_visibility.put(eancode, visibility);
+						}
+					}
+				}
+				num_rows++;
+			}
+			
+			num_rows = 0;
+			rowIterator = ibsa_sheet.iterator();
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
 				/*
 				  1: Präparatname
-				  2: Units
-				  3: Gal. form (DE)
-				  4: Gal. form (FR)
-				  5: EAN code
-				  6: Pharma code
-				  7: Reg.
-				  8: FEP exkl. MWSt.
-				  9: FAP exkl. MWSt.
-				 10: MWSt.
-				 11: visible Arzt, Apotheke
-				 12: visible Drogerie
-				 13: visible Spital
-				 14: visible Grosshandel
-				 15: B-Arztpraxis
-				 16: A-Artzpraxis
-				 17: assortierbar mit, comma-separated list
-				 18: B-Apotheke
-				 19: A-Apotheke
-				 20: assortierbar mit, comma-separated list
-				 21: Promotionszyklus B-Apotheke
-				 22: Promotionszyklus A-Apotheke
-				 23: assortierbar mit, comma-separated list
-				 24: B-Drogerie
-				 25: A-Drogerie
-				 26: assortierbar mit, comma-separated list
-				 27: Promotionszyklus, B-Drogerie
-				 28: Promotionszyklus, A-Drogerie
-				 29: assortierbar mit, comma-separated list				 
-				 30: C-Spital
-				 31: B-Spital
-				 32: A-Spital
-				 33: assortierbar mit, comma-separated list
+				  2: Gruppe (DE)
+				  3: Gruppe (FR)
+				  4: Units				  
+				  5: Gal. form (DE)
+				  6: Gal. form (FR)
+				  7: EAN code
+				  8: Pharma code
+				  9: Reg.
+				 10: FEP exkl. MWSt.
+				 11: FAP exkl. MWSt.
+				 12: MWSt.
+				 13: visible Arzt, Apotheke
+				 14: visible Drogerie
+				 15: visible Spital
+				 16: visible Grosshandel
+				 17: B-Arztpraxis
+				 18: A-Artzpraxis
+				 19: assortierbar mit, comma-separated list
+				 20: B-Apotheke
+				 21: A-Apotheke
+				 22: assortierbar mit, comma-separated list
+				 23: Promotionszyklus B-Apotheke
+				 24: Promotionszyklus A-Apotheke
+				 25: assortierbar mit, comma-separated list
+				 26: B-Drogerie
+				 27: A-Drogerie
+				 28: assortierbar mit, comma-separated list
+				 29: Promotionszyklus, B-Drogerie
+				 30: Promotionszyklus, A-Drogerie
+				 31: assortierbar mit, comma-separated list				 
+				 32: C-Spital
+				 33: B-Spital
+				 34: A-Spital
+				 35: assortierbar mit, comma-separated list
 				*/
 
 				if (num_rows>1) {
-					if (row.getCell(5)!=null) {
-						String eancode = getCellValue(row.getCell(5));
+					if (row.getCell(7)!=null) {
+						String eancode = getCellValue(row.getCell(7));
 						if (eancode!=null && eancode.length()==16) {
 							// EAN code read in as "float"!
                             eancode = eancode.substring(0, eancode.length()-3);
 							String name = getCellValue(row.getCell(1)).replaceAll("\\*", "").trim();
 							float fep = 0.0f;
-							if (!getCellValue(row.getCell(8)).isEmpty())
-								fep = Float.valueOf(getCellValue(row.getCell(8)));
-							float fap = 0.0f;
-							if (!getCellValue(row.getCell(9)).isEmpty())							
-								fap = Float.valueOf(getCellValue(row.getCell(9)));	
-							float vat = 8.0f;	// [%]
 							if (!getCellValue(row.getCell(10)).isEmpty())
-								vat = Float.valueOf(getCellValue(row.getCell(10)));
-							// 11: doctors, pharmacy; 12: drugstore; 13: hospital; 14: wholesaler
+								fep = Float.valueOf(getCellValue(row.getCell(10)));
+							float fap = 0.0f;
+							if (!getCellValue(row.getCell(11)).isEmpty())							
+								fap = Float.valueOf(getCellValue(row.getCell(11)));	
+							float vat = 8.0f;	// [%]
+							if (!getCellValue(row.getCell(12)).isEmpty())
+								vat = Float.valueOf(getCellValue(row.getCell(12)));
+							// 13: doctors, pharmacy; 14: drugstore; 15: hospital; 16: wholesaler
 							int visibility = 0x00;	// article visible to no customer group
-							if (!getCellValue(row.getCell(11)).toLowerCase().isEmpty())
-								if (getCellValue(row.getCell(11)).equals("x"))
-									visibility |= 0x08;
-							if (!getCellValue(row.getCell(12)).toLowerCase().isEmpty())
-								if (getCellValue(row.getCell(12)).equals("x"))
-									visibility |= 0x04;
 							if (!getCellValue(row.getCell(13)).toLowerCase().isEmpty())
 								if (getCellValue(row.getCell(13)).equals("x"))
+									visibility |= 0x08;
+							if (!getCellValue(row.getCell(14)).toLowerCase().isEmpty())
+								if (getCellValue(row.getCell(14)).equals("x"))
+									visibility |= 0x04;
+							if (!getCellValue(row.getCell(15)).toLowerCase().isEmpty())
+								if (getCellValue(row.getCell(15)).equals("x"))
 									visibility |= 0x02;
-							if (!getCellValue(row.getCell(14)).isEmpty())
-								if (getCellValue(row.getCell(14)).toLowerCase().equals("x"))
+							if (!getCellValue(row.getCell(16)).isEmpty())
+								if (getCellValue(row.getCell(16)).toLowerCase().equals("x"))
 									visibility |= 0x01;							
 							Product product = new Product();
 							product.processed = false;
 							product.title = name;
 							product.author = "IBSA Institut Biochimique SA";	// Currently only one company
-							product.size = getCellValue(row.getCell(2));		// Packungsgrösse
+							product.size = getCellValue(row.getCell(4));		// Packungsgrösse
 							if (product.size!=null && product.size.endsWith(".00"))
 								product.size = product.size.substring(0, product.size.length()-3);
-							product.units[0] = getCellValue(row.getCell(3));	// Galenische Form (DE)
-							product.units[1] = getCellValue(row.getCell(4));	// Galenische Form (FR)
+							product.units[0] = getCellValue(row.getCell(5));	// Galenische Form (DE)
+							product.units[1] = getCellValue(row.getCell(6));	// Galenische Form (FR)
 							if (product.units[0]!=null)
 								product.units[0] = product.units[0].trim();
 							if (product.units[1]!=null)
 								product.units[1] = product.units[1].trim();
 							product.eancode = eancode;
-							String pharmacode = getCellValue(row.getCell(6));
+							String pharmacode = getCellValue(row.getCell(8));
 							if (pharmacode!=null && pharmacode.length()>3)
 								product.pharmacode = pharmacode.substring(0, pharmacode.length()-3);
-							product.swissmedic_cat = getCellValue(row.getCell(7));
+							product.swissmedic_cat = getCellValue(row.getCell(9));
 							product.fep = fep;
 							product.fap = fap;
 							product.vat = vat;
@@ -168,29 +204,29 @@ public class ShoppingCart implements java.io.Serializable {
 
 							// Rebates
 							try {
-								extractDiscounts(cond, "B-doctor", getCellValue(row.getCell(15)));			// B-Arztpraxis
-								extractDiscounts(cond, "A-doctor", getCellValue(row.getCell(16)));			// A-Arztpraxis		
-								extractDiscounts(cond, "B-pharmacy", getCellValue(row.getCell(18)));		// B-Apotheke
-								extractDiscounts(cond, "A-pharmacy", getCellValue(row.getCell(19)));		// A-Apotheke
-								extractDiscounts(cond, "B-pharmacy-promo", getCellValue(row.getCell(21)));	// B-Apotheke promo-cycle
-								extractDiscounts(cond, "A-pharmacy-promo", getCellValue(row.getCell(22)));	// A-Apotheke promo-cycle
-								extractDiscounts(cond, "B-drugstore", getCellValue(row.getCell(24)));		// B-Drogerie
-								extractDiscounts(cond, "A-drugstore", getCellValue(row.getCell(25)));		// A-Drogerie
-								extractDiscounts(cond, "B-drugstore-promo", getCellValue(row.getCell(27)));	// B-Drogerie promo-cycle
-								extractDiscounts(cond, "A-drugstore-promo", getCellValue(row.getCell(28)));	// A-Drogerie promo-cycle
-								extractDiscounts(cond, "C-hospital", getCellValue(row.getCell(30)));		// C-Spital
-								extractDiscounts(cond, "B-hospital", getCellValue(row.getCell(31)));		// B-Spital
-								extractDiscounts(cond, "A-hospital", getCellValue(row.getCell(32)));		// A-Spital
+								extractDiscounts(cond, "B-doctor", getCellValue(row.getCell(17)));			// B-Arztpraxis
+								extractDiscounts(cond, "A-doctor", getCellValue(row.getCell(18)));			// A-Arztpraxis		
+								extractDiscounts(cond, "B-pharmacy", getCellValue(row.getCell(20)));		// B-Apotheke
+								extractDiscounts(cond, "A-pharmacy", getCellValue(row.getCell(21)));		// A-Apotheke
+								extractDiscounts(cond, "B-pharmacy-promo", getCellValue(row.getCell(23)));	// B-Apotheke promo-cycle
+								extractDiscounts(cond, "A-pharmacy-promo", getCellValue(row.getCell(24)));	// A-Apotheke promo-cycle
+								extractDiscounts(cond, "B-drugstore", getCellValue(row.getCell(25)));		// B-Drogerie
+								extractDiscounts(cond, "A-drugstore", getCellValue(row.getCell(26)));		// A-Drogerie
+								extractDiscounts(cond, "B-drugstore-promo", getCellValue(row.getCell(29)));	// B-Drogerie promo-cycle
+								extractDiscounts(cond, "A-drugstore-promo", getCellValue(row.getCell(30)));	// A-Drogerie promo-cycle
+								extractDiscounts(cond, "C-hospital", getCellValue(row.getCell(32)));		// C-Spital
+								extractDiscounts(cond, "B-hospital", getCellValue(row.getCell(33)));		// B-Spital
+								extractDiscounts(cond, "A-hospital", getCellValue(row.getCell(34)));		// A-Spital
 								// Assortiebarkeit
-								extractAssort(cond, "doctor", getCellValue(row.getCell(17)));
-								extractAssort(cond, "pharmacy", getCellValue(row.getCell(20)));
-								extractAssort(cond, "pharmacy-promo", getCellValue(row.getCell(23)));							
-								extractAssort(cond, "drugstore", getCellValue(row.getCell(26)));
-								extractAssort(cond, "drugstore-promo", getCellValue(row.getCell(29)));
-								extractAssort(cond, "hospital", getCellValue(row.getCell(33)));								
+								extractAssort(cond, "doctor", getCellValue(row.getCell(19)), map_visibility);
+								extractAssort(cond, "pharmacy", getCellValue(row.getCell(22)), map_visibility);
+								extractAssort(cond, "pharmacy-promo", getCellValue(row.getCell(25)), map_visibility);							
+								extractAssort(cond, "drugstore", getCellValue(row.getCell(28)), map_visibility);
+								extractAssort(cond, "drugstore-promo", getCellValue(row.getCell(31)), map_visibility);
+								extractAssort(cond, "hospital", getCellValue(row.getCell(35)), map_visibility);								
 							} catch(Exception e) {
 								System.out.println(">> Exception while processing Excel-File " + filename);
-								System.out.println(">> Check " + eancode + " -> " +name);
+								System.out.println(">> Check " + eancode + " -> " + name);
 								e.printStackTrace();
 								System.exit(-1);
 							}
@@ -438,15 +474,28 @@ public class ShoppingCart implements java.io.Serializable {
 		return discounted;
 	}
 	
-	private void extractAssort(Conditions c, String category, String eans_str) {
+	private void extractAssort(Conditions c, String category, String eans_str, Map<String, Integer> map_visibility) {
 		if (!eans_str.isEmpty()) {
+			// Get all encodes in the list
 			String[] eans = eans_str.split("\\s*,\\s*");
 			List<String> items = Arrays.asList(eans);
+			List<String> cleaned_eans = new ArrayList<String>();
+			// Loop through the list
 			for (int i=0; i<items.size(); ++i) {
-				if (items.get(i).contains("."))
-					items.set(i, items.get(i).split("\\.")[0]);
+				String ean_code = items.get(i);				
+				if (ean_code.contains("."))
+					ean_code = ean_code.split("\\.")[0];
+				if (map_visibility.containsKey(ean_code)) {
+					int visible = map_visibility.get(ean_code);
+					if ((visible & 0x08)>0 && (category.equals("doctor") || category.equals("pharmacy") || category.equals("pharmacy-promo"))
+							|| ((visible & 0x04)>0 && (category.equals("drugstore")) || category.equals("drugstore-promo"))
+							|| ((visible & 0x02)>0 && (category.equals("hospital")))
+							|| ((visible & 0x01)>0 && (category.equals("wholesaler")))) {
+						cleaned_eans.add(ean_code);
+					}
+				}
 			}
-			c.setAssort(category, items);
+			c.setAssort(category, cleaned_eans);
 		}
 	}
 	
