@@ -340,9 +340,9 @@ public class AllDown {
 				pb.start();	
 			}
 			if (language.equals("DE"))
-				url = new URL("https://download.epha.ch/cleaned/matrix.csv");
+				url = new URL("https://download.epha.ch/data/matrix/matrix.csv");
 			else if (language.equals("FR"))
-				url = new URL("https://download.epha.ch/cleaned/matrix.csv");
+				url = new URL("https://download.epha.ch/data/matrix/matrix.csv");
 				
 			if (url!=null) {
 				File destination = new File(file_interactions_csv);			
