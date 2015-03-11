@@ -223,17 +223,17 @@ public class RealExpertInfo {
 					if (row.getCell(0) != null)
 						swissmedic_no5 = String.format("%05d", (int)(row.getCell(0).getNumericCellValue()));	// Swissmedic registration number (5 digits)
 					if (row.getCell(2) != null)
-						sequence_name = getCellValue(row.getCell(2)); 	// Sequence name
+						sequence_name = ExcelOps.getCellValue(row.getCell(2)); 	// Sequence name
 					if (row.getCell(6) != null)
-						heilmittel_code = getCellValue(row.getCell(6));	// Heilmittelcode					
+						heilmittel_code = ExcelOps.getCellValue(row.getCell(6));	// Heilmittelcode					
 					if (row.getCell(11) != null)						
-						package_size = getCellValue(row.getCell(11));	// Packungsgrösse
+						package_size = ExcelOps.getCellValue(row.getCell(11));	// Packungsgrösse
 					if (row.getCell(12) != null)
-						package_unit = getCellValue(row.getCell(12));	// Einheit
+						package_unit = ExcelOps.getCellValue(row.getCell(12));	// Einheit
 					if (row.getCell(13) != null)
-						swissmedic_cat = getCellValue(row.getCell(13));	// Abgabekategorie	
+						swissmedic_cat = ExcelOps.getCellValue(row.getCell(13));	// Abgabekategorie	
 					if (row.getCell(16) != null)
-						application_area = getCellValue(row.getCell(16));	// Anwendungsgebiet				
+						application_area = ExcelOps.getCellValue(row.getCell(16));	// Anwendungsgebiet				
 					if (row.getCell(10) != null) {							
 						package_id = String.format("%03d", (int)(row.getCell(10).getNumericCellValue()));		// Verpackungs ID
 						swissmedic_no8 = swissmedic_no5 + package_id;
@@ -626,13 +626,13 @@ public class RealExpertInfo {
 					if (num_rows>7) {
 						Row row = rowIterator.next();
 						if (row.getCell(0)!=null)	// Zusatzentgelt
-							zusatz_entgelt = getCellValue(row.getCell(0));					
+							zusatz_entgelt = ExcelOps.getCellValue(row.getCell(0));					
 						if (row.getCell(2)!= null)	// ATC Code
-							atc_code = getCellValue(row.getCell(2)).replaceAll("[^A-Za-z0-9.]", ""); 
+							atc_code = ExcelOps.getCellValue(row.getCell(2)).replaceAll("[^A-Za-z0-9.]", ""); 
 						if (row.getCell(3)!=null)	// Dosage class
-							dosage_class = getCellValue(row.getCell(3));
+							dosage_class = ExcelOps.getCellValue(row.getCell(3));
 						if (row.getCell(4)!=null) 	// Price
-							price = getCellValue(row.getCell(4));
+							price = ExcelOps.getCellValue(row.getCell(4));
 					
 						if (!zusatz_entgelt.isEmpty() && !dosage_class.isEmpty() && !price.isEmpty() && 
 								!atc_code.contains(".") && !dosage_class.equals("BLANK") && !price.equals("BLANK")) {
@@ -1622,20 +1622,6 @@ public class RealExpertInfo {
 			
 		return doc.html();
 	}
-		
-	private String getCellValue(Cell part) {
-		if (part!=null) {
-		    switch (part.getCellType()) {
-		        case Cell.CELL_TYPE_BOOLEAN: return part.getBooleanCellValue() + "";
-		        case Cell.CELL_TYPE_NUMERIC: return String.format("%.2f", part.getNumericCellValue());
-		        case Cell.CELL_TYPE_STRING:	return part.getStringCellValue() + "";
-		        case Cell.CELL_TYPE_BLANK: return "BLANK";
-		        case Cell.CELL_TYPE_ERROR: return "ERROR";
-		        case Cell.CELL_TYPE_FORMULA: return "FORMEL";
-		    }
-		}
-		return "";
-	}	
 	
 	private String capitalizeFully(String s, int N) {
 		// Split string

@@ -238,8 +238,7 @@ public class GlnCodes {
 	}			
 	
 	private XSSFSheet getSheetsFromFile(String filename, int n) {
-		XSSFSheet sheet = null;
-		
+		XSSFSheet sheet = null;		
 		try {
 			FileInputStream file = new FileInputStream(filename);
 			// Get workbook

@@ -517,6 +517,77 @@ public class AllDown {
 		}
 	}
 	
+	public void downZurRose() {
+		String fl = "";
+		String fp = "";
+		String fs = "";
+		try {
+			FileInputStream dispoFileXlsx = new FileInputStream(Constants.DIR_ZURROSE + "/access.ami.csv");
+			BufferedReader br = new BufferedReader(new InputStreamReader(dispoFileXlsx, "UTF-8"));
+			String line;
+			while ((line=br.readLine()) !=null ) {
+				// Semicolon is used as a separator
+				String[] gln = line.split(";");
+				if (gln.length>2) {
+					if (gln[0].equals("P_ywesee")) {
+						fl = gln[0];
+						fp = gln[1];
+						fs = gln[2];
+					}
+				}
+			}		
+			br.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		FTPClient ftp_client = new FTPClient();				
+		try {
+			ftp_client.connect(fs, 21);
+			ftp_client.login(fl, fp);
+			ftp_client.enterLocalPassiveMode();
+			ftp_client.changeWorkingDirectory("ywesee in");
+			ftp_client.setFileType(FTP.BINARY_FILE_TYPE);
+
+			int reply = ftp_client.getReplyCode();
+			if (!FTPReply.isPositiveCompletion(reply)) {
+				ftp_client.disconnect();
+				System.err.println("FTP server refused connection.");
+				return;
+			}
+
+			System.out.println("- Connected to server " + fs + "...");
+			 //get list of filenames
+            FTPFile[] ftpFiles = ftp_client.listFiles(); 
+            
+            String remote_file = "dispo_artikel_zurrose.xlsx";
+            
+            if (ftpFiles!=null && ftpFiles.length>0) {
+            	OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + Constants.FILE_DISPO_ZR);
+            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+	
+            	boolean done = ftp_client.retrieveFile(remote_file, os);
+            	if (done)
+            		System.out.println("file downloaded successfully.");
+            	else
+            		System.out.println("error.");
+            	os.close();
+            }
+		} catch (IOException ex) {
+			System.out.println("Error: " + ex.getMessage());
+			ex.printStackTrace();
+		} finally {
+			try {
+				if (ftp_client.isConnected()) {
+					ftp_client.logout();
+					ftp_client.disconnect();
+				}
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+	
     /*
      *  fix for exception 
      *  javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException:

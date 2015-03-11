@@ -46,11 +46,15 @@ public class Constants {
 	// GLN Codes (Personen + Betriebe)
 	public static final String FILE_GLN_CODES_PEOPLE = "./downloads/gln_codes_people_xlsx.xlsx";
 	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";
-	// File IBSA
+	// Files IBSA
 	public static final String FILE_MOOSBERGER = "moosberger_glns.csv";
 	public static final String FILE_TARGETING = "targeting_glns.csv";
-	// "Shopping" files
-	public static final String DIR_SHOPPING = "./input/shop/";
+	// "Shopping" directory
+	public static final String DIR_SHOPPING = "./input/shop/";	
+	// Files zur Rose
+	public static final String FILE_DISPO_ZR = "dispo_artikel_zurrose.xlsx";
+	// "Shopping" directory
+	public static final String DIR_ZURROSE = "./input/zurrose/";	
 	// ****** ATC class xls file (DE != FR) ******
 	// public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";	// 2013
 	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0114_xls.xls";		// 2014
