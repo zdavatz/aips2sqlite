@@ -242,7 +242,9 @@ public class DispoParse {
 							m_ean_likes.put(eancode, ++num_likes);
 						}
 					}										
-					fis.close();				
+					fis.close();		
+					// Delete file
+					f.delete();
 				}
 			}
 		} catch (IOException e) {
