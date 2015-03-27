@@ -130,7 +130,7 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("onlyshop")) {
 				CmlOptions.ONLY_SHOPPING_CART = true;
 			}
-			if (cmd.hasOption("zurrose")) {
+			if (cmd.hasOption("zurrose")) {				
 				CmlOptions.ZUR_ROSE_DB = true;
 			}
 			if (cmd.hasOption("nodown")) {
@@ -168,7 +168,7 @@ public class Aips2Sqlite {
 		addOption(options, "gln", "generate csv file with Swiss gln codes", false, false);
 		addOption(options, "shop", "generate encrypted files for shopping cart", false, false);
 		addOption(options, "onlyshop", "skip generation of sqlite database", false, false);
-		addOption(options, "zurrose", "generate zur Rose database", false, false);
+		addOption(options, "zurrose", "generate only zur Rose database", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -184,20 +184,21 @@ public class Aips2Sqlite {
 			allDown();
 		}
 		
+		// Generate only zur Rose DB
+		if (CmlOptions.ZUR_ROSE_DB==true) {
+			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_ZURROSE, "access_rose.ami", Constants.DIR_OUTPUT, 0, 3);						
+			DispoParse dp = new DispoParse();		
+			dp.process("csv");
+		}
+		
 		System.out.println("");
-		if (!CmlOptions.DB_LANGUAGE.isEmpty()) {	
+		if (!CmlOptions.DB_LANGUAGE.isEmpty() && CmlOptions.ZUR_ROSE_DB==false) {	
 			// Extract drug interactions information
 			if (CmlOptions.ADD_INTERACTIONS==true) {
 				Interactions inter = new Interactions(CmlOptions.DB_LANGUAGE);
 				// Generate in various data exchange files
 				inter.generateDataExchangeFiles();
 			}			
-			
-			// Generate zur Rose DB
-			if (CmlOptions.ZUR_ROSE_DB==true) {
-				DispoParse dp = new DispoParse();
-				dp.process();
-			}
 			
 			// Generate a csv file with all the GLN codes pertinent information
 			if (CmlOptions.GLN_CODES==true) {
@@ -213,9 +214,9 @@ public class Aips2Sqlite {
 				ShoppingCart sc = new ShoppingCart(map_products);
 				sc.listFiles(Constants.DIR_SHOPPING);
 				sc.encryptConditionsToDir("ibsa_conditions", Constants.DIR_SHOPPING);
-				sc.encryptCsvToDir("moosberger_glns", "targeting_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 2);
-				sc.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 3);
-				sc.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
+				FileOps.encryptCsvToDir("moosberger_glns", "targeting_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 2);
+				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 3);
+				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
 			}			
 
 			if (CmlOptions.ONLY_SHOPPING_CART==false) {
@@ -272,23 +273,25 @@ public class Aips2Sqlite {
 	static void allDown() {
 		AllDown a = new AllDown();
 		
-		a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
-		// a.downPackungenXml(FILE_PACKAGES_XLS);
-		a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
-		a.downSwissindexXml("DE", Constants.FILE_REFDATA_PHARMA_DE_XML);
-		a.downSwissindexXml("FR", Constants.FILE_REFDATA_PHARMA_FR_XML);
-		a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
-		a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
-		a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
-		a.downEPhaInteractionsCsv("DE", Constants.FILE_EPHA_INTERACTIONS_DE_CSV);
-		a.downEPhaInteractionsCsv("FR", Constants.FILE_EPHA_INTERACTIONS_FR_CSV);
-		a.downEPhaProductsJson("DE", Constants.FILE_EPHA_PRODUCTS_DE_JSON);
-		a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);	
-		a.downGLNCodesXlsx(Constants.FILE_GLN_CODES_PEOPLE, Constants.FILE_GLN_CODES_COMPANIES);
-		if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true)
-			a.downIBSA();
-		if (CmlOptions.ZUR_ROSE_DB==true)
+		if (CmlOptions.ZUR_ROSE_DB==true) {
 			a.downZurRose();
+		} else {
+			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
+			// a.downPackungenXml(FILE_PACKAGES_XLS);
+			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
+			a.downSwissindexXml("DE", Constants.FILE_REFDATA_PHARMA_DE_XML);
+			a.downSwissindexXml("FR", Constants.FILE_REFDATA_PHARMA_FR_XML);
+			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
+			a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
+			a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
+			a.downEPhaInteractionsCsv("DE", Constants.FILE_EPHA_INTERACTIONS_DE_CSV);
+			a.downEPhaInteractionsCsv("FR", Constants.FILE_EPHA_INTERACTIONS_FR_CSV);
+			a.downEPhaProductsJson("DE", Constants.FILE_EPHA_PRODUCTS_DE_JSON);
+			a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);	
+			a.downGLNCodesXlsx(Constants.FILE_GLN_CODES_PEOPLE, Constants.FILE_GLN_CODES_COMPANIES);
+			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true)
+				a.downIBSA();
+		}
 	}
 	
 	static List<MedicalInformations.MedicalInformation> readAipsFile() {

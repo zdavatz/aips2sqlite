@@ -51,13 +51,11 @@ public class SqlDatabase {
 			Class.forName("org.sqlite.JDBC");
 
 			// Touch db file if it does not exist
-			String db_url = System.getProperty("user.dir") + "/output/amiko_db_full_idx_" + db_lang + ".db";			
-			File db_file = new File(db_url);
-			if (!db_file.exists()) {
-				db_file.getParentFile().mkdirs();
-				db_file.createNewFile();
-			}
-			m_db_file = db_file;
+			String db_url = System.getProperty("user.dir") + "/output/amiko_db_full_idx_" + db_lang + ".db";
+			m_db_file = FileOps.touchFile(db_url);				
+			if (m_db_file==null)
+				throw new IOException();
+			
 			// Creates connection
 			conn = DriverManager.getConnection("jdbc:sqlite:" + db_url);		
 			stat = conn.createStatement();

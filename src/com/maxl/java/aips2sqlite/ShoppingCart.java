@@ -252,14 +252,14 @@ public class ShoppingCart implements java.io.Serializable {
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
 			if (map_conditions.size()>0) {
-				byte[] serializedBytes = serialize(map_conditions);
+				byte[] serializedBytes = FileOps.serialize(map_conditions);
 				if (serializedBytes!=null) {
 					encrypted_msg = crypto.encrypt(serializedBytes);
 					// System.out.println(Arrays.toString(encrypted_msg));
 				}
 			}
 			// Write to file
-			writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
+			FileOps.writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
 			System.out.println("Saved encrypted file " + filename +".ser");
 
 			// TEST: Read from file
@@ -499,138 +499,6 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 	}
 	
-	public void encryptCsvToDir(String in_filename_1, String in_filename_2, String in_dir, 
-			String out_filename, String out_dir, int skip, int cols) {
-		// First check if paths exist
-		File f = new File(in_dir);
-		if (!f.exists() || !f.isDirectory()) {
-			System.out.println("Directory " + in_dir + " does not exist!");
-			return;
-		}
-		// First check if path exists
-		f = new File(out_dir);
-		if (!f.exists() || !f.isDirectory()) {
-			System.out.println("Directory " + out_dir + " does not exist!");
-			return;
-		}
-		try {
-			Map<String, String> gln_map = new TreeMap<String, String>();
-			// Load csv file and dump to map			
-			{
-				FileInputStream glnCodesCsv = new FileInputStream(in_dir + "/" + in_filename_1 + ".csv");
-				BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
-				String line;
-				while ((line=br.readLine()) !=null ) {
-					// Semicolon is used as a separator
-					String[] gln = line.split(";");
-					if (gln.length>(cols-1)) {
-						if (cols==2)
-							gln_map.put(gln[0], gln[1]);
-						else if (cols==3)
-							gln_map.put(gln[0], gln[1]+";"+gln[2]);
-					}
-				}			
-				glnCodesCsv.close();				
-				br.close();
-			}
-			// Used when files are merged
-			{
-				if (!in_filename_2.isEmpty()) {
-					FileInputStream glnCodesCsv = new FileInputStream(in_dir + "/" + in_filename_2 + ".csv");
-					BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
-					String line;
-					while ((line=br.readLine()) !=null ) {
-						// Semicolon is used as a separator
-						String[] gln = line.split(";");
-						if (!gln_map.containsKey(gln[0]) && gln.length>(cols-1)) {
-							if (cols==2)
-								gln_map.put(gln[0], gln[1]);
-							else if (cols==3)
-								gln_map.put(gln[0], gln[1]+";"+gln[2]);
-						}
-					}	
-					glnCodesCsv.close();
-					br.close();
-				}
-			}
-			// First serialize into a byte array output stream, then encrypt
-			Crypto crypto = new Crypto();
-			byte[] encrypted_msg = null;
-			if (gln_map.size()>0) {
-				byte[] serializedBytes = serialize(gln_map);
-				if (serializedBytes!=null) {
-					encrypted_msg = crypto.encrypt(serializedBytes);
-				}
-			}
-			// Write to file
-			writeToFile(out_dir + out_filename +".ser", encrypted_msg);
-			System.out.println("Saved encrypted file " + out_filename +".ser");
-		} catch(IOException e) {
-			e.printStackTrace();			
-		}
-	}
-	
-	public void encryptFileToDir(String filename, String dir) {
-		// First check if path exists
-		File f = new File(dir);
-		if (!f.exists() || !f.isDirectory()) {
-			System.out.println("Directory " + dir + " does not exist!");
-			return;
-		}
-		try {
-			File inputFile = new File(dir + "/" + filename);
-			FileInputStream inputStream = new FileInputStream(inputFile);
-	        byte[] serializedBytes = new byte[(int) inputFile.length()];
-	        inputStream.read(serializedBytes);
-	        
-			Crypto crypto = new Crypto();
-			byte[] encrypted_msg = null;
-			if (serializedBytes.length>0) {
-				encrypted_msg = crypto.encrypt(serializedBytes);
-			}
-			// Write to file
-			writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
-			System.out.println("Saved encrypted file " + filename +".ser");
-
-	        inputStream.close();
-		} catch(IOException e) {
-			e.printStackTrace();
-		} 
-	}
-	
-	private byte[] serialize(Object obj) {
-		try {
-			ByteArrayOutputStream bout = new ByteArrayOutputStream();	// new byte array
-			ObjectOutputStream sout = new ObjectOutputStream(bout);		// serialization stream header
-			sout.writeObject(obj);							// write object to serialied stream
-			return (bout.toByteArray());
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	private Object deserialize(byte[] byteArray) {
-		try {
-			ByteArrayInputStream bin = new ByteArrayInputStream(byteArray);
-			ObjectInputStream sin = new ObjectInputStream(bin);
-			return sin.readObject();
-		} catch(IOException | ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	private void writeToFile(String path, byte[] buf) {
-		try {
-			FileOutputStream fos = new FileOutputStream(path);
-			fos.write(buf);
-			fos.close();
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	private byte[] readFromFile(String path) {
 		File file = new File(path);
 		byte[] buf = new byte[(int)file.length()];

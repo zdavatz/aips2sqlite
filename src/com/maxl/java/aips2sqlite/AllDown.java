@@ -557,22 +557,36 @@ public class AllDown {
 			}
 
 			System.out.println("- Connected to server " + fs + "...");
-			 //get list of filenames
-            FTPFile[] ftpFiles = ftp_client.listFiles(); 
-            
-            String remote_file = "dispo_artikel_zurrose.xlsx";
-            
+			
+			// Get list of filenames
+            FTPFile[] ftpFiles = ftp_client.listFiles();            
             if (ftpFiles!=null && ftpFiles.length>0) {
-            	OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + Constants.FILE_DISPO_ZR);
-            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
-	
+                // First download new disposition file
+            	String remote_file = "dispo_artikel_zurrose.xlsx";                
+            	OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + Constants.XLSX_FILE_DISPO_ZR);
+            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
             	boolean done = ftp_client.retrieveFile(remote_file, os);
             	if (done)
-            		System.out.println("file downloaded successfully.");
+            		System.out.println("success.");
             	else
             		System.out.println("error.");
             	os.close();
+            	// ... then download all csv files
+            	for (FTPFile f : ftpFiles) {
+            		remote_file = f.getName();
+            		if (remote_file.endsWith("csv")) {
+            			os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + remote_file);
+                    	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
+                    	done = ftp_client.retrieveFile(remote_file, os);
+                    	if (done)
+                    		System.out.println("success.");
+                    	else
+                    		System.out.println("error.");
+                    	os.close();
+            		}
+            	}
             }
+            
 		} catch (IOException ex) {
 			System.out.println("Error: " + ex.getMessage());
 			ex.printStackTrace();
