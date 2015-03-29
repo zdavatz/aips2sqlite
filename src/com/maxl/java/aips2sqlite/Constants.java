@@ -49,6 +49,7 @@ public class Constants {
 	// Files IBSA
 	public static final String FILE_MOOSBERGER = "moosberger_glns.csv";
 	public static final String FILE_TARGETING = "targeting_glns.csv";
+	public static final String FILE_MOOS_ADDR = "moos_addresses.csv";
 	// "Shopping" directory
 	public static final String DIR_SHOPPING = "./input/shop/";	
 	// Files zur Rose

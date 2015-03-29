@@ -32,6 +32,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +45,7 @@ import java.util.zip.ZipInputStream;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -383,7 +386,11 @@ public class AllDown {
 				url = new URL("https://download.epha.ch/cleaned/produkte.json");
 			if (url!=null) {
 				File destination = new File(file_products_json);			
-				FileUtils.copyURLToFile(url, destination, 60000, 60000);		
+				
+				Files.copy(url.openStream(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				
+				
+				// FileUtils.copyURLToFile(url, destination, 60000, 60000);	
 				if (!disp)
 					pb.stopp();
 				long stopTime = System.currentTimeMillis();		
@@ -484,8 +491,8 @@ public class AllDown {
 			 //get list of filenames
             FTPFile[] ftpFiles = ftp_client.listFiles(); 
             
-            List<String> list_remote_files = Arrays.asList("Konditionen.csv", "Targeting_diff.csv");
-            List<String> list_local_files = Arrays.asList(Constants.FILE_MOOSBERGER, Constants.FILE_TARGETING);
+            List<String> list_remote_files = Arrays.asList("Konditionen.csv", "Targeting_diff.csv", "Address.csv");
+            List<String> list_local_files = Arrays.asList(Constants.FILE_MOOSBERGER, Constants.FILE_TARGETING, Constants.FILE_MOOS_ADDR);
             
             if (ftpFiles!=null && ftpFiles.length>0) {
             	int index = 0;
@@ -628,7 +635,9 @@ public class AllDown {
 		} };
 
 		// Install the all-trusting trust manager
-		SSLContext sc = SSLContext.getInstance("SSL");
+		
+		SSLContext sc = SSLContext.getInstance("SSL"); 
+		System.out.println(sc.getProtocol());
 		sc.init(null, trustAllCerts, new java.security.SecureRandom());
 		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		

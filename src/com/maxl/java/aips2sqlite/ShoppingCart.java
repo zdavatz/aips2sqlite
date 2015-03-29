@@ -1,16 +1,8 @@
 package com.maxl.java.aips2sqlite;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -30,7 +22,7 @@ import com.maxl.java.shared.Conditions;
 
 public class ShoppingCart implements java.io.Serializable {
 	
-	boolean Debug = true;
+	boolean Debug = false;
 	Map<String, Product> map_products = null;
 	
 	public ShoppingCart(Map<String, Product> map_products) {
@@ -497,19 +489,6 @@ public class ShoppingCart implements java.io.Serializable {
 			}
 			c.setAssort(category, cleaned_eans);
 		}
-	}
-	
-	private byte[] readFromFile(String path) {
-		File file = new File(path);
-		byte[] buf = new byte[(int)file.length()];
-		try {
-			DataInputStream dis = new DataInputStream(new FileInputStream(file));
-			dis.readFully(buf);
-			dis.close();
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		return buf;
 	}
 	
 	private String getCellValue(Cell part) {
