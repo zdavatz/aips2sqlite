@@ -276,7 +276,7 @@ public class Aips2Sqlite {
 		if (CmlOptions.ZUR_ROSE_DB==true) {
 			a.downZurRose();
 		} else {
-			// --> a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
+			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
 			// a.downPackungenXml(FILE_PACKAGES_XLS);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
 			a.downSwissindexXml("DE", Constants.FILE_REFDATA_PHARMA_DE_XML);

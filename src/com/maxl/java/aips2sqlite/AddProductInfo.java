@@ -115,7 +115,7 @@ public class AddProductInfo {
 	
 	void clean(String author) {
 		List<Long> list_of_delete = new ArrayList<Long>();
-		// List all medis of author in sqlite db)
+		// List all medis of author in sqlite db
 		Map<Long, String> map_of_medis = m_sql_db.mapMedis(author);
 		// For each medi, check if ean code is in map_products
 		for (Map.Entry<Long, String> medi : map_of_medis.entrySet()) {
