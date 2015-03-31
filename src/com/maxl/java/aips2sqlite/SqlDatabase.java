@@ -93,12 +93,12 @@ public class SqlDatabase {
 		vacuum();
 	}
 	
-	public List<String> listProducts() {
+	public List<String> listProductsExcludingPseudo() {
 		List<String> packages = new ArrayList<String>();		
 		
 		try {
 			stat = conn.createStatement();
-			String query = "SELECT packages FROM amikodb";
+			String query = "SELECT packages FROM amikodb WHERE tindex_str not like 'PSEUDO'";
 			ResultSet rs = stat.executeQuery(query);
 			while (rs.next()) {
 				packages.add(rs.getString(1));

@@ -30,7 +30,7 @@ public class AddProductInfo {
 		System.out.println("Processing all non-swissmedic xml products ...");	
 		
 		// List all products in 'db', compare with products in 'map_products', flag packages found
-		List<String> list_of_packages = m_sql_db.listProducts();
+		List<String> list_of_packages = m_sql_db.listProductsExcludingPseudo();
 		// Loop through list of packages
 		for (String pack : list_of_packages) {
 			String packs[] = pack.split("\n");

@@ -247,7 +247,7 @@ public class Aips2Sqlite {
 		List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
 		
 		if (CmlOptions.GENERATE_PI==false) {
-			// Process Fachinfos
+			// Process Fachinfos (official and pseudo)
 			RealExpertInfo fi = new RealExpertInfo(sql_db, med_list, map_products);
 			fi.process();
 		} else {
