@@ -93,6 +93,23 @@ public class SqlDatabase {
 		vacuum();
 	}
 	
+	public List<String> listProducts() {
+		List<String> packages = new ArrayList<String>();		
+		
+		try {
+			stat = conn.createStatement();
+			String query = "SELECT packages FROM amikodb";
+			ResultSet rs = stat.executeQuery(query);
+			while (rs.next()) {
+				packages.add(rs.getString(1));
+			} 
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in listProducts!");
+		}
+		
+		return packages;
+	}
+	
 	public List<String> listProductsExcludingPseudo() {
 		List<String> packages = new ArrayList<String>();		
 		
@@ -127,6 +144,25 @@ public class SqlDatabase {
 		
 		return map_of_medis;		
 	}
+
+	public Map<Long, String> mapMedisExcludingPseudo(String author) {
+		Map<Long, String> map_of_medis = new TreeMap<Long, String>();
+		
+		try {
+			String auth = author.toLowerCase();
+			stat = conn.createStatement();
+			String query = "SELECT _id, packages FROM amikodb WHERE auth LIKE " + "'" + auth + "%' and tindex_str not like 'PSEUDO'";	
+			ResultSet rs = stat.executeQuery(query);
+			while (rs.next()) {
+				map_of_medis.put(rs.getLong(1), rs.getString(2));
+			} 
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in mapMedis!");
+		}
+		
+		return map_of_medis;		
+	}
+
 	
 	public void deleteEntry(Long index) {
 		try {

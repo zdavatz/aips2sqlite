@@ -30,7 +30,7 @@ public class AddProductInfo {
 		System.out.println("Processing all non-swissmedic xml products ...");	
 		
 		// List all products in 'db', compare with products in 'map_products', flag packages found
-		List<String> list_of_packages = m_sql_db.listProductsExcludingPseudo();
+		List<String> list_of_packages = m_sql_db.listProducts();
 		// Loop through list of packages
 		for (String pack : list_of_packages) {
 			String packs[] = pack.split("\n");
@@ -116,7 +116,7 @@ public class AddProductInfo {
 	void clean(String author) {
 		List<Long> list_of_delete = new ArrayList<Long>();
 		// List all medis of author in sqlite db
-		Map<Long, String> map_of_medis = m_sql_db.mapMedis(author);
+		Map<Long, String> map_of_medis = m_sql_db.mapMedisExcludingPseudo(author);
 		// For each medi, check if ean code is in map_products
 		for (Map.Entry<Long, String> medi : map_of_medis.entrySet()) {
 			Long index = medi.getKey();
