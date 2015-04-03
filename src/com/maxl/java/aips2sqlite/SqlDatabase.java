@@ -85,6 +85,7 @@ public class SqlDatabase {
 		} 
 	}
 	
+	@Override
 	public void finalize() {
 		// Reorder tables alphabetically
 		reorderAlphaDB("amikodb");

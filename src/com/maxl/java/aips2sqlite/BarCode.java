@@ -21,11 +21,8 @@ package com.maxl.java.aips2sqlite;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 
 import javax.imageio.ImageIO;
@@ -71,7 +68,7 @@ public class BarCode {
     public int getChecksum(String eanStr) {
     	int val=0;   	
     	for (int i=0; i<eanStr.length(); i++)
-    		val += ((int)Integer.parseInt(eanStr.charAt(i)+""))*((i%2==0)?1:3);
+    		val += (Integer.parseInt(eanStr.charAt(i)+""))*((i%2==0)?1:3);
 
         int checksum_digit = 10 - (val % 10);
         if (checksum_digit == 10) 

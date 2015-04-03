@@ -337,16 +337,19 @@ public class Aips2Sqlite {
 	}
 
 	static class MyErrorHandler implements ErrorHandler {
+		@Override
 		public void warning(SAXParseException exception) throws SAXException {
 			System.out.println("\nWARNING");
 			exception.printStackTrace();
 		}
 
+		@Override
 		public void error(SAXParseException exception) throws SAXException {
 			System.out.println("\nERROR");
 			exception.printStackTrace();
 		}
 
+		@Override
 		public void fatalError(SAXParseException exception) throws SAXException {
 			System.out.println("\nFATAL ERROR");
 			exception.printStackTrace();

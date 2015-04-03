@@ -60,7 +60,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -1345,7 +1344,7 @@ public class RealExpertInfo {
 				
 				Iterator<String> set_iterator = atccode_set.iterator();
 				while (set_iterator.hasNext()) {
-					bwriter.write((String)set_iterator.next() + "\n");
+					bwriter.write(set_iterator.next() + "\n");
 				}
 				bwriter.close();
 			}

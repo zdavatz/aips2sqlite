@@ -29,6 +29,7 @@ public class ProgressBar extends Thread {
 		this.msg = msg;
 	}
 	
+	@Override
 	public void run() {
 		String anim = "|/-\\";
 		int x = 0;

@@ -16,7 +16,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class GlnCodes {
+import com.maxl.java.shared.User;
+
+public class GlnCodes implements java.io.Serializable {
 	
 	XSSFSheet m_gln_codes_people_sheet = null;
 	XSSFSheet m_gln_codes_companies_sheet = null;
@@ -245,6 +247,7 @@ public class GlnCodes {
 				cust.fax = token[14];
 			if (cust.email.isEmpty())
 				cust.email = token[15];
+			cust.owner = "";
 			m_gln_codes_complete.put(key, cust);
 			
 		} else {	// Create new entry		
@@ -265,6 +268,7 @@ public class GlnCodes {
 				cust.phone = token[13];
 				cust.fax = token[14];
 				cust.email = token[15];
+				cust.owner = "i";
 				m_gln_codes_complete.put(key, cust);
 			} else {
 				System.out.println("Found wrong key code: " + key);

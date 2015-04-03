@@ -22,6 +22,7 @@ public class FastAlphanumComp<T extends CharSequence> implements Comparator<T>
 		return ch >= '0' && ch <= '9' || ch == '.';
 	}
 
+	@Override
 	public int compare(T s1, T s2) {
 		int n1 = s1.length(), i1 = 0;
 		int n2 = s2.length(), i2 = 0;
