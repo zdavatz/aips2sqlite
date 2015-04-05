@@ -133,14 +133,14 @@ public class GlnCodes implements java.io.Serializable {
 		
 		// Loop through the moosberger_glns file
 		for (Map.Entry<String, String> entry : m_gln_codes_moos_cond.entrySet()) {
-			processGlns(entry.getKey(), entry.getValue());
+			processGlns(entry.getKey(), entry.getValue(), "i");
 		}
 		if (CmlOptions.SHOW_LOGS)
 			System.out.println("- Processed gln codes mosberger conditions file... (" + m_gln_codes_complete.size() + ")");		
 
 		// Loop through the targeting_glns file
 		for (Map.Entry<String, String> entry : m_gln_codes_moos_targ.entrySet()) {
-			processGlns(entry.getKey(), entry.getValue());
+			processGlns(entry.getKey(), entry.getValue(), "i");
 		}	
 		if (CmlOptions.SHOW_LOGS)
 			System.out.println("- Processed gln codes mosberger targetting file... (" + m_gln_codes_complete.size() + ")");			
@@ -169,7 +169,7 @@ public class GlnCodes implements java.io.Serializable {
 		}
 	}
 
-	private void processGlns(String gln, String cat) {
+	private void processGlns(String gln, String cat, String owner) {
 		String key = gln + "S";
 		if (m_gln_codes_complete.containsKey(key)) {
 			String t[] = cat.split(";");
@@ -186,6 +186,7 @@ public class GlnCodes implements java.io.Serializable {
 			if (t.length>2)
 				cust.email = t[2];
 			cust.addr_type = "S";
+			cust.owner = owner;
 			m_gln_codes_complete.put(key, cust);			
 		} else {	// Create new entry
 			if (gln.length()==13) {
@@ -211,6 +212,7 @@ public class GlnCodes implements java.io.Serializable {
 				}
 				cust.gln_code = gln;
 				cust.addr_type = "S";				
+				cust.owner = owner;				
 				cust.category = type;
 				m_gln_codes_complete.put(key, cust);
 			} else {
@@ -223,53 +225,58 @@ public class GlnCodes implements java.io.Serializable {
 		if (m_gln_codes_complete.containsKey(key)) {
 			String[] token = value.split(";", -1);
 			User cust = m_gln_codes_complete.get(key);
-			if (cust.title.isEmpty())
-				cust.title = token[4];
-			if (cust.first_name.isEmpty())
-				cust.first_name = token[5];
-			if (cust.last_name.isEmpty())
-				cust.last_name = token[6];
-			if (cust.name1.isEmpty())
-				cust.name1 = token[7];
-			if (cust.name2.isEmpty())			
-				cust.name2 = token[8];
-			if (cust.name3.isEmpty())
-				cust.name3 = token[9];
-			if (cust.street.isEmpty())
-				cust.street = token[10];
-			if (cust.zip.isEmpty())
-				cust.zip = token[11];
-			if (cust.city.isEmpty())
-				cust.city = token[12];
-			if (cust.phone.isEmpty())
-				cust.phone = token[13];
-			if (cust.fax.isEmpty())
-				cust.fax = token[14];
-			if (cust.email.isEmpty())
-				cust.email = token[15];
-			cust.owner = "";
-			m_gln_codes_complete.put(key, cust);
-			
+			// Check if this is an IBSA customer, if yes, complete
+			if (!cust.owner.isEmpty() && cust.owner.charAt(0)=='i') {
+				if (cust.title.isEmpty())
+					cust.title = token[4];
+				if (cust.first_name.isEmpty())
+					cust.first_name = token[5];
+				if (cust.last_name.isEmpty())
+					cust.last_name = token[6];
+				if (cust.name1.isEmpty())
+					cust.name1 = token[7];
+				if (cust.name2.isEmpty())			
+					cust.name2 = token[8];
+				if (cust.name3.isEmpty())
+					cust.name3 = token[9];
+				if (cust.street.isEmpty())
+					cust.street = token[10];
+				if (cust.zip.isEmpty())
+					cust.zip = token[11];
+				if (cust.city.isEmpty())
+					cust.city = token[12];
+				if (cust.phone.isEmpty())
+					cust.phone = token[13];
+				if (cust.fax.isEmpty())
+					cust.fax = token[14];
+				if (cust.email.isEmpty())
+					cust.email = token[15];
+				cust.owner = "";
+				m_gln_codes_complete.put(key, cust);
+			}
 		} else {	// Create new entry		
 			if (key.length()==14) {				
 				String[] token = value.split(";", -1);
 				User cust = new User();
-				cust.gln_code = key.substring(0, 13);
-				cust.addr_type = key.substring(13);
-				cust.title = token[4];
-				cust.first_name = token[5];
-				cust.last_name = token[6];
-				cust.name1 = token[7];
-				cust.name2 = token[8];
-				cust.name3 = token[9];
-				cust.street = token[10];
-				cust.zip = token[11];
-				cust.city = token[12];
-				cust.phone = token[13];
-				cust.fax = token[14];
-				cust.email = token[15];
-				cust.owner = "i";
-				m_gln_codes_complete.put(key, cust);
+				// Check if this is an IBSA customer, if yes, complete
+				if (!cust.owner.isEmpty() && cust.owner.charAt(0)=='i') {
+					cust.gln_code = key.substring(0, 13);
+					cust.addr_type = key.substring(13);
+					cust.title = token[4];
+					cust.first_name = token[5];
+					cust.last_name = token[6];
+					cust.name1 = token[7];
+					cust.name2 = token[8];
+					cust.name3 = token[9];
+					cust.street = token[10];
+					cust.zip = token[11];
+					cust.city = token[12];
+					cust.phone = token[13];
+					cust.fax = token[14];
+					cust.email = token[15];
+					cust.owner = "i";
+					m_gln_codes_complete.put(key, cust);
+				}
 			} else {
 				System.out.println("Found wrong key code: " + key);
 			}

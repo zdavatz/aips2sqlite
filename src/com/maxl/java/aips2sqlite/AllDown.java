@@ -327,11 +327,10 @@ public class AllDown {
 	public void downEPhaInteractionsCsv(String language, String file_interactions_csv) {
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();
-		URL url = null;
 		
 		try {
 			// Ignore validation for https sites
-			setNoValidation();
+			// --> setNoValidation();			
 			
 			// Start timer
 			long startTime = System.currentTimeMillis();
@@ -341,10 +340,12 @@ public class AllDown {
 				pb.init("- Downloading EPha interactions file (" + language + ")... ");
 				pb.start();	
 			}
+			
+			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("https://download.epha.ch/data/matrix/matrix.csv");
+				url = new URL("http://download.epha.ch/data/matrix/matrix.csv");
 			else if (language.equals("FR"))
-				url = new URL("https://download.epha.ch/data/matrix/matrix.csv");
+				url = new URL("http://download.epha.ch/data/matrix/matrix.csv");
 				
 			if (url!=null) {
 				File destination = new File(file_interactions_csv);			
@@ -365,11 +366,10 @@ public class AllDown {
 	public void downEPhaProductsJson(String language, String file_products_json) {
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();
-		URL url = null;
 		
 		try {
 			// Ignore validation for https sites
-			setNoValidation();
+			// --> setNoValidation();
 
 			// Start timer
 			long startTime = System.currentTimeMillis();
@@ -379,10 +379,12 @@ public class AllDown {
 				pb.init("- Downloading EPha products (" + language + ") file... ");
 				pb.start();	
 			}
+			
+			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("https://download.epha.ch/cleaned/produkte.json");
+				url = new URL("http://download.epha.ch/cleaned/produkte.json");
 			else if (language.equals("FR"))
-				url = new URL("https://download.epha.ch/cleaned/produkte.json");
+				url = new URL("http://download.epha.ch/cleaned/produkte.json");
 			if (url!=null) {
 				File destination = new File(file_products_json);			
 				
@@ -633,10 +635,8 @@ public class AllDown {
 			}
 		} };
 
-		// Install the all-trusting trust manager
-		
+		// Install the all-trusting trust manager		
 		SSLContext sc = SSLContext.getInstance("SSL"); 
-		System.out.println(sc.getProtocol());
 		sc.init(null, trustAllCerts, new java.security.SecureRandom());
 		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		
