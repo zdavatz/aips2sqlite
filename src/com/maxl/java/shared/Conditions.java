@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.joda.time.DateTime;
@@ -69,7 +70,7 @@ public class Conditions implements java.io.Serializable {
 	public TreeMap<Integer, Float> getDiscountDoctor(char category) {		
 		return doctor.get(category);
 	}
-
+	
 	public void addDiscountPharmacy(char category, int units, float discount, boolean promo) {
 		TreeMap<Integer, Float> reb = null;
 		if (promo==false) {
@@ -95,7 +96,14 @@ public class Conditions implements java.io.Serializable {
 		else
 			return pharmacy_promo.get(category);
 	}
-
+	
+	public Set<Character> getCategoriesPharmacy(boolean promo) {
+		if (promo==false)
+			return pharmacy.keySet();
+		else 
+			return pharmacy_promo.keySet();
+	}
+	
 	public void addDiscountDrugstore(char category, int units, float discount, boolean promo) {
 		TreeMap<Integer, Float> reb = null;
 		if (promo==false) {
@@ -261,6 +269,14 @@ public class Conditions implements java.io.Serializable {
 			throws ClassNotFoundException, IOException {
 		// always perform the default de-serialization first
 		ois.defaultReadObject();
+		
+		long serial_ver_uid = Conditions.serialVersionUID;
+		// In case there are changes use this technique...
+		if (serial_ver_uid==1L) {
+			
+		} else if (serial_ver_uid==2L) {
+			
+		}
 	}
 
 	/**

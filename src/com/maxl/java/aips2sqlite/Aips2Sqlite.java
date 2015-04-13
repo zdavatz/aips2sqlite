@@ -186,7 +186,7 @@ public class Aips2Sqlite {
 		
 		// Generate only zur Rose DB
 		if (CmlOptions.ZUR_ROSE_DB==true) {
-			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_ZURROSE, "access_rose.ami", Constants.DIR_OUTPUT, 0, 3);						
+			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_ZURROSE, "access_rose.ami", Constants.DIR_OUTPUT, 0, 3, null);						
 			DispoParse dp = new DispoParse();		
 			dp.process("csv");
 		}
@@ -213,9 +213,10 @@ public class Aips2Sqlite {
 			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true) {
 				ShoppingCart sc = new ShoppingCart(map_products);
 				sc.listFiles(Constants.DIR_SHOPPING);
-				sc.encryptConditionsToDir("ibsa_conditions", Constants.DIR_SHOPPING);
-				FileOps.encryptCsvToDir("moosberger_glns", "targeting_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 2);
-				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 3);
+				Map<String, String> map_pharma_groups = sc.readPharmacyGroups();
+				sc.encryptConditionsToDir(Constants.DIR_SHOPPING, Constants.DIR_OUTPUT, "ibsa_conditions");
+				FileOps.encryptCsvToDir("moosberger_glns", "targeting_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
+				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 3, null);
 				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
 			}			
 

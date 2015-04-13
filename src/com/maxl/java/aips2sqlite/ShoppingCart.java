@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,6 +17,8 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.joda.time.DateTime;
 
 import com.maxl.java.shared.Conditions;
@@ -23,12 +26,28 @@ import com.maxl.java.shared.Conditions;
 public class ShoppingCart implements java.io.Serializable {
 	
 	boolean Debug = false;
-	Map<String, Product> map_products = null;
+	Map<String, Conditions> m_map_conditions = null;
+	Map<String, Product> m_map_products = null;
+	Map<String, String> m_map_group_id = null;
 	
 	public ShoppingCart(Map<String, Product> map_products) {
-		this.map_products = map_products;
+		m_map_products = map_products;		
 	}
-		
+	
+	private String getCellValue(Cell part) {
+		if (part!=null) {
+		    switch (part.getCellType()) {
+		        case Cell.CELL_TYPE_BOOLEAN: return part.getBooleanCellValue() + "";
+		        case Cell.CELL_TYPE_NUMERIC: return String.format("%.2f", part.getNumericCellValue());
+		        case Cell.CELL_TYPE_STRING:	return part.getStringCellValue() + "";
+		        case Cell.CELL_TYPE_BLANK: return "";
+		        case Cell.CELL_TYPE_ERROR: return "ERROR";
+		        case Cell.CELL_TYPE_FORMULA: return "FORMULA";
+		    }
+		}
+		return "";
+	}
+	
 	public void listFiles(String path) {
 		File folder = new File(path);
 		File[] list_of_files = folder.listFiles(); 
@@ -42,27 +61,73 @@ public class ShoppingCart implements java.io.Serializable {
 			}
 		}
 	}
-	
-	public void encryptConditionsToDir(String filename, String dir) {
-		// First check if path exists
-		File f = new File(dir);
-		if (!f.exists() || !f.isDirectory()) {
-			System.out.println("Directory " + dir + " does not exist!");
-			return;
-		}
+		
+	public Map<String, String> readPharmacyGroups() {
+
+		System.out.println("\nExtracting pharmacy groups...");
+		
 		try {
 			// Load ibsa xls file			
-			FileInputStream ibsa_file = new FileInputStream(dir + filename + ".xls");
+			FileInputStream pharma_conditions = new FileInputStream(Constants.DIR_SHOPPING + "ibsa_pharma_conditions.xlsx");
+			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
+			XSSFWorkbook ibsa_workbook = new XSSFWorkbook(pharma_conditions);
+			// Get first sheet from workbook
+			XSSFSheet ibsa_sheet = ibsa_workbook.getSheetAt(0);
+			// Iterate through all rows
+			Iterator<Row> rowIterator = ibsa_sheet.iterator();
+			//
+			m_map_group_id = new TreeMap<String, String>();
+			int num_rows = 0;
+			while (rowIterator.hasNext() && num_rows<2) {
+				Row row = rowIterator.next();
+				if (num_rows==0) {
+					int num_groups = row.getLastCellNum();
+					char id = 'C';
+					for (int col=3; col<num_groups; ++col) {
+						// Extract group name
+						String name_group = getCellValue(row.getCell(col));
+						name_group = name_group.toLowerCase().trim();		
+						// Check if it's a standard group or promotion
+						if (name_group.contains("standard")) {
+							// Add category to group name
+							m_map_group_id.put(name_group, String.valueOf(id));
+							System.out.println("Pharma-group #" + (id-'C'+1) + ": " + name_group + " (ID = " + id + ")");
+							id++;
+						} else if (name_group.contains("aktion")) {
+							String standard_name_group = name_group.replaceAll("aktion", "standard").trim();
+							if (m_map_group_id.containsKey(standard_name_group)) {
+								String cat = m_map_group_id.get(standard_name_group);
+								m_map_group_id.put(name_group, cat + "-promo");
+							} else {
+								m_map_group_id.put(name_group, String.valueOf(id) + "-promo");
+								id++;
+							}
+							System.out.println("Pharma-group #" + (id-'C'+1) + ": " + name_group + " (ID = " + m_map_group_id.get(name_group) + ")");									
+						}
+					}
+				}
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return m_map_group_id;
+	}
+	
+	private void processMainConditionsFile(String path) {
+
+		System.out.println("\nProcessing main conditions file... ");
+		
+		try {
+			// Load main ibsa conditiosn xls			
+			FileInputStream ibsa_file = new FileInputStream(path);
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 			HSSFWorkbook ibsa_workbook = new HSSFWorkbook(ibsa_file);
 			// Get first sheet from workbook
 			HSSFSheet ibsa_sheet = ibsa_workbook.getSheetAt(0);
 			// Iterate through all rows
 			Iterator<Row> rowIterator = ibsa_sheet.iterator();
-			// Map of ean code to rebate condition
-			Map<String, Conditions> map_conditions = new TreeMap<String, Conditions>();
 			// Map of ean code to visibility flag
-			Map<String, Integer> map_visibility = new TreeMap<String, Integer>();
+			Map<String, Integer> map_visibility = new TreeMap<String, Integer>();			
 			
 			// First round to extract list of products (eancodes) visible for particular customer group
 			int num_rows = 0;
@@ -188,11 +253,11 @@ public class ShoppingCart implements java.io.Serializable {
 							product.fap = fap;
 							product.vat = vat;
 							product.visible = visibility;
-							map_products.put(eancode, product);
+							m_map_products.put(eancode, product);
 							
 							// Instantiate new med condition
 							Conditions cond = new Conditions(eancode, name.toUpperCase() + ", " + product.units[0] + ", " + product.size, fep, fap);	
-							System.out.println(eancode + " -> " + name + " " + product.size + ", " + product.units[0]);							
+							System.out.println(eancode + " -> " + name);							
 
 							// Rebates
 							try {
@@ -217,58 +282,139 @@ public class ShoppingCart implements java.io.Serializable {
 								extractAssort(cond, "drugstore-promo", getCellValue(row.getCell(31)), map_visibility);
 								extractAssort(cond, "hospital", getCellValue(row.getCell(35)), map_visibility);								
 							} catch(Exception e) {
-								System.out.println(">> Exception while processing Excel-File " + filename);
+								System.out.println(">> Exception while processing Excel-File " + path);
 								System.out.println(">> Check " + eancode + " -> " + name);
 								e.printStackTrace();
 								System.exit(-1);
 							}
-
-							// Test
-							/*
-							TreeMap<Integer, Float> test = cond.getDiscountPharmacy('A', true);
-							for (Map.Entry<Integer, Float> entry : test.entrySet()) {
-								int unit = entry.getKey();
-								float discount = entry.getValue();								
-								System.out.print(unit + " -> " + discount + "  ");
-							}
-							System.out.println();
-							*/
 							// Add to list of conditions
-							map_conditions.put(eancode, cond);		
+							m_map_conditions.put(eancode, cond);		
 						}
 					}
 				}
 				num_rows++;
 			}
-			// First serialize into a byte array output stream, then encrypt
-			Crypto crypto = new Crypto();
-			byte[] encrypted_msg = null;
-			if (map_conditions.size()>0) {
-				byte[] serializedBytes = FileOps.serialize(map_conditions);
-				if (serializedBytes!=null) {
-					encrypted_msg = crypto.encrypt(serializedBytes);
-					// System.out.println(Arrays.toString(encrypted_msg));
-				}
-			}
-			// Write to file
-			FileOps.writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
-			System.out.println("Saved encrypted file " + filename +".ser");
-
-			// TEST: Read from file
-			/*
-			encrypted_msg = readFromFile(Constants.DIR_OUTPUT + filename + ".ser");
-			// Test: first decrypt, then deserialize
-			if (encrypted_msg!=null) {
-				byte[] plain_msg = crypto.decrypt(encrypted_msg);
-				Map<String, Conditions> mc = new TreeMap<String, Conditions>();
-				mc = (TreeMap<String, Conditions>)deserialize(plain_msg);
-				for (Map.Entry<String, Conditions> entry : mc.entrySet()) {
-					System.out.println(entry.getKey() + " -> " + entry.getValue().name);
-				}
-			}
-			*/
 		} catch(IOException e) {
 			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	private void processSecondaryConditionsFile(String path) {
+		
+		System.out.println("\nProcessing secondary conditions file...");
+		
+		if (m_map_conditions==null || m_map_group_id==null)
+			return;
+		
+		try {
+			// Load ibsa xls file			
+			FileInputStream pharma_conditions = new FileInputStream(path);
+			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
+			XSSFWorkbook ibsa_workbook = new XSSFWorkbook(pharma_conditions);
+			// Get first sheet from workbook
+			XSSFSheet ibsa_sheet = ibsa_workbook.getSheetAt(0);
+			// Iterate through all rows
+			Iterator<Row> rowIterator = ibsa_sheet.iterator();
+			int num_rows = 0;
+			Row first_row = null;
+			while (rowIterator.hasNext()) {
+				Row row = rowIterator.next();
+				int num_groups = row.getLastCellNum();
+				if (num_rows==0) {	// Save first row
+					first_row = row;
+				} else if (num_rows>0) {
+					if (row.getCell(2)!=null) {
+						String eancode = getCellValue(row.getCell(2));
+						if (eancode!=null && eancode.length()==16) {
+                            eancode = eancode.substring(0, eancode.length()-3);
+                            if (m_map_conditions.containsKey(eancode)) {
+                            	Conditions cond = m_map_conditions.get(eancode);
+                            	String name = cond.name;
+    							System.out.println(eancode + " -> " + name);		
+	                            // Loop through all columns
+	                            for (int col=3; col<num_groups; ++col) {
+	                            	// Check if group_name is in group map
+	                            	String group = getCellValue(first_row.getCell(col)).toLowerCase().trim();
+	                            	if (m_map_group_id.containsKey(group)) {
+	                            		try {
+	                            			// Add new category to conditions...
+	                            			String group_id = m_map_group_id.get(group);
+	                            			// Generate conditions-compatible group id
+	                            			group_id = group_id.substring(0, 1) + "-pharmacy" + group_id.substring(1);
+	                            			if (Debug)
+	                            				System.out.println("  Processing pharma-group: '" + group_id + "'");	                            			
+	        								extractDiscounts(cond, group_id, getCellValue(row.getCell(col)));						
+	        							} catch(Exception e) {
+	        								System.out.println(">> Exception while processing Excel-File " + path);
+	        								System.out.println(">> Check " + eancode + " -> " + name);
+	        								e.printStackTrace();
+	        								System.exit(-1);
+	        							}
+	        							// Add to list of conditions
+	        							m_map_conditions.put(eancode, cond);
+	                            	}
+	                            }
+                            }
+						}
+					}					
+				}
+				num_rows++;
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
+	
+	private void testConditionsMap() {
+		System.out.println("Test conditions map...");
+		for (Map.Entry<String, Conditions> entry : m_map_conditions.entrySet()) {
+			System.out.println(entry.getKey() + ": " + entry.getValue().name);
+			Conditions cond = entry.getValue();
+			Set<Character> pharma_category = cond.getCategoriesPharmacy(false);
+			for (char c : pharma_category) {
+				TreeMap<Integer, Float> discount_map = entry.getValue().getDiscountPharmacy(c, false);
+				if (discount_map!=null)
+					System.out.println("  " + c + " -> " + discount_map.size());
+			}
+		}
+	}
+	
+	public void encryptConditionsToDir(String in_dir, String out_dir, String filename) {
+		// First check if path exists
+		File f = new File(in_dir);
+		if (!f.exists() || !f.isDirectory()) {
+			System.out.println("Directory " + in_dir + " does not exist!");
+			return;
+		}		
+
+		// Initialize map conditions
+		m_map_conditions = new TreeMap<String, Conditions>();
+
+		// 1. Process main ibsa conditions file
+		processMainConditionsFile(in_dir + "/" + "ibsa_conditions.xls");		
+		// 2. Process secondary ibsa conditions file (pharmacies)
+		processSecondaryConditionsFile(in_dir + "/" + "ibsa_pharma_conditions.xlsx");
+		
+		System.out.println("");
+
+		// Test conditions map
+		// testConditionsMap();
+		
+		// First serialize into a byte array output stream, then encrypt
+		Crypto crypto = new Crypto();
+		byte[] encrypted_msg = null;
+		if (m_map_conditions!=null && m_map_conditions.size()>0) {
+			byte[] serializedBytes = FileOps.serialize(m_map_conditions);
+			if (serializedBytes!=null) {
+				encrypted_msg = crypto.encrypt(serializedBytes);
+			}
+			// Write to file
+			FileOps.writeToFile(out_dir + filename + ".ser", encrypted_msg);
+			System.out.println("Saved encrypted file " + filename + ".ser");
+		} else {
+			System.out.println("!! Error occurred when generating " + filename + ".ser");
 			System.exit(1);
 		}
 	}
@@ -298,12 +444,12 @@ public class ShoppingCart implements java.io.Serializable {
 						d2 = (new DateTime(year1, 12, 31, 0, 0, 0)).getDayOfYear();
 					if (Debug)
 						System.out.println("# complex date -> from " + d1 + " to " + d2);						
-					if (category.equals("A-pharmacy-promo") || category.equals("B-pharmacy-promo")) {
+					if (category.endsWith("-pharmacy-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("pharmacy", category.charAt(0), m);
 						c.addPromoTime("pharmacy", category.charAt(0), d1, d2);
 					}
-					if (category.equals("A-drugstore-promo") || category.equals("B-drugstore-promo")) {
+					if (category.endsWith("-drugstore-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("drugstore", category.charAt(0), m);
 						c.addPromoTime("drugstore", category.charAt(0), d1, d2);
@@ -326,12 +472,12 @@ public class ShoppingCart implements java.io.Serializable {
 						d2 = (new DateTime(curr_year, 12, 31, 0, 0, 0)).getDayOfYear();
 					if (Debug)
 						System.out.println("# simple date -> from " + d1 + " to " + d2);		
-					if (category.equals("A-pharmacy-promo") || category.equals("B-pharmacy-promo")) {
+					if (category.endsWith("-pharmacy-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("pharmacy", category.charAt(0), m);
 						c.addPromoTime("pharmacy", category.charAt(0), d1, d2);
 					}
-					if (category.equals("A-drugstore-promo") || category.equals("B-drugstore-promo")) {
+					if (category.endsWith("-drugstore-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("drugstore", category.charAt(0), m);
 						c.addPromoTime("drugstore", category.charAt(0), d1, d2);
@@ -434,32 +580,18 @@ public class ShoppingCart implements java.io.Serializable {
 		if (d!=null)
 			discount = Float.valueOf(d);	
 		
-		if (category.equals("B-doctor"))
-			c.addDiscountDoctor('B', units, discount);
-		else if (category.equals("A-doctor"))
-			c.addDiscountDoctor('A', units, discount);
-		else if (category.equals("B-pharmacy"))
-			c.addDiscountPharmacy('B', units, discount, false);
-		else if (category.equals("A-pharmacy"))
-			c.addDiscountPharmacy('A', units, discount, false);
-		else if (category.equals("B-pharma-promo"))
-			c.addDiscountPharmacy('B', units, discount, true);
-		else if (category.equals("A-pharma-promo"))
-			c.addDiscountPharmacy('A', units, discount, true);
-		else if (category.equals("B-drugstore"))
-			c.addDiscountDrugstore('B', units, discount, false);
-		else if (category.equals("A-drugstore"))
-			c.addDiscountDrugstore('A', units, discount, false);
-		else if (category.equals("B-drugstore-promo"))
-			c.addDiscountDrugstore('B', units, discount, true);
-		else if (category.equals("A-drugstore-promo"))
-			c.addDiscountDrugstore('A', units, discount, true);		
-		else if (category.equals("C-hospital"))
-			c.addDiscountHospital('C', units, discount);
-		else if (category.equals("B-hospital"))
-			c.addDiscountHospital('B', units, discount);
-		else if (category.equals("A-hospital"))
-			c.addDiscountHospital('A', units, discount);						
+		if (category.endsWith("-doctor"))
+			c.addDiscountDoctor(category.charAt(0), units, discount);
+		else if (category.endsWith("-pharmacy"))
+			c.addDiscountPharmacy(category.charAt(0), units, discount, false);
+		else if (category.endsWith("-pharmacy-promo"))
+			c.addDiscountPharmacy(category.charAt(0), units, discount, true);
+		else if (category.endsWith("-drugstore"))
+			c.addDiscountDrugstore(category.charAt(0), units, discount, false);
+		else if (category.endsWith("-drugstore-promo"))
+			c.addDiscountDrugstore(category.charAt(0), units, discount, true);
+		else if (category.endsWith("-hospital"))
+			c.addDiscountHospital(category.charAt(0), units, discount);
 		else
 			discounted = false;
 		
@@ -489,19 +621,5 @@ public class ShoppingCart implements java.io.Serializable {
 			}
 			c.setAssort(category, cleaned_eans);
 		}
-	}
-	
-	private String getCellValue(Cell part) {
-		if (part!=null) {
-		    switch (part.getCellType()) {
-		        case Cell.CELL_TYPE_BOOLEAN: return part.getBooleanCellValue() + "";
-		        case Cell.CELL_TYPE_NUMERIC: return String.format("%.2f", part.getNumericCellValue());
-		        case Cell.CELL_TYPE_STRING:	return part.getStringCellValue() + "";
-		        case Cell.CELL_TYPE_BLANK: return "";
-		        case Cell.CELL_TYPE_ERROR: return "ERROR";
-		        case Cell.CELL_TYPE_FORMULA: return "FORMULA";
-		    }
-		}
-		return "";
 	}
 }

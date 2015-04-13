@@ -162,7 +162,8 @@ public class FileOps {
 	}
 	
 	static public void encryptCsvToDir(String in_filename_1, String in_filename_2, String in_dir, 
-			String out_filename, String out_dir, int skip, int cols) {
+			String out_filename, String out_dir, int skip, int cols,
+			Map<String, String> map_pharma_groups) {
 		// First check if paths exist
 		File f = new File(in_dir);
 		if (!f.exists() || !f.isDirectory()) {
@@ -176,7 +177,7 @@ public class FileOps {
 			return;
 		}
 		try {
-			Map<String, String> gln_map = new TreeMap<String, String>();
+			Map<String, String> tree_map = new TreeMap<String, String>();
 			// Load csv file and dump to map			
 			{
 				FileInputStream glnCodesCsv = new FileInputStream(in_dir + "/" + in_filename_1 + ".csv");
@@ -184,12 +185,37 @@ public class FileOps {
 				String line;
 				while ((line=br.readLine()) !=null ) {
 					// Semicolon is used as a separator
-					String[] gln = line.split(";");
+					String[] gln = line.split(";", -1);
 					if (gln.length>(cols-1)) {
+						/*
+							gln[0]: ean code
+							gln[1]: category (Kundenkategorie) - A oder B
+							gln[2]: type 
+							gln[3]: email
+							gln[4]: name Gruppierung (nur für Apotheken)
+							gln[5]: ??
+						*/ 
 						if (cols==2)
-							gln_map.put(gln[0], gln[1]);
+							tree_map.put(gln[0], gln[1]);
 						else if (cols==3)
-							gln_map.put(gln[0], gln[1]+";"+gln[2]);
+							tree_map.put(gln[0], gln[1]+";"+gln[2]);
+						else if (cols==5) {
+							String name_group = gln[4].toLowerCase();
+							String standard_name_group = name_group + " standard";
+							String aktion_name_group = name_group + " aktion";
+							if (map_pharma_groups.containsKey(standard_name_group)) {
+								// Non-standard pharma group category								
+								String group_id = map_pharma_groups.get(standard_name_group);						
+								tree_map.put(gln[0], group_id);
+							} else if (map_pharma_groups.containsKey(aktion_name_group)) {								
+								// Non-standard pharma group category
+								String group_id = map_pharma_groups.get(aktion_name_group);						
+								tree_map.put(gln[0], group_id);								
+							} else {
+								// Standard A or B category
+								tree_map.put(gln[0], gln[1]);
+							}
+						}
 					}
 				}			
 				glnCodesCsv.close();				
@@ -204,11 +230,11 @@ public class FileOps {
 					while ((line=br.readLine()) !=null ) {
 						// Semicolon is used as a separator
 						String[] gln = line.split(";");
-						if (!gln_map.containsKey(gln[0]) && gln.length>(cols-1)) {
+						if (!tree_map.containsKey(gln[0]) && gln.length>(cols-1)) {
 							if (cols==2)
-								gln_map.put(gln[0], gln[1]);
+								tree_map.put(gln[0], gln[1]);
 							else if (cols==3)
-								gln_map.put(gln[0], gln[1]+";"+gln[2]);
+								tree_map.put(gln[0], gln[1]+";"+gln[2]);
 						}
 					}	
 					glnCodesCsv.close();
@@ -218,8 +244,8 @@ public class FileOps {
 			// First serialize into a byte array output stream, then encrypt
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
-			if (gln_map.size()>0) {
-				byte[] serializedBytes = FileOps.serialize(gln_map);
+			if (tree_map.size()>0) {
+				byte[] serializedBytes = FileOps.serialize(tree_map);
 				if (serializedBytes!=null) {
 					encrypted_msg = crypto.encrypt(serializedBytes);
 				}
