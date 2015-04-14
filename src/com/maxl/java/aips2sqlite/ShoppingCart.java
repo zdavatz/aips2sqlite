@@ -522,14 +522,20 @@ public class ShoppingCart implements java.io.Serializable {
 						} else {
 							int u = Integer.valueOf(units);						
 							// Check if number of units is limited to <=100 and its a "loner"
-							if (u<=100 && i==(rebates.length-1)) {
-								// Increment units to 100 in steps of 10
+							if (u<100 && i==(rebates.length-1)) {
 								if (Debug)
-									System.out.println("# last loner " + u + " to 100");
+									System.out.println("# last loner " + u + " to 100 in steps of 10");
 								for (int k=u; k<=100; k+=10) {
 									String single_unit = String.format("%d", k);
 									addDiscount(c, category, single_unit, discount);
 								}
+							} else if (u>=100 && u<500 && i==(rebates.length-1)) {
+								if (Debug)
+									System.out.println("# last loner " + u + " to 500 in steps of 10");
+								for (int k=u; k<=500; k+=100) {
+									String single_unit = String.format("%d", k);
+									addDiscount(c, category, single_unit, discount);
+								}								
 							} else {
 								String single_unit = String.format("%d", u);
 								addDiscount(c, category, single_unit, discount);
@@ -550,12 +556,22 @@ public class ShoppingCart implements java.io.Serializable {
 					} else {
 						// Loners are filled up to 100 units with a 10er increment
 						if (rebates.length==1 || i==(rebates.length-1)) {
-							if (Debug)
-								System.out.println("# loner -> " + u + " to 100");	
-							for (int k=u; k<=100; k+=10) {
-								String single_unit = String.format("%d", k);
-								// No discount
-								addDiscount(c, category, single_unit, "0");
+							if (u<100) {
+								if (Debug)
+									System.out.println("# loner -> " + u + " to 100 in steps of 10");	
+								for (int k=u; k<=100; k+=10) {
+									String single_unit = String.format("%d", k);
+									// No discount
+									addDiscount(c, category, single_unit, "0");
+								}
+							} else if (u>=100 && u<500){
+								if (Debug)
+									System.out.println("# loner -> " + u + " to 500 in steps of 100");										
+								for (int k=u; k<=500; k+=100) {
+									String single_unit = String.format("%d", k);
+									// No discount
+									addDiscount(c, category, single_unit, "0");
+								}								
 							}
 						} else {							
 							if (Debug)
