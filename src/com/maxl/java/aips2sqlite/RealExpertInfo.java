@@ -1474,10 +1474,11 @@ public class RealExpertInfo {
 						if (pi_row.get(10).length()>0)
 							withdrawn_str = ", " + pi_row.get(10);
 						// --> Add ex factory price information
-						String price = !efp.isEmpty() ? efp : fep;				
-						if (price.length()>0) {
+						String price_efp = !efp.isEmpty() ? "EFP" + efp.replace("CHF", "") : "FEP" + fep.replace("CHF", "");
+						String price_pp = !pup.isEmpty() ? ", PP" + pup.replace("CHF", "") : "";
+						if (efp.length()>0 || fep.length()>0) {
 							// The rest of the package information
-							String append_str = ", " + price 
+							String append_str = ", " + price_efp + price_pp 
 									+ withdrawn_str + " [" + pi_row.get(5) 
 									+ pi_row.get(11) + pi_row.get(12) 
 									+ flagsb_str + orggen_str + "]";
@@ -1492,8 +1493,7 @@ public class RealExpertInfo {
 							//
 							// @maxl (10.01.2014): Price for swissmedicNo8 pack is not listed in bag_preparations.xml!!
 							//
-							pinfo_str.add("<p class=\"spacing1\">"
-										+ medtitle + withdrawn_str + " [" + pi_row.get(5) + "]</p>" + barcode_html);
+							pinfo_str.add("<p class=\"spacing1\">" + medtitle + withdrawn_str + " [" + pi_row.get(5) + "]</p>" + barcode_html);
 						}
 						
 						// --> Add "tindex_str" and "application_str" (see

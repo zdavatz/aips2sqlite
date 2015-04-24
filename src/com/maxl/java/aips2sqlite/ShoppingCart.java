@@ -151,7 +151,7 @@ public class ShoppingCart implements java.io.Serializable {
 									visibility |= 0x02;
 							if (!getCellValue(row.getCell(16)).isEmpty())
 								if (getCellValue(row.getCell(16)).toLowerCase().equals("x"))
-									visibility |= 0x01;	
+									visibility |= 0x01;								
 							map_visibility.put(eancode, visibility);
 						}
 					}
