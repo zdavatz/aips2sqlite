@@ -3,6 +3,7 @@ package com.maxl.java.aips2sqlite;
 public class Product {
 	boolean processed = false;
 	public String title = "";
+	public String group_title[] = {"", ""};
 	public String author = "";
 	public String eancode = "";
 	public String pharmacode = "";

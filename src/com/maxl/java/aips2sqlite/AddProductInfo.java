@@ -25,15 +25,24 @@ public class AddProductInfo {
 		return "";
 	}
 	
+	private int lang_id() {
+		if (CmlOptions.DB_LANGUAGE.equals("de"))
+			return 0;
+		else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+			return 1;
+		return 0;
+	}
+	
 	public void process() {
 		
 		System.out.println("Processing all non-swissmedic xml products ...");	
 		
 		// List all products in 'db', compare with products in 'map_products', flag packages found
-		List<String> list_of_packages = m_sql_db.listProducts();
-		// Loop through list of packages
-		for (String pack : list_of_packages) {
-			String packs[] = pack.split("\n");
+		Map<Long, String> map_of_packages = m_sql_db.mapProducts();
+		// Loop through all packages
+		for (Map.Entry<Long, String> entry : map_of_packages.entrySet()) {
+			long id = entry.getKey();
+			String packs[] = entry.getValue().split("\n");
 			for (int i=0; i<packs.length; ++i) {
 				if (!packs[i].isEmpty()) {
 					String p[] = packs[i].split("\\|");
@@ -45,7 +54,9 @@ public class AddProductInfo {
 							if (m_map_products.containsKey(eancode)) {
 								Product product = m_map_products.get(eancode);
 								product.processed = true;
-								m_map_products.put(eancode, product);
+								m_map_products.put(eancode, product);							
+								// Update db with group name
+								m_sql_db.updateAddInfo(id, product.group_title[lang_id()]);							
 							}
 						}
 					}
@@ -76,12 +87,13 @@ public class AddProductInfo {
 			}
 		}
 		
-		// Add all the non found products to the main sqlite db
+		// Add all the NOT FOUND products to the main sqlite db
 		for (Map.Entry<String, List<Product>> entry : map_of_medis.entrySet()) {
 			String name = entry.getKey().trim();
 			List<Product> list_of_products = entry.getValue();
 			String eancode_str = "";
 			String pack_info_str = "";
+			String add_info_str = "";
 			String packages_str = "";
 			String author = "";
 			for (Product p : list_of_products) {
@@ -100,8 +112,9 @@ public class AddProductInfo {
 				String fap = String.format("CHF %.2f", p.fap);	// Fabrikabgabepreis
 				String fep = String.format("CHF %.2f", p.fep);	// Fachhandelseinkaufspreis	
 				// 
-				author = p.author;
+				author = p.author;				
 				pack_info_str += name.toUpperCase() + ", " + u + ", " + size + ", " + fap + " [" + swissmedic_cat + "]\n";
+				add_info_str = p.group_title[lang_id()];
 				packages_str += name.toUpperCase() + ", " + u + ", " + size + "|" + p.size + "|" + u + "|" 
 						+ p.efp + "|" + p.pp + "|" + fap + "|" + fep + "|" + String.format("%.2f", p.vat) + "|"
 						+ p.swissmedic_cat + ",,|" + p.eancode + "|" + p.pharmacode + "|" + p.visible + "\n";
@@ -109,7 +122,7 @@ public class AddProductInfo {
 			}
 			if (eancode_str.endsWith(", "))
 				eancode_str = eancode_str.substring(0, eancode_str.length()-2);
-			m_sql_db.addExpertDB(name, author, eancode_str, 2, pack_info_str, packages_str);			
+			m_sql_db.addExpertDB(name, author, eancode_str, 2, pack_info_str, add_info_str, packages_str);			
 		}	
 	}
 	

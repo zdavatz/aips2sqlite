@@ -115,7 +115,8 @@ public class RealExpertInfo {
 	/*
 	 * Constructors
 	 */
-	public RealExpertInfo(SqlDatabase sql_db, List<MedicalInformations.MedicalInformation> med_list, 
+	public RealExpertInfo(SqlDatabase sql_db, 
+			List<MedicalInformations.MedicalInformation> med_list, 
 			Map<String, Product> map_products) {
 		m_sql_db = sql_db;
 		m_med_list = med_list;
@@ -1221,6 +1222,9 @@ public class RealExpertInfo {
 										orggen_str = ai_list.get(0);				
 								}
 							}
+							
+							// @maxl: 25.04.2015 -> set orggen_str to nil (we are using add_info_str for group names now...)
+							orggen_str = "";
 							
 							/*
 							 * Add medis, titles and ids to database

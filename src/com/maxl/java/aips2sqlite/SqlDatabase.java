@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -92,6 +93,23 @@ public class SqlDatabase {
 		reorderAlphaDB("productdb");
 		// 
 		vacuum();
+	}
+	
+	public Map<Long, String> mapProducts() {
+		Map<Long, String> map_of_packages = new HashMap<Long, String>();
+		
+		try {
+			stat = conn.createStatement();
+			String query = "SELECT _id, packages FROM amikodb";	
+			ResultSet rs = stat.executeQuery(query);
+			while (rs.next()) {
+				map_of_packages.put(rs.getLong(1), rs.getString(2));
+			} 	
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in mapProducts!");
+		}
+		
+		return map_of_packages;
 	}
 	
 	public List<String> listProducts() {
@@ -240,6 +258,17 @@ public class SqlDatabase {
 		} 
 	}
 	
+	public void updateAddInfo(long index, String add_info_str) {
+		try {
+			stat = conn.createStatement();
+			String query = "UPDATE amikodb SET add_info_str='" + add_info_str + "' WHERE _id=" + index + ";";
+			stat.executeUpdate(query);
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in updateAddInfo!");
+			e.printStackTrace();
+		}
+	}
+	
 	public void addExpertDB(MedicalInformations.MedicalInformation m) {
 		try {
 			m_prep_amikodb.setString(1, m.getTitle());
@@ -292,7 +321,7 @@ public class SqlDatabase {
 	}	
 		
 	public void addExpertDB(String title, String author, String eancode_str, int customer_id, 
-			String pack_info_str, String packages_str) {
+			String pack_info_str, String add_info_str, String packages_str) {
 		try {
 			if (m_prep_amikodb!=null) {
 				m_prep_amikodb.setString(1, title);
@@ -304,6 +333,7 @@ public class SqlDatabase {
 				m_prep_amikodb.setString(8, "NON-AIPS");	 
 				m_prep_amikodb.setInt(10, customer_id);	        
 				m_prep_amikodb.setString(11, pack_info_str);
+				m_prep_amikodb.setString(12,  add_info_str);
 				m_prep_amikodb.setString(17, packages_str);
 				m_prep_amikodb.addBatch();        
 				conn.setAutoCommit(false);

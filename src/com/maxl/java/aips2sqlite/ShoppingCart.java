@@ -207,7 +207,6 @@ public class ShoppingCart implements java.io.Serializable {
 						if (eancode!=null && eancode.length()==16) {
 							// EAN code read in as "float"!
                             eancode = eancode.substring(0, eancode.length()-3);
-							String name = getCellValue(row.getCell(1)).replaceAll("\\*", "").trim();
 							float fep = 0.0f;
 							if (!getCellValue(row.getCell(10)).isEmpty())
 								fep = Float.valueOf(getCellValue(row.getCell(10)));
@@ -231,9 +230,16 @@ public class ShoppingCart implements java.io.Serializable {
 							if (!getCellValue(row.getCell(16)).isEmpty())
 								if (getCellValue(row.getCell(16)).toLowerCase().equals("x"))
 									visibility |= 0x01;							
+							String name = getCellValue(row.getCell(1)).replaceAll("\\*", "").trim();
+							String group_name_de = getCellValue(row.getCell(2)).replaceAll("\\*", "").trim();
+							String group_name_fr = getCellValue(row.getCell(3)).replaceAll("\\*", "").trim();
+							
+							//  
 							Product product = new Product();
 							product.processed = false;
 							product.title = name;
+							product.group_title[0] = group_name_de;
+							product.group_title[1] = group_name_fr;
 							product.author = "IBSA Institut Biochimique SA";	// Currently only one company
 							product.size = getCellValue(row.getCell(4));		// Packungsgrösse
 							if (product.size!=null && product.size.endsWith(".00"))
