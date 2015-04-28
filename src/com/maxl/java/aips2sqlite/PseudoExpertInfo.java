@@ -349,6 +349,6 @@ public class PseudoExpertInfo {
 			packages_str += s;
 		
 		mSqlDB.addExpertDB(mMedi, packages_str, mEanCodes_str, mSectionIds_str, mSectionTitles_str, mEanCodes_str, "", m_pack_info_str, 
-				"P", mCustomerId, emptyList, "");
+				"", mCustomerId, emptyList, "");
 	}
 }

@@ -477,7 +477,7 @@ public class ShoppingCart implements java.io.Serializable {
 					else	// Januar 1st
 						d2 = (new DateTime(curr_year, 12, 31, 0, 0, 0)).getDayOfYear();
 					if (Debug)
-						System.out.println("# simple date -> from " + d1 + " to " + d2);		
+						System.out.println("# simple date -> from " + d1 + " to " + d2 + " (" + month1 + " - " + month2 + ")");		
 					if (category.endsWith("-pharmacy-promo")) {
 						for (int m=month1; m<=month2; ++m)
 							c.addPromoMonth("pharmacy", category.charAt(0), m);
