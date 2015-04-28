@@ -190,9 +190,9 @@ public class FileOps {
 						/*
 							gln[0]: ean code
 							gln[1]: category (Kundenkategorie) - A oder B
-							gln[2]: type 
+							gln[2]: type (Apotheke, Drogerie, Spital, ...)
 							gln[3]: email
-							gln[4]: name Gruppierung (nur für Apotheken)
+							gln[4]: name Gruppierung (gilt nur für Apotheken)
 							gln[5]: ??
 						*/ 
 						if (cols==2)
@@ -206,14 +206,14 @@ public class FileOps {
 							if (map_pharma_groups.containsKey(standard_name_group)) {
 								// Non-standard pharma group category								
 								String group_id = map_pharma_groups.get(standard_name_group);						
-								tree_map.put(gln[0], group_id);
+								tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback
 							} else if (map_pharma_groups.containsKey(aktion_name_group)) {								
 								// Non-standard pharma group category
 								String group_id = map_pharma_groups.get(aktion_name_group);						
-								tree_map.put(gln[0], group_id);								
+								tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback								
 							} else {
 								// Standard A or B category
-								tree_map.put(gln[0], gln[1]);
+								tree_map.put(gln[0], gln[1]+";");	// gln[1] is default
 							}
 						}
 					}
@@ -230,11 +230,37 @@ public class FileOps {
 					while ((line=br.readLine()) !=null ) {
 						// Semicolon is used as a separator
 						String[] gln = line.split(";");
+						// If gln[0] is not contained in map, add it...
 						if (!tree_map.containsKey(gln[0]) && gln.length>(cols-1)) {
+							/*
+							  	gln[0]: ean code
+							  	gln[1]: category (Kundenkategorie) - A oder B
+							  	gln[2]: type (Arzt, Apotheke, etc...)
+							  	gln[3]: email
+							  	gln[4]: name Gruppierung (gilt nur für Apotheken)
+								gln[5]: ??
+							 */
 							if (cols==2)
 								tree_map.put(gln[0], gln[1]);
 							else if (cols==3)
 								tree_map.put(gln[0], gln[1]+";"+gln[2]);
+							else if (cols==5) {
+								String name_group = gln[4].toLowerCase();
+								String standard_name_group = name_group + " standard";
+								String aktion_name_group = name_group + " aktion";
+								if (map_pharma_groups.containsKey(standard_name_group)) {
+									// Non-standard pharma group category								
+									String group_id = map_pharma_groups.get(standard_name_group);						
+									tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback
+								} else if (map_pharma_groups.containsKey(aktion_name_group)) {								
+									// Non-standard pharma group category
+									String group_id = map_pharma_groups.get(aktion_name_group);						
+									tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback								
+								} else {
+									// Standard A or B category
+									tree_map.put(gln[0], gln[1]+";");	// gln[1] is default
+								}
+							}
 						}
 					}	
 					glnCodesCsv.close();
