@@ -221,7 +221,7 @@ public class GlnCodes implements java.io.Serializable {
 		}
 	}
 	
-	private void processMoosFull(String key, String value) {
+	private void processMoosFull(String key, String value) {	
 		if (m_gln_codes_complete.containsKey(key)) {
 			String[] token = value.split(";", -1);
 			User cust = m_gln_codes_complete.get(key);
@@ -258,25 +258,22 @@ public class GlnCodes implements java.io.Serializable {
 			if (key.length()==14) {				
 				String[] token = value.split(";", -1);
 				User cust = new User();
-				// Check if this is an IBSA customer, if yes, complete
-				if (!cust.owner.isEmpty() && cust.owner.charAt(0)=='i') {
-					cust.gln_code = key.substring(0, 13);
-					cust.addr_type = key.substring(13);
-					cust.title = token[4];
-					cust.first_name = token[5];
-					cust.last_name = token[6];
-					cust.name1 = token[7];
-					cust.name2 = token[8];
-					cust.name3 = token[9];
-					cust.street = token[10];
-					cust.zip = token[11];
-					cust.city = token[12];
-					cust.phone = token[13];
-					cust.fax = token[14];
-					cust.email = token[15];
-					cust.owner = "i";
-					m_gln_codes_complete.put(key, cust);
-				}
+				cust.gln_code = key.substring(0, 13);
+				cust.addr_type = key.substring(13);
+				cust.title = token[4];
+				cust.first_name = token[5];
+				cust.last_name = token[6];
+				cust.name1 = token[7];
+				cust.name2 = token[8];
+				cust.name3 = token[9];
+				cust.street = token[10];
+				cust.zip = token[11];
+				cust.city = token[12];
+				cust.phone = token[13];
+				cust.fax = token[14];
+				cust.email = token[15];
+				cust.owner = "i";
+				m_gln_codes_complete.put(key, cust);
 			} else {
 				System.out.println("Found wrong key code: " + key);
 			}
@@ -327,7 +324,7 @@ public class GlnCodes implements java.io.Serializable {
 					String token[] = line.split(";",-1);
 					if (token.length>=num_entries) {
 						if (!token[0].isEmpty() && !token[1].isEmpty()) {
-							String key = token[1] + token[0];	// gln + addr_type
+							String key = token[1] + token[0];	// gln + addr_type (S,B,O)
 							if (map.containsKey(key))
 								System.out.println("GLN code exists already! This is unlikely...");
 							// Fill in map

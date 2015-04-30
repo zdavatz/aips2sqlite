@@ -330,7 +330,7 @@ public class AllDown {
 		
 		try {
 			// Ignore validation for https sites
-			// --> setNoValidation();			
+			setNoValidation();			
 			
 			// Start timer
 			long startTime = System.currentTimeMillis();
@@ -343,9 +343,9 @@ public class AllDown {
 			
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("http://download.epha.ch/data/matrix/matrix.csv");
+				url = new URL("https://download.epha.ch/data/matrix/matrix.csv");
 			else if (language.equals("FR"))
-				url = new URL("http://download.epha.ch/data/matrix/matrix.csv");
+				url = new URL("https://download.epha.ch/data/matrix/matrix.csv");
 				
 			if (url!=null) {
 				File destination = new File(file_interactions_csv);			
@@ -369,7 +369,7 @@ public class AllDown {
 		
 		try {
 			// Ignore validation for https sites
-			// --> setNoValidation();
+			setNoValidation();
 
 			// Start timer
 			long startTime = System.currentTimeMillis();
@@ -382,9 +382,9 @@ public class AllDown {
 			
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("http://download.epha.ch/cleaned/produkte.json");
+				url = new URL("https://download.epha.ch/cleaned/produkte.json");
 			else if (language.equals("FR"))
-				url = new URL("http://download.epha.ch/cleaned/produkte.json");
+				url = new URL("https://download.epha.ch/cleaned/produkte.json");
 			if (url!=null) {
 				File destination = new File(file_products_json);			
 				
@@ -410,6 +410,9 @@ public class AllDown {
 		ProgressBar pb = new ProgressBar();
 		
 		try {
+			// Ignore validation for https sites
+			// setNoValidation();
+			
 			// Start timer 
 			long startTime = System.currentTimeMillis();
 			if (disp)
