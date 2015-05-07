@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,8 @@ import org.joda.time.DateTime;
 import com.maxl.java.shared.Conditions;
 
 public class ShoppingCart implements java.io.Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	boolean Debug = false;
 	Map<String, Conditions> m_map_conditions = null;
@@ -113,6 +116,35 @@ public class ShoppingCart implements java.io.Serializable {
 		return m_map_group_id;
 	}
 	
+	private Map<Integer, String> createCondMap() {
+        Map<Integer, String> cond_map = new TreeMap<Integer, String>();
+        cond_map.put(17, "B-doctor");			// B-Arztpraxis
+        cond_map.put(18, "A-doctor");			// A-Arztpraxis	
+        cond_map.put(20, "B-pharmacy");			// B-Apotheke
+        cond_map.put(21, "A-pharmacy");			// A-Apotheke
+        cond_map.put(23, "B-pharmacy-promo");	// B-Apotheke promo-cycle
+        cond_map.put(24, "A-pharmacy-promo");	// A-Apotheke promo-cycle
+        cond_map.put(25, "B-drugstore");		// B-Drogerie
+        cond_map.put(26, "A-drugstore");		// A-Drogerie
+        cond_map.put(29, "B-drugstore-promo");	// B-Drogerie promo-cycle
+        cond_map.put(30, "A-drugstore-promo");	// A-Drogerie promo-cycle
+        cond_map.put(32, "C-hospital");        	// C-Spital
+        cond_map.put(33, "B-hospital");			// B-Spital
+        cond_map.put(34, "A-hospital");			// A-Spital
+        return Collections.unmodifiableMap(cond_map);
+    }
+	
+	private Map<Integer, String> createAssortMap() {
+        Map<Integer, String> assort_map = new TreeMap<Integer, String>();
+        assort_map.put(19, "doctor");			
+        assort_map.put(22, "pharmacy");			
+        assort_map.put(25, "pharmacy-promo");		
+        assort_map.put(28, "drugstore");		
+        assort_map.put(31, "drugstore-promo");	
+        assort_map.put(35, "hospital");	
+        return Collections.unmodifiableMap(assort_map);
+	}
+	
 	private void processMainConditionsFile(String path) {
 
 		System.out.println("\nProcessing main conditions file... ");
@@ -158,6 +190,9 @@ public class ShoppingCart implements java.io.Serializable {
 				}
 				num_rows++;
 			}
+			
+			Map<Integer, String> cond_map = createCondMap();
+			Map<Integer, String> assort_map = createAssortMap();
 			
 			num_rows = 0;
 			rowIterator = ibsa_sheet.iterator();
@@ -266,30 +301,25 @@ public class ShoppingCart implements java.io.Serializable {
 							System.out.println(eancode + " -> " + name);							
 
 							// Rebates
+							int col = 0;
 							try {
-								extractDiscounts(cond, "B-doctor", getCellValue(row.getCell(17)));			// B-Arztpraxis
-								extractDiscounts(cond, "A-doctor", getCellValue(row.getCell(18)));			// A-Arztpraxis		
-								extractDiscounts(cond, "B-pharmacy", getCellValue(row.getCell(20)));		// B-Apotheke
-								extractDiscounts(cond, "A-pharmacy", getCellValue(row.getCell(21)));		// A-Apotheke
-								extractDiscounts(cond, "B-pharmacy-promo", getCellValue(row.getCell(23)));	// B-Apotheke promo-cycle
-								extractDiscounts(cond, "A-pharmacy-promo", getCellValue(row.getCell(24)));	// A-Apotheke promo-cycle
-								extractDiscounts(cond, "B-drugstore", getCellValue(row.getCell(25)));		// B-Drogerie
-								extractDiscounts(cond, "A-drugstore", getCellValue(row.getCell(26)));		// A-Drogerie
-								extractDiscounts(cond, "B-drugstore-promo", getCellValue(row.getCell(29)));	// B-Drogerie promo-cycle
-								extractDiscounts(cond, "A-drugstore-promo", getCellValue(row.getCell(30)));	// A-Drogerie promo-cycle
-								extractDiscounts(cond, "C-hospital", getCellValue(row.getCell(32)));		// C-Spital
-								extractDiscounts(cond, "B-hospital", getCellValue(row.getCell(33)));		// B-Spital
-								extractDiscounts(cond, "A-hospital", getCellValue(row.getCell(34)));		// A-Spital
-								// Assortiebarkeit
-								extractAssort(cond, "doctor", getCellValue(row.getCell(19)), map_visibility);
-								extractAssort(cond, "pharmacy", getCellValue(row.getCell(22)), map_visibility);
-								extractAssort(cond, "pharmacy-promo", getCellValue(row.getCell(25)), map_visibility);							
-								extractAssort(cond, "drugstore", getCellValue(row.getCell(28)), map_visibility);
-								extractAssort(cond, "drugstore-promo", getCellValue(row.getCell(31)), map_visibility);
-								extractAssort(cond, "hospital", getCellValue(row.getCell(35)), map_visibility);								
+								// Konditionen
+								for (Map.Entry<Integer, String> entry : cond_map.entrySet()) {
+									String value = entry.getValue();
+									col = entry.getKey();
+									extractDiscounts(cond, value, getCellValue(row.getCell(col)));
+								}
+								// Assortierbarkeiten
+								for (Map.Entry<Integer, String> entry : assort_map.entrySet()) {
+									String value = entry.getValue();
+									col = entry.getKey();
+									extractAssort(cond, value, getCellValue(row.getCell(col)), map_visibility);
+								}						
 							} catch(Exception e) {
 								System.out.println(">> Exception while processing Excel-File " + path);
-								System.out.println(">> Check " + eancode + " -> " + name);
+								int error_row = row.getRowNum()+1;
+								int error_col = col+1;
+								System.out.println(">> Check " + name + " (" + eancode + ") -> [r=" + error_row + " c=" + error_col + "]");
 								e.printStackTrace();
 								System.exit(-1);
 							}
@@ -353,7 +383,9 @@ public class ShoppingCart implements java.io.Serializable {
 	        								extractDiscounts(cond, group_id, getCellValue(row.getCell(col)));						
 	        							} catch(Exception e) {
 	        								System.out.println(">> Exception while processing Excel-File " + path);
-	        								System.out.println(">> Check " + eancode + " -> " + name);
+	        								int error_row = row.getRowNum()+1;
+	        								int error_col = col+1;
+	        								System.out.println(">> Check " + name + " (" + eancode + ") -> [r=" + error_row + " c=" + error_col + "]");
 	        								e.printStackTrace();
 	        								System.exit(-1);
 	        							}
@@ -425,7 +457,8 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 	}
 	
-	private void extractDiscounts(Conditions c, String category, String discount_str) {
+	private void extractDiscounts(Conditions c, String category, String discount_str) 
+		throws Exception {
 		if (!discount_str.isEmpty()) {
 			// All regex patterns
 			Pattern date_pattern1 = Pattern.compile("\\b(\\d{2}).(\\d{2}).(\\d{4})-(\\d{2})\\b", Pattern.DOTALL);
@@ -505,7 +538,15 @@ public class ShoppingCart implements java.io.Serializable {
 					// Get discount as content of the parentheses
 					Matcher rebate_match2 = rebate_pattern2.matcher(rebates[i]);
 					rebate_match2.find();
-					String discount = rebate_match2.group(1).replaceAll("%", "");
+					String parenthesis_str = rebate_match2.group(1);
+					// Validation...
+					if (!parenthesis_str.contains("%")) {
+						throw new Exception("Missing '%' in expression: " + rebates[i]);
+					}
+					if (!parenthesis_str.matches("[-]?\\d+\\%")) {
+						throw new Exception("Fix format: " + parenthesis_str);
+					}
+					String discount = parenthesis_str.replaceAll("%", "");
 					// Extract all units 
 					// Note: discount can also be <0!
 					if (units!=null) {				
