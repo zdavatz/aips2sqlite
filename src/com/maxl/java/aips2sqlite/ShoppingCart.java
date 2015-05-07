@@ -145,6 +145,15 @@ public class ShoppingCart implements java.io.Serializable {
         return Collections.unmodifiableMap(assort_map);
 	}
 	
+	private String toExcelColName(int number) {
+        StringBuilder sb = new StringBuilder();
+        while (number-- > 0) {
+            sb.append((char)('A' + (number % 26)));
+            number /= 26;
+        }
+        return sb.reverse().toString();
+    }
+	
 	private void processMainConditionsFile(String path) {
 
 		System.out.println("\nProcessing main conditions file... ");
@@ -319,7 +328,7 @@ public class ShoppingCart implements java.io.Serializable {
 								System.out.println(">> Exception while processing Excel-File " + path);
 								int error_row = row.getRowNum()+1;
 								int error_col = col+1;
-								System.out.println(">> Check " + name + " (" + eancode + ") -> [r=" + error_row + " c=" + error_col + "]");
+								System.out.println(">> Check " + name + " (" + eancode + ") -> [r=" + error_row + " c=" + toExcelColName(error_col) + "]");
 								e.printStackTrace();
 								System.exit(-1);
 							}
@@ -385,7 +394,7 @@ public class ShoppingCart implements java.io.Serializable {
 	        								System.out.println(">> Exception while processing Excel-File " + path);
 	        								int error_row = row.getRowNum()+1;
 	        								int error_col = col+1;
-	        								System.out.println(">> Check " + name + " (" + eancode + ") -> [r=" + error_row + " c=" + error_col + "]");
+	        								System.out.println(">> Check " + name + " (" + eancode + ") -> [r=" + error_row + " c=" + toExcelColName(error_col) + "]");
 	        								e.printStackTrace();
 	        								System.exit(-1);
 	        							}
