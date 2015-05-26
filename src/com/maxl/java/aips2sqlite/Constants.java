@@ -53,7 +53,7 @@ public class Constants {
 	// "Shopping" directory
 	public static final String DIR_SHOPPING = "./input/shop/";	
 	// Files zur Rose
-	public static final String CSV_FILE_DISPO_ZR = "Artikelstamm.csv.csv";
+	public static final String CSV_FILE_DISPO_ZR = "Artikelstamm.csv";
 	public static final String XLSX_FILE_DISPO_ZR = "dispo_artikel_zurrose.xlsx";
 	public static final String CSV_LIKE_DB_ZR = "like_db_zurrose.csv";
 	// "Shopping" directory
