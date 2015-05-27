@@ -557,7 +557,7 @@ public class AllDown {
 			ftp_client.connect(fs, 21);
 			ftp_client.login(fl, fp);
 			ftp_client.enterLocalPassiveMode();
-			ftp_client.changeWorkingDirectory("ywesee in");
+			ftp_client.changeWorkingDirectory("ywesee out");
 			ftp_client.setFileType(FTP.BINARY_FILE_TYPE);
 
 			int reply = ftp_client.getReplyCode();
@@ -572,23 +572,16 @@ public class AllDown {
 			// Get list of filenames
             FTPFile[] ftpFiles = ftp_client.listFiles();            
             if (ftpFiles!=null && ftpFiles.length>0) {
-                // First download new disposition file
-            	String remote_file = "dispo_artikel_zurrose.xlsx";                
-            	OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + Constants.XLSX_FILE_DISPO_ZR);
-            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
-            	boolean done = ftp_client.retrieveFile(remote_file, os);
-            	if (done)
-            		System.out.println("success.");
-            	else
-            		System.out.println("error.");
-            	os.close();
             	// ... then download all csv files
             	for (FTPFile f : ftpFiles) {
-            		remote_file = f.getName();
+            		String remote_file = f.getName();
             		if (remote_file.endsWith("csv")) {
-            			os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + remote_file);
+            			String local_file = remote_file;
+            			if (remote_file.startsWith("ArtikelStamm"))
+            				local_file = Constants.CSV_FILE_DISPO_ZR;
+            			OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
                     	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
-                    	done = ftp_client.retrieveFile(remote_file, os);
+                    	boolean done = ftp_client.retrieveFile(remote_file, os);
                     	if (done)
                     		System.out.println("success.");
                     	else

@@ -72,11 +72,6 @@ public class DispoParse {
 			processLikes();
 			// Load CSV file...
 			processCsv();
-		} else if (type.equals("xlsx")) {
-			// Load dispo file...
-			m_dispo_articles_sheet = getSheetsFromFile(Constants.DIR_ZURROSE + "/" + Constants.XLSX_FILE_DISPO_ZR, 0);
-			// then process it
-			processXlsx();		
 		}
 	}
 	
