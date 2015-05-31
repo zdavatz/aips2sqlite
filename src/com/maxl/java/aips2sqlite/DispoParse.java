@@ -67,10 +67,11 @@ public class DispoParse {
 	public void process(String type) {		
 		// Process atc map
 		getAtcMap();
+
 		if (type.equals("csv")) {
 			// Process likes
 			processLikes();
-			// Load CSV file...
+			// Load CSV file...		
 			processCsv();
 		}
 	}
@@ -274,14 +275,17 @@ public class DispoParse {
 			String line;
 			int num_rows = 0;
 			List<Article> list_of_articles = new ArrayList<Article>();
-			while ((line = br.readLine()) != null && num_rows<9000) {
-				String token[] = line.split("\\|");
-				if (num_rows>0) {
+			while ((line = br.readLine())!=null && num_rows<9000) {
+				String token[] = line.split(";");
+				if (num_rows>0 && token.length>12) {
 					Article article = new Article();					
-					if (token[0]!=null)
+					// Pharmacode
+					if (token[0]!=null)	
 						article.pharma_code = token[0];
+					// Artikelname
 					if (token[1]!=null)
 						article.pack_title = token[1];
+					// Strichcode
 					if (token[2]!=null) {
 						article.ean_code = token[2];
 						if (article.ean_code.length()==13) {
@@ -293,16 +297,20 @@ public class DispoParse {
 								article.likes = 0;
 						}
 					}
+					// Ausstand bis
 					if (token[3]!=null)
 						article.availability = token[3];
+					// Packungsihnalt
 					if (token[5]!=null)		// SIZE = Packungsgrösse or Packungsinhalt
-						article.pack_size = Integer.parseInt(token[5]);				
+						article.pack_size = (int)(Float.parseFloat(token[5]));				
+					// Therapeutischer Code			
 					if (token[6]!=null) {
 						if (!token[6].isEmpty())
 							article.therapy_code = token[6];
 						else 
 							article.therapy_code = "k.A.";
 					}
+					// ATC-Key
 					if (token[7]!=null) {
 						article.atc_code = token[7].toUpperCase();
 						if (!article.atc_code.isEmpty())
@@ -312,16 +320,21 @@ public class DispoParse {
 							article.atc_class = "k.A.";
 						}
 					}
+					// Lagerbestand
 					if (token[8]!=null)
-						article.stock = Integer.parseInt(token[8]);
+						article.stock = (int)(Float.parseFloat(token[8]));
+					// Lieferant
 					if (token[9]!=null)
 						article.rose_supplier = token[9];
+					// Galen. Form
 					if (token[10]!=null)	// GALEN = Galenische Form					
 						article.galen_form = token[10];
+					// Dosierung
 					if (token[11]!=null) {	// UNIT = Stärke or Dosierung
 						unitParse(token[11]);
 						article.pack_unit = token[11];				
 					}
+					// Rose Basispreis
 					if (token[12]!=null) {
 						if (token[12].matches("^[0-9]+(\\.[0-9]{1,2})?$"))
 							article.rose_base_price = String.format("%.2f", Float.parseFloat(token[12]));

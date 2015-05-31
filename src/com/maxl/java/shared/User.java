@@ -5,6 +5,8 @@ public class User implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	public String gln_code = "";
+	public String ideale_id = "";
+	public String xpris_id = "";
 	public String addr_type = "";	// S: shipping, B: billing, O: Office	
 	public String category = "";	// arzt, spital, drogerie, ...
 	public String title = "";

@@ -187,8 +187,7 @@ public class FileOps {
 					// Semicolon is used as a separator
 					String[] gln = line.split(";", -1);
 					if (gln.length>(cols-1)) {
-						/*
-							gln[0]: ean code
+						/*	gln[0]: ean code
 							gln[1]: category (Kundenkategorie) - A oder B
 							gln[2]: type (Apotheke, Drogerie, Spital, ...)
 							gln[3]: email
@@ -199,6 +198,8 @@ public class FileOps {
 							tree_map.put(gln[0], gln[1]);
 						else if (cols==3)
 							tree_map.put(gln[0], gln[1]+";"+gln[2]);
+						else if (cols==4)							
+							tree_map.put(gln[0], gln[1]+";"+gln[2]+";"+gln[3]);
 						else if (cols==5) {
 							String name_group = gln[4].toLowerCase();
 							String standard_name_group = name_group + " standard";
@@ -267,6 +268,10 @@ public class FileOps {
 					br.close();
 				}
 			}
+			/*
+			if (cols==5)
+				writeMapToFile(tree_map, "ibsa_glns_csv.csv");
+			*/
 			// First serialize into a byte array output stream, then encrypt
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
@@ -283,6 +288,14 @@ public class FileOps {
 			e.printStackTrace();			
 		}
 	}
+	
+	static private void writeMapToFile(Map<String, String> map, String file_name) {
+		String csv_file = "";
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			csv_file += entry.getKey() + " -> " + entry.getValue() + "\n";
+		}
+		FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT, file_name);
+	}	
 	
 	static public byte[] serialize(Object obj) {
 		try {

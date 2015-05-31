@@ -533,8 +533,8 @@ public class AllDown {
 		String fp = "";
 		String fs = "";
 		try {
-			FileInputStream dispoFileXlsx = new FileInputStream(Constants.DIR_ZURROSE + "/access.ami.csv");
-			BufferedReader br = new BufferedReader(new InputStreamReader(dispoFileXlsx, "UTF-8"));
+			FileInputStream access = new FileInputStream(Constants.DIR_ZURROSE + "/access.ami.csv");
+			BufferedReader br = new BufferedReader(new InputStreamReader(access, "UTF-8"));
 			String line;
 			while ((line=br.readLine()) !=null ) {
 				// Semicolon is used as a separator
@@ -557,40 +557,43 @@ public class AllDown {
 			ftp_client.connect(fs, 21);
 			ftp_client.login(fl, fp);
 			ftp_client.enterLocalPassiveMode();
-			ftp_client.changeWorkingDirectory("ywesee out");
 			ftp_client.setFileType(FTP.BINARY_FILE_TYPE);
 
-			int reply = ftp_client.getReplyCode();
-			if (!FTPReply.isPositiveCompletion(reply)) {
-				ftp_client.disconnect();
-				System.err.println("FTP server refused connection.");
-				return;
-			}
-
 			System.out.println("- Connected to server " + fs + "...");
+
+			String[] working_dir = {"ywesee out", "../ywesee in"};
 			
-			// Get list of filenames
-            FTPFile[] ftpFiles = ftp_client.listFiles();            
-            if (ftpFiles!=null && ftpFiles.length>0) {
-            	// ... then download all csv files
-            	for (FTPFile f : ftpFiles) {
-            		String remote_file = f.getName();
-            		if (remote_file.endsWith("csv")) {
-            			String local_file = remote_file;
-            			if (remote_file.startsWith("ArtikelStamm"))
-            				local_file = Constants.CSV_FILE_DISPO_ZR;
-            			OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
-                    	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
-                    	boolean done = ftp_client.retrieveFile(remote_file, os);
-                    	if (done)
-                    		System.out.println("success.");
-                    	else
-                    		System.out.println("error.");
-                    	os.close();
-            		}
-            	}
-            }
-            
+			for (int i=0; i<working_dir.length; ++i) {
+				// Set working directory
+				ftp_client.changeWorkingDirectory(working_dir[i]);
+				int reply = ftp_client.getReplyCode();
+				if (!FTPReply.isPositiveCompletion(reply)) {
+					ftp_client.disconnect();
+					System.err.println("FTP server refused connection.");
+					return;
+				}
+				// Get list of filenames
+	            FTPFile[] ftpFiles = ftp_client.listFiles();            
+	            if (ftpFiles!=null && ftpFiles.length>0) {
+	            	// ... then download all csv files
+	            	for (FTPFile f : ftpFiles) {
+	            		String remote_file = f.getName();
+	            		if (remote_file.endsWith("csv")) {
+	            			String local_file = remote_file;
+	            			if (remote_file.startsWith("Artikelstamm"))
+	            				local_file = Constants.CSV_FILE_DISPO_ZR;
+	            			OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
+	                    	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
+	                    	boolean done = ftp_client.retrieveFile(remote_file, os);
+	                    	if (done)
+	                    		System.out.println("success.");
+	                    	else
+	                    		System.out.println("error.");
+	                    	os.close();
+	            		}
+	            	}
+	            }
+			}            
 		} catch (IOException ex) {
 			System.out.println("Error: " + ex.getMessage());
 			ex.printStackTrace();

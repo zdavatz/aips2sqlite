@@ -171,6 +171,7 @@ public class GlnCodes implements java.io.Serializable {
 
 	private void processGlns(String gln, String cat, String owner) {
 		String key = gln + "S";
+
 		if (m_gln_codes_complete.containsKey(key)) {
 			String t[] = cat.split(";");
 			User cust = m_gln_codes_complete.get(key);
@@ -227,6 +228,10 @@ public class GlnCodes implements java.io.Serializable {
 			User cust = m_gln_codes_complete.get(key);
 			// Check if this is an IBSA customer, if yes, complete
 			if (!cust.owner.isEmpty() && cust.owner.charAt(0)=='i') {
+				if (cust.ideale_id.isEmpty())
+					cust.ideale_id = token[2];
+				if (cust.xpris_id.isEmpty())
+					cust.xpris_id = token[3];
 				if (cust.title.isEmpty())
 					cust.title = token[4];
 				if (cust.first_name.isEmpty())
@@ -260,6 +265,8 @@ public class GlnCodes implements java.io.Serializable {
 				User cust = new User();
 				cust.gln_code = key.substring(0, 13);
 				cust.addr_type = key.substring(13);
+				cust.ideale_id = token[2];
+				cust.xpris_id = token[3];
 				cust.title = token[4];
 				cust.first_name = token[5];
 				cust.last_name = token[6];
@@ -368,6 +375,8 @@ public class GlnCodes implements java.io.Serializable {
 		List<User> customer_list = new ArrayList<User>(map.values());
 		for (User c : customer_list) {	
 			csv_file += c.gln_code + separator 
+					+ c.ideale_id + separator
+					+ c.xpris_id + separator
 					+ c.addr_type + separator
 					+ c.category + separator
 					+ c.title + separator
