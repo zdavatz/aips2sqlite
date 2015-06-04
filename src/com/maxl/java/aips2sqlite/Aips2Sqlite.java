@@ -186,7 +186,7 @@ public class Aips2Sqlite {
 		
 		// Generate only zur Rose DB
 		if (CmlOptions.ZUR_ROSE_DB==true) {
-			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_ZURROSE, "access_rose.ami", Constants.DIR_OUTPUT, 0, 3, null);						
+			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_ZURROSE, "access_rose.ami", Constants.DIR_OUTPUT, 0, 4, null);						
 			DispoParse dp = new DispoParse();		
 			dp.process("csv");
 		}

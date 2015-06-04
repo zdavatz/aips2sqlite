@@ -47,8 +47,8 @@ public class Constants {
 	public static final String FILE_GLN_CODES_PEOPLE = "./downloads/gln_codes_people_xlsx.xlsx";
 	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";
 	// Files IBSA
-	public static final String FILE_MOOSBERGER = "moosberger_glns.csv";
-	public static final String FILE_TARGETING = "targeting_glns.csv";
+	public static final String FILE_CUST_GLNS = "customer_glns.csv";
+	public static final String FILE_TARG_GLNS = "targeting_glns.csv";
 	public static final String FILE_MOOS_ADDR = "moos_addresses.csv";
 	// "Shopping" directory
 	public static final String DIR_SHOPPING = "./input/shop/";	

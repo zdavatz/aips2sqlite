@@ -496,7 +496,7 @@ public class AllDown {
             FTPFile[] ftpFiles = ftp_client.listFiles(); 
             
             List<String> list_remote_files = Arrays.asList("Konditionen.csv", "Targeting_diff.csv", "Address.csv");
-            List<String> list_local_files = Arrays.asList(Constants.FILE_MOOSBERGER, Constants.FILE_TARGETING, Constants.FILE_MOOS_ADDR);
+            List<String> list_local_files = Arrays.asList(Constants.FILE_CUST_GLNS, Constants.FILE_TARG_GLNS, Constants.FILE_MOOS_ADDR);
             
             if (ftpFiles!=null && ftpFiles.length>0) {
             	int index = 0;

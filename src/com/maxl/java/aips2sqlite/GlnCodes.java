@@ -32,8 +32,8 @@ public class GlnCodes implements java.io.Serializable {
 		m_gln_codes_people_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_PEOPLE, 0);
 		m_gln_codes_companies_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_COMPANIES, 0);
 		// Mosberger conditions
-		m_gln_codes_moos_cond = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_MOOSBERGER);
-		m_gln_codes_moos_targ = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_TARGETING);
+		m_gln_codes_moos_cond = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_CUST_GLNS);
+		m_gln_codes_moos_targ = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_TARG_GLNS);
 		// Mosberger full info without conditions
 		m_gln_codes_moos_full = readFromComplexCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_MOOS_ADDR, 16);
 		// Complete list of gln_codes
@@ -223,10 +223,10 @@ public class GlnCodes implements java.io.Serializable {
 	}
 	
 	private void processMoosFull(String key, String value) {	
+		String[] token = value.split(";", -1);
 		if (m_gln_codes_complete.containsKey(key)) {
-			String[] token = value.split(";", -1);
 			User cust = m_gln_codes_complete.get(key);
-			// Check if this is an IBSA customer, if yes, complete
+			// Check if this is an IBSA customer, if yes, complete information...						
 			if (!cust.owner.isEmpty() && cust.owner.charAt(0)=='i') {
 				if (cust.ideale_id.isEmpty())
 					cust.ideale_id = token[2];
@@ -261,7 +261,6 @@ public class GlnCodes implements java.io.Serializable {
 			}
 		} else {	// Create new entry		
 			if (key.length()==14) {				
-				String[] token = value.split(";", -1);
 				User cust = new User();
 				cust.gln_code = key.substring(0, 13);
 				cust.addr_type = key.substring(13);
