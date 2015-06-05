@@ -215,7 +215,7 @@ public class Aips2Sqlite {
 				sc.listFiles(Constants.DIR_SHOPPING);
 				Map<String, String> map_pharma_groups = sc.readPharmacyGroups();
 				sc.encryptConditionsToDir(Constants.DIR_SHOPPING, Constants.DIR_OUTPUT, "ibsa_conditions");
-				FileOps.encryptCsvToDir("moosberger_glns", "targeting_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
+				FileOps.encryptCsvToDir("customer_glns", "targeting_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
 				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);
 				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
 			}			

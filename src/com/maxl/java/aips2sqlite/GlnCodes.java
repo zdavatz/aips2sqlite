@@ -147,7 +147,11 @@ public class GlnCodes implements java.io.Serializable {
 				
 		// Loop through the moosberger full info without conditions
 		for (Map.Entry<String, String> entry : m_gln_codes_moos_full.entrySet()) {
-			processMoosFull(entry.getKey(), entry.getValue());
+			processMoosFull(entry.getValue());
+			/*
+			 * String gln = entry.getKey();
+			 * processMoosFull(gln, entry.getValue());
+			 */
 		}	
 		if (CmlOptions.SHOW_LOGS)
 			System.out.println("- Processed gln codes mosberger address file... (" + m_gln_codes_complete.size() + ")");		
@@ -222,12 +226,14 @@ public class GlnCodes implements java.io.Serializable {
 		}
 	}
 	
-	private void processMoosFull(String key, String value) {	
+	private void processMoosFull(String value) {	
 		String[] token = value.split(";", -1);
-		if (m_gln_codes_complete.containsKey(key)) {
-			User cust = m_gln_codes_complete.get(key);
+		String extended_gln_code = token[1] + token[0];
+		if (m_gln_codes_complete.containsKey(extended_gln_code)) {
+			User cust = m_gln_codes_complete.get(extended_gln_code);
 			// Check if this is an IBSA customer, if yes, complete information...						
 			if (!cust.owner.isEmpty() && cust.owner.charAt(0)=='i') {
+				// Address type and gln code "should" already be correct...
 				if (cust.ideale_id.isEmpty())
 					cust.ideale_id = token[2];
 				if (cust.xpris_id.isEmpty())
@@ -257,13 +263,13 @@ public class GlnCodes implements java.io.Serializable {
 				if (cust.email.isEmpty())
 					cust.email = token[15];
 				cust.owner = "";
-				m_gln_codes_complete.put(key, cust);
+				m_gln_codes_complete.put(extended_gln_code, cust);
 			}
 		} else {	// Create new entry		
-			if (key.length()==14) {				
+			if (extended_gln_code.length()==14) {				
 				User cust = new User();
-				cust.gln_code = key.substring(0, 13);
-				cust.addr_type = key.substring(13);
+				cust.addr_type = token[0];
+				cust.gln_code = token[1];				
 				cust.ideale_id = token[2];
 				cust.xpris_id = token[3];
 				cust.title = token[4];
@@ -279,9 +285,9 @@ public class GlnCodes implements java.io.Serializable {
 				cust.fax = token[14];
 				cust.email = token[15];
 				cust.owner = "i";
-				m_gln_codes_complete.put(key, cust);
+				m_gln_codes_complete.put(extended_gln_code, cust);
 			} else {
-				System.out.println("Found wrong key code: " + key);
+				System.out.println("Found wrong key code: " + extended_gln_code);
 			}
 		}
 	}
@@ -329,13 +335,18 @@ public class GlnCodes implements java.io.Serializable {
 				if (num_rows>0) {
 					String token[] = line.split(";",-1);
 					if (token.length>=num_entries) {
-						if (!token[0].isEmpty() && !token[1].isEmpty()) {
-							String key = token[1] + token[0];	// gln + addr_type (S,B,O)
+						// token[0] -> {S,B,O}
+						// token[1] -> GLN Code
+						// token[2] -> Ideale ID
+						// token[3] -> XPris ID
+						if (!token[0].isEmpty() && !token[3].isEmpty()/*!token[1].isEmpty()*/) {
+							String key = /*token[1]*/ token[3] + token[0];	// gln + addr_type (S,B,O)
 							if (map.containsKey(key))
 								System.out.println("GLN code exists already! This is unlikely...");
 							// Fill in map
-							String value_str = token[0] + ";" + token[1] + ";";
-							for (int i=2; i<num_entries-1; ++i)
+							// String value_str = token[0] + ";" + token[1] + ";";
+							String value_str = "";
+							for (int i=0; i<num_entries-1; ++i)
 								value_str += token[i] + ";";
 							value_str += token[num_entries-1];
 							map.put(key, value_str);
