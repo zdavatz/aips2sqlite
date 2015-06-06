@@ -146,15 +146,17 @@ public class GlnCodes implements java.io.Serializable {
 			System.out.println("- Processed gln codes mosberger targetting file... (" + m_gln_codes_complete.size() + ")");			
 				
 		// Loop through the moosberger full info without conditions
+		int no_gln_cnt = 0;
 		for (Map.Entry<String, String> entry : m_gln_codes_moos_full.entrySet()) {
-			processMoosFull(entry.getValue());
+			if (processMoosFull(entry.getValue()))
+				no_gln_cnt++;
 			/*
 			 * String gln = entry.getKey();
 			 * processMoosFull(gln, entry.getValue());
 			 */
 		}	
 		if (CmlOptions.SHOW_LOGS)
-			System.out.println("- Processed gln codes mosberger address file... (" + m_gln_codes_complete.size() + ")");		
+			System.out.println("- Processed gln codes mosberger address file... (" + m_gln_codes_complete.size() + ") - " + no_gln_cnt + " entries have no gln code.");		
 		
 		// Write to file
 		int rows = writeMapToCsv(m_gln_codes_complete, '|', "gln_codes_csv.csv", "");		
@@ -226,7 +228,8 @@ public class GlnCodes implements java.io.Serializable {
 		}
 	}
 	
-	private void processMoosFull(String value) {	
+	private boolean processMoosFull(String value) {	
+		boolean no_gln_flag = false;
 		String[] token = value.split(";", -1);
 		String extended_gln_code = token[1] + token[0];
 		if (m_gln_codes_complete.containsKey(extended_gln_code)) {
@@ -287,9 +290,11 @@ public class GlnCodes implements java.io.Serializable {
 				cust.owner = "i";
 				m_gln_codes_complete.put(extended_gln_code, cust);
 			} else {
-				System.out.println("Found wrong key code: " + extended_gln_code);
+				no_gln_flag = true;
+				System.out.println("No gln code: " + extended_gln_code + " -> " + token[3]);
 			}
 		}
+		return no_gln_flag;
 	}
 	
 	private Map<String, String> readFromSimpleCsvToMap(String file_name) {

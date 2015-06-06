@@ -277,6 +277,8 @@ public class Aips2Sqlite {
 		if (CmlOptions.ZUR_ROSE_DB==true) {
 			a.downZurRose();
 		} else {
+			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true)
+				a.downIBSA();
 			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
 			// a.downPackungenXml(FILE_PACKAGES_XLS);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
@@ -290,8 +292,6 @@ public class Aips2Sqlite {
 			a.downEPhaProductsJson("DE", Constants.FILE_EPHA_PRODUCTS_DE_JSON);
 			a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);	
 			a.downGLNCodesXlsx(Constants.FILE_GLN_CODES_PEOPLE, Constants.FILE_GLN_CODES_COMPANIES);
-			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true)
-				a.downIBSA();
 		}
 	}
 	
