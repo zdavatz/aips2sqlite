@@ -43,6 +43,8 @@ public class Constants {
 	public static final String FILE_EPHA_INTERACTIONS_FR_CSV = "./downloads/epha_interactions_fr_csv.csv";
 	public static final String FILE_EPHA_PRODUCTS_DE_JSON = "./downloads/epha_products_de_json.json";
 	public static final String FILE_EPHA_PRODUCTS_FR_JSON = "./downloads/epha_products_fr_json.json";	
+	// EPha ATC codes file
+	public static final String FILE_EPHA_ATC_CODES_CSV = "./downloads/epha_atc_codes_csv.csv";
 	// GLN Codes (Personen + Betriebe)
 	public static final String FILE_GLN_CODES_PEOPLE = "./downloads/gln_codes_people_xlsx.xlsx";
 	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";

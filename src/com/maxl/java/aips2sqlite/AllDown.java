@@ -343,9 +343,9 @@ public class AllDown {
 			
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("https://download.epha.ch/data/matrix/matrix.csv");
+				url = new URL("http://download.epha.ch/data/matrix/matrix.csv");
 			else if (language.equals("FR"))
-				url = new URL("https://download.epha.ch/data/matrix/matrix.csv");
+				url = new URL("http://download.epha.ch/data/matrix/matrix.csv");
 				
 			if (url!=null) {
 				File destination = new File(file_interactions_csv);			
@@ -382,9 +382,9 @@ public class AllDown {
 			
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("https://download.epha.ch/cleaned/produkte.json");
+				url = new URL("http://download.epha.ch/cleaned/produkte.json");
 			else if (language.equals("FR"))
-				url = new URL("https://download.epha.ch/cleaned/produkte.json");
+				url = new URL("http://download.epha.ch/cleaned/produkte.json");
 			if (url!=null) {
 				File destination = new File(file_products_json);			
 				
@@ -403,6 +403,42 @@ public class AllDown {
 			System.err.println(" Exception: in 'downInteractionsCsv'");
 			e.printStackTrace();
 		}	
+	}
+	
+	public void downEphaATCCodesCsv(String file_atc_codes_csv) {
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+		
+		try {
+			// Ignore validation for https sites
+			setNoValidation();			
+			
+			// Start timer
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading EPha ATC codes file... ");	
+			else {
+				pb.init("- Downloading EPha ATC codes file... ");
+				pb.start();	
+			}
+			
+			URL url = null;
+			url = new URL("http://download.epha.ch/data/atc/atc.csv");
+				
+			if (url!=null) {
+				File destination = new File(file_atc_codes_csv);			
+				FileUtils.copyURLToFile(url, destination, 60000, 60000);		
+				if (!disp)
+					pb.stopp();
+				long stopTime = System.currentTimeMillis();		
+				System.out.println("\r- Downloading EPha ATC codes file... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			}				
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downEphaATCCodesCsv'");
+			e.printStackTrace();
+		}
 	}
 	
 	public void downGLNCodesXlsx(String file_glncodes_people_xlsx, String file_glncodes_companies_xlsx) {

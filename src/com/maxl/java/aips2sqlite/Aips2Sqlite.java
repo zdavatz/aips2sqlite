@@ -291,6 +291,7 @@ public class Aips2Sqlite {
 			a.downEPhaInteractionsCsv("FR", Constants.FILE_EPHA_INTERACTIONS_FR_CSV);
 			a.downEPhaProductsJson("DE", Constants.FILE_EPHA_PRODUCTS_DE_JSON);
 			a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);	
+			a.downEphaATCCodesCsv(Constants.FILE_EPHA_ATC_CODES_CSV);
 			a.downGLNCodesXlsx(Constants.FILE_GLN_CODES_PEOPLE, Constants.FILE_GLN_CODES_COMPANIES);
 		}
 	}

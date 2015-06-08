@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
@@ -44,6 +45,8 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import com.opencsv.CSVReader;
 
 public class DispoParse {
 
@@ -431,6 +434,19 @@ public class DispoParse {
 		m_atc_map = new TreeMap<String, String>();
 		
 		try {
+			CSVReader reader = new CSVReader(new FileReader(Constants.FILE_EPHA_ATC_CODES_CSV));
+			List<String[]> myEntries = reader.readAll();
+			int num_rows = myEntries.size();
+			for (String[] s : myEntries) {
+				if (s.length>2) {
+					String atc_code = s[0];
+					String atc_class = s[1];
+					m_atc_map.put(atc_code, atc_class);
+				}
+			}
+			reader.close();
+
+			/*
 			// Load ATC classes xls file
 			FileInputStream atc_classes_file = new FileInputStream(Constants.FILE_ATC_CLASSES_XLS);
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
@@ -460,6 +476,7 @@ public class DispoParse {
 				}
 				num_rows++;
 			}
+			*/
 		} catch(IOException e) {
 			e.printStackTrace();
 		}

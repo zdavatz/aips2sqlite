@@ -22,6 +22,7 @@ package com.maxl.java.aips2sqlite;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,8 +37,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -48,6 +47,7 @@ import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
 import com.maxl.java.aips2sqlite.Preparations.Preparation;
+import com.opencsv.CSVReader;
 
 public class RealPatientInfo {
 	
@@ -203,6 +203,7 @@ public class RealPatientInfo {
 			if (CmlOptions.SHOW_LOGS)
 				System.out.print("- Processing atc classes xls... ");
 			if (CmlOptions.DB_LANGUAGE.equals("de")) {
+				/*
 				// Load ATC classes xls file
 				FileInputStream atc_classes_file = new FileInputStream(Constants.FILE_ATC_CLASSES_XLS);
 				// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
@@ -231,6 +232,18 @@ public class RealPatientInfo {
 					}
 					num_rows++;
 				}
+				*/
+				CSVReader reader = new CSVReader(new FileReader(Constants.FILE_EPHA_ATC_CODES_CSV));
+				List<String[]> myEntries = reader.readAll();
+				num_rows = myEntries.size();
+				for (String[] s : myEntries) {
+					if (s.length>2) {
+						String atc_code = s[0];
+						String atc_class = s[1];
+						m_atc_map.put(atc_code, atc_class);
+					}
+				}
+				reader.close();
 			} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 				// Load multilinguagl ATC classes txt file
 				String atc_classes_multi = FileOps.readFromFile(Constants.FILE_ATC_MULTI_LINGUAL_TXT);
