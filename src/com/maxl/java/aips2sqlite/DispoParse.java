@@ -434,7 +434,7 @@ public class DispoParse {
 		m_atc_map = new TreeMap<String, String>();
 		
 		try {
-			CSVReader reader = new CSVReader(new FileReader(Constants.FILE_EPHA_ATC_CODES_CSV));
+			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(Constants.FILE_EPHA_ATC_CODES_CSV), "UTF-8"));
 			List<String[]> myEntries = reader.readAll();
 			int num_rows = myEntries.size();
 			for (String[] s : myEntries) {

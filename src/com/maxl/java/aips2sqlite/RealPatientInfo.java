@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -233,7 +234,7 @@ public class RealPatientInfo {
 					num_rows++;
 				}
 				*/
-				CSVReader reader = new CSVReader(new FileReader(Constants.FILE_EPHA_ATC_CODES_CSV));
+				CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(Constants.FILE_EPHA_ATC_CODES_CSV), "UTF-8"));
 				List<String[]> myEntries = reader.readAll();
 				num_rows = myEntries.size();
 				for (String[] s : myEntries) {
