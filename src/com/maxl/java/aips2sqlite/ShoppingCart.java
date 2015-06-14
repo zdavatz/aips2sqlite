@@ -124,8 +124,8 @@ public class ShoppingCart implements java.io.Serializable {
         cond_map.put(21, "A-pharmacy");			// A-Apotheke
         cond_map.put(23, "B-pharmacy-promo");	// B-Apotheke promo-cycle
         cond_map.put(24, "A-pharmacy-promo");	// A-Apotheke promo-cycle
-        cond_map.put(25, "B-drugstore");		// B-Drogerie
-        cond_map.put(26, "A-drugstore");		// A-Drogerie
+        cond_map.put(26, "B-drugstore");		// B-Drogerie
+        cond_map.put(27, "A-drugstore");		// A-Drogerie
         cond_map.put(29, "B-drugstore-promo");	// B-Drogerie promo-cycle
         cond_map.put(30, "A-drugstore-promo");	// A-Drogerie promo-cycle
         cond_map.put(32, "C-hospital");        	// C-Spital
