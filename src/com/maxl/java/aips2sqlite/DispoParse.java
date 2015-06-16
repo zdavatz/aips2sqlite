@@ -274,7 +274,7 @@ public class DispoParse {
 			if (!file.exists()) 
 				return;
 			FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
-			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "Cp1252"));
 			String line;
 			int num_rows = 0;
 			List<Article> list_of_articles = new ArrayList<Article>();
@@ -436,7 +436,6 @@ public class DispoParse {
 		try {
 			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(Constants.FILE_EPHA_ATC_CODES_CSV), "UTF-8"));
 			List<String[]> myEntries = reader.readAll();
-			int num_rows = myEntries.size();
 			for (String[] s : myEntries) {
 				if (s.length>2) {
 					String atc_code = s[0];
@@ -445,38 +444,6 @@ public class DispoParse {
 				}
 			}
 			reader.close();
-
-			/*
-			// Load ATC classes xls file
-			FileInputStream atc_classes_file = new FileInputStream(Constants.FILE_ATC_CLASSES_XLS);
-			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
-			HSSFWorkbook atc_classes_workbook = new HSSFWorkbook(atc_classes_file);
-			// Get first sheet from workbook
-			// HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(1);	// --> 2013 file
-			HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(0);		// --> 2014 file			
-			// Iterate through all rows of first sheet
-			Iterator<Row> rowIterator = atc_classes_sheet.iterator();
-		
-			int num_rows = 0;
-			while (rowIterator.hasNext()) {
-				Row row = rowIterator.next();
-				if (num_rows>2) {
-					String atc_code = "";
-					String atc_class = "";
-					if (row.getCell(0)!=null) {
-						atc_code = row.getCell(0).getStringCellValue().replaceAll("\\s", "");
-					}
-					if (row.getCell(2)!=null) {
-						atc_class = row.getCell(2).getStringCellValue();
-					}
-					// Build a full map atc code to atc class
-					if (atc_code.length()>0) {
-						m_atc_map.put(atc_code, atc_class);
-					}
-				}
-				num_rows++;
-			}
-			*/
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
