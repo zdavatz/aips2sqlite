@@ -231,7 +231,7 @@ public class FileOps {
 					String line;
 					while ((line=br.readLine()) !=null ) {
 						// Semicolon is used as a separator
-						String[] gln = line.split(";");
+						String[] gln = line.split(";", -1);
 						// If gln[0] is not contained in map, add it...
 						if (!tree_map.containsKey(gln[0]) && gln.length>(cols-1)) {
 							/*
@@ -269,10 +269,10 @@ public class FileOps {
 					br.close();
 				}
 			}
-			/*
+			
 			if (cols==5)
 				writeMapToFile(tree_map, "ibsa_glns_csv.csv");
-			*/
+			
 			// First serialize into a byte array output stream, then encrypt
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
