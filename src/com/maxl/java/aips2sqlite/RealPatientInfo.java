@@ -276,33 +276,23 @@ public class RealPatientInfo {
 			}
 			stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
-				System.out.println((m_atc_map.size() + 1) + " classes in "
-						+ (stopTime - startTime) / 1000.0f + " sec");
+				System.out.println((m_atc_map.size() + 1) + " classes in " + (stopTime - startTime) / 1000.0f + " sec");
+			
 			// Load Refdata xml file
-			File refdata_xml_file = null;
-			if (CmlOptions.DB_LANGUAGE.equals("de"))
-				refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_DE_XML);
-			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-				refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_FR_XML);
-			else if (CmlOptions.DB_LANGUAGE.equals("it"))
-				refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_FR_XML);
-			else {
-				System.err.println("ERROR: DB_LANGUAGE undefined");
-				System.exit(1);
-			}
+			File refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_XML);
 			FileInputStream refdata_fis = new FileInputStream(refdata_xml_file);
 
 			startTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
-				System.out.print("- Unmarshalling Refdata Pharma " + CmlOptions.DB_LANGUAGE + "... ");
+				System.out.print("- Unmarshalling Refdatabase for " + CmlOptions.DB_LANGUAGE + "... ");
 
-			JAXBContext context = JAXBContext.newInstance(Pharma.class);
+			JAXBContext context = JAXBContext.newInstance(Refdata.class);
 			Unmarshaller um = context.createUnmarshaller();
-			Pharma refdataPharma = (Pharma) um.unmarshal(refdata_fis);
-			List<Pharma.ITEM> pharma_list = refdataPharma.getItem();
+			Refdata refdataPharma = (Refdata) um.unmarshal(refdata_fis);
+			List<Refdata.ITEM> pharma_list = refdataPharma.getItem();
 
 			String smno8;
-			for (Pharma.ITEM pharma : pharma_list) {
+			for (Refdata.ITEM pharma : pharma_list) {
 				String ean_code = pharma.getGtin();
 				if (ean_code.length() == 13) {
 					smno8 = ean_code.substring(4, 12);
@@ -310,34 +300,33 @@ public class RealPatientInfo {
 					ArrayList<String> pi_row = m_package_info.get(smno8);
 					// Replace sequence_name
 					if (pi_row != null) {
-						if (pharma.getAddscr().length() > 0)
-							pi_row.set(1, pharma.getDscr() + ", " + pharma.getAddscr());
-						else
-							pi_row.set(1, pharma.getDscr());
+						// Präparatname + galenische Form
+						if (CmlOptions.DB_LANGUAGE.equals("de"))
+							pi_row.set(1, pharma.getNameDE());
+						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+							pi_row.set(1, pharma.getNameFR());		
 						// If med is in refdata file, then it is "in Handel!!" ;)
 						pi_row.set(10, "");
-						if (pharma.getStatus().equals("I")) {
-							if (CmlOptions.DB_LANGUAGE.equals("de"))
-								pi_row.set(10, "a.H.");
-							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-								pi_row.set(10, "p.c.");
-							else if (CmlOptions.DB_LANGUAGE.equals("it"))
-								pi_row.set(10, "f.c.");
-						}
+						if (CmlOptions.DB_LANGUAGE.equals("de"))
+							pi_row.set(10, "a.H.");
+						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+							pi_row.set(10, "p.c.");
+						else if (CmlOptions.DB_LANGUAGE.equals("it"))
+							pi_row.set(10, "f.c.");
 						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
 						pi_row.set(14, ean_code);
 					} else {
 						if (CmlOptions.SHOW_ERRORS) {
 							System.err.println(">> Does not exist in BAG xls: " + smno8 
-									+ " (" + pharma.getDscr() + ", " + pharma.getAddscr() + ")");
+									+ " (" + pharma.getNameDE() + ")");
 						}
 					}
 				} else if (ean_code.length() < 13) {
 					if (CmlOptions.SHOW_ERRORS)
-						System.err.println(">> EAN code too short: " + ean_code + ": " + pharma.getDscr());
+						System.err.println(">> EAN code too short: " + ean_code + ": " + pharma.getNameDE());
 				} else if (ean_code.length() > 13) {
 					if (CmlOptions.SHOW_ERRORS)
-						System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getDscr());
+						System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getNameDE());
 				}
 			}
 			

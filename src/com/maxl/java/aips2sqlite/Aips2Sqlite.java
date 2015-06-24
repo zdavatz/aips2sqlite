@@ -280,10 +280,12 @@ public class Aips2Sqlite {
 			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true)
 				a.downIBSA();
 			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
-			// a.downPackungenXml(FILE_PACKAGES_XLS);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
+			a.downRefdatabaseXml(Constants.FILE_REFDATA_PHARMA_XML);
+			/* Pre-July 2015
 			a.downSwissindexXml("DE", Constants.FILE_REFDATA_PHARMA_DE_XML);
 			a.downSwissindexXml("FR", Constants.FILE_REFDATA_PHARMA_FR_XML);
+			*/
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
 			a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);

@@ -21,6 +21,7 @@ package com.maxl.java.aips2sqlite;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -55,6 +56,7 @@ import javax.xml.soap.SOAPConnection;
 import javax.xml.soap.SOAPConnectionFactory;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 import javax.xml.transform.OutputKeys;
@@ -243,6 +245,68 @@ public class AllDown {
 			if (!disp)
 				pb.stopp();			
 			System.err.println(" Exception: in 'downSwissindexXml'");
+			e.printStackTrace();
+		}		
+	}
+	
+	public void downRefdatabaseXml(String file_refdata_pharma_xml) {		
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();	
+		
+		try {
+			// Start timer 
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading Refdatabase file... ");
+			else {
+				pb.init("- Downloading Refdatabase file... ");
+				pb.start();
+			}
+			
+			// Create soaprequest
+			SOAPMessage soapRequest = MessageFactory.newInstance().createMessage();
+			// Set SOAPAction header line
+			MimeHeaders headers = soapRequest.getMimeHeaders();
+			headers.addHeader("SOAPAction", "http://refdatabase.refdata.ch/Pharma/Download");		        
+			// Set SOAP main request part
+			SOAPPart soapPart = soapRequest.getSOAPPart();
+			SOAPEnvelope envelope = soapPart.getEnvelope();
+			SOAPBody soapBody = envelope.getBody();
+			// Construct SOAP request message
+			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadArticleInput");
+			soapBodyElement1.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/");				
+			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("ATYPE");
+			soapBodyElement2.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/Article_in");			
+			soapBodyElement2.addTextNode("ALL");	
+			soapRequest.saveChanges();
+			// If needed print out soapRequest in a pretty format
+			// prettyFormatSoapXml(soapRequest);
+			// Create connection to SOAP server
+			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();			
+			SOAPConnection connection = soapConnectionFactory.createConnection();			
+			// wsURL contains service end point
+			String wsURL = "http://refdatabase.refdata.ch/Service/Article.asmx?WSDL";
+			SOAPMessage soapResponse = connection.call(soapRequest, wsURL);
+			// Extract response
+			Document doc = soapResponse.getSOAPBody().extractContentAsDocument();
+			String strBody = getStringFromDoc(doc);
+			String xmlBody = prettyFormat(strBody);			
+			// Note: parsing the Document tree and using the removeAttribute function is hopeless! 			
+			xmlBody = xmlBody.replaceAll("xmlns.*?\".*?\" ", "");			
+			
+			long len = writeToFile(xmlBody, file_refdata_pharma_xml);
+			
+			if (!disp)
+				pb.stopp();
+			long stopTime = System.currentTimeMillis();	
+			System.out.println("\r- Downloading Refdatabase file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			
+			connection.close();			
+			
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downRefdatabaseXml'");
 			e.printStackTrace();
 		}		
 	}
@@ -758,5 +822,16 @@ public class AllDown {
 	    } catch (Exception e) {
 	        throw new RuntimeException(e); // simple exception handling, please review it
 	    }
+	}
+	
+	private String prettyFormatSoapXml(SOAPMessage soap) {
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();		
+			soap.writeTo(out);
+			String msg = new String(out.toByteArray());
+			return prettyFormat(msg);
+		} catch(SOAPException | IOException e) {
+			return "";
+		}
 	}
 }

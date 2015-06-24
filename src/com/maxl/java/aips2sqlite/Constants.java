@@ -31,8 +31,11 @@ public class Constants {
 	public static final String FILE_PACKAGES_XLS = "./downloads/swissmedic_packages_xls.xls";
 	public static final String FILE_PACKAGES_XLSX = "./downloads/swissmedic_packages_xlsx.xlsx";
 	// Refdata xml file to be parsed (DE != FR)
+	public static final String FILE_REFDATA_PHARMA_XML = "./downloads/refdata_pharma_xml.xml";	
+	/*
 	public static final String FILE_REFDATA_PHARMA_DE_XML = "./downloads/refdata_pharma_de_xml.xml";
 	public static final String FILE_REFDATA_PHARMA_FR_XML = "./downloads/refdata_pharma_fr_xml.xml";
+	*/
 	// BAG xml file to be parsed (contains DE and FR)
 	public static final String FILE_PREPARATIONS_XML = "./downloads/bag_preparations_xml.xml";
 	// Swiss DRG xlsx file to be parsed (DE != FR)
