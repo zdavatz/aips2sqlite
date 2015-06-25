@@ -307,12 +307,6 @@ public class RealPatientInfo {
 							pi_row.set(1, pharma.getNameFR());		
 						// If med is in refdata file, then it is "in Handel!!" ;)
 						pi_row.set(10, "");
-						if (CmlOptions.DB_LANGUAGE.equals("de"))
-							pi_row.set(10, "a.H.");
-						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-							pi_row.set(10, "p.c.");
-						else if (CmlOptions.DB_LANGUAGE.equals("it"))
-							pi_row.set(10, "f.c.");
 						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
 						pi_row.set(14, ean_code);
 					} else {
