@@ -253,8 +253,11 @@ public class GlnCodes implements java.io.Serializable {
 					cust.name2 = token[8];
 				if (cust.name3.isEmpty())
 					cust.name3 = token[9];
+				// Street is special - because Mosberger and medreg do not conform
 				if (cust.street.isEmpty())
 					cust.street = token[10];
+				else
+					cust.street = cust.street + " " + cust.number;
 				if (cust.zip.isEmpty())
 					cust.zip = token[11];
 				if (cust.city.isEmpty())
@@ -265,7 +268,7 @@ public class GlnCodes implements java.io.Serializable {
 					cust.fax = token[14];
 				if (cust.email.isEmpty())
 					cust.email = token[15];
-				cust.owner = "";
+				cust.owner = "";				
 				m_gln_codes_complete.put(extended_gln_code, cust);
 			}
 		} else {	// Create new entry		
