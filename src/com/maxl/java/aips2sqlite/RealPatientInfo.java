@@ -118,7 +118,7 @@ public class RealPatientInfo {
 			int num_rows = 0;
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
-				if (num_rows > 4) {
+				if (num_rows > 5) {
 					String swissmedic_no5 = ""; // SwissmedicNo5 registration number (5 digits)
 					String sequence_name = "";
 					String package_id = "";
@@ -137,17 +137,19 @@ public class RealPatientInfo {
 					String add_info_str = ""; 	// Contains additional information separated by ;
 					String ean_code_str = "";
 
-					// 0: Zulassungsnummer, 1: Sequenz, 2: Sequenzname, 3: Zulassunginhaberin, 4: T-Nummer, 5: ATC-Code, 6: Heilmittelcode
-					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Verpackung, 11: Packungsgrösse
-					// 12: Einheit, 13: Abgabekategorie, 14: Wirkstoff, 15: Zusammensetzung, 16: Anwendungsgebiet Präparat, 17: Anwendungsgebiet Sequenz
-					
+					// 0: Zulassungsnummer, 1: Dosisstärkenummer, 2: Präparat, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
+					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Packungscode, 11: Packungsgrösse
+					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisstärke, 15: Abgabekategorie Präparat, 
+					// 16: Wirkstoff, 15: Zusammensetzung, 16: Anwendungsgebiet Präparat, 17: Anwendungsgebiet Dosisstärke, 18: Gentechnisch hergestellte Wirkstoffe
+					// 19: Kategorie bei Insulinen, 20: Betäubungsmittelhaltigen Präparaten
+						
 					// @cybermax: 15.10.2013 - work around for Excel cells of type "Special" (cell0 and cell10)
 					if (row.getCell(0) != null)
 						swissmedic_no5 = String.format("%05d", (int)(row.getCell(0).getNumericCellValue()));	// Swissmedic registration number (5 digits)
 					if (row.getCell(2) != null)
 						sequence_name = row.getCell(2).getStringCellValue(); 	// Sequence name
-					if (row.getCell(6) != null)
-						heilmittel_code = row.getCell(6).getStringCellValue();	// Heilmittelcode					
+					if (row.getCell(4) != null)
+						heilmittel_code = row.getCell(4).getStringCellValue();	// Heilmittelcode					
 					if (row.getCell(11) != null)						
 						package_size = row.getCell(11).getStringCellValue();	// Packungsgrösse
 					if (row.getCell(12) != null)
