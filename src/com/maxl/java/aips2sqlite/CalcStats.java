@@ -27,6 +27,7 @@ import com.opencsv.CSVWriter;
 public class CalcStats {
 
 	Map<String, String> m_ean_customer_class_map = new HashMap<String, String>();
+	Map<String, String> m_ean_to_name_map = new HashMap<String, String>();
 	Map<String, Customer> map_of_doctors = new HashMap<String, Customer>();
 	Map<String, Customer> map_of_pharmacies = new HashMap<String, Customer>();
 	Map<String, Customer> map_of_rest_of_world = new HashMap<String, Customer>();
@@ -39,6 +40,7 @@ public class CalcStats {
 	private class Article {
 		
 		String ean_code;
+		String name;
 		int quantity;
 		float price_CHF;		
 	}
@@ -167,6 +169,11 @@ public class CalcStats {
 							if (row.getCell(18)!=null) {
 								article.ean_code = ExcelOps.getCellValue(row.getCell(18));
 							}
+							if (row.getCell(20)!=null) {
+								article.name = ExcelOps.getCellValue(row.getCell(20));
+								if (!article.ean_code.isEmpty())
+									m_ean_to_name_map.put(article.ean_code, article.name);
+							}
 							if (row.getCell(23)!=null) {
 								String quantity = ExcelOps.getCellValue(row.getCell(23));
 								article.quantity = Float.valueOf(quantity).intValue();
@@ -290,7 +297,10 @@ public class CalcStats {
 			CSVWriter writer = new CSVWriter(new FileWriter(Constants.DIR_OUTPUT + "/" + file_name), '|', CSVWriter.NO_QUOTE_CHARACTER);
 			for (Map.Entry<String, Frequency> entry : map_meds_and_quants.entrySet()) {
 				List<String> csv_line = new ArrayList<String>();
-				csv_line.add(entry.getKey());	// That's the ean code 
+				String ean_code = entry.getKey();
+				String name = m_ean_to_name_map.get(ean_code);
+				csv_line.add(name);
+				csv_line.add(ean_code);
 				Iterator<Map.Entry<Comparable<?>, Long>> iter2 = entry.getValue().entrySetIterator();
 				// Loop through frequency histogram
 				while (iter2.hasNext()) {	
