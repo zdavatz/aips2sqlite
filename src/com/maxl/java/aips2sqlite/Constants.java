@@ -55,6 +55,7 @@ public class Constants {
 	public static final String FILE_CUST_GLNS = "customer_glns.csv";
 	public static final String FILE_TARG_GLNS = "targeting_glns.csv";
 	public static final String FILE_MOOS_ADDR = "moos_addresses.csv";
+	public static final String DIR_IBSA = "./input/ibsa/";
 	// "Shopping" directory
 	public static final String DIR_SHOPPING = "./input/shop/";	
 	// Files zur Rose

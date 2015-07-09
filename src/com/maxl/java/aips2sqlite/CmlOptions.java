@@ -23,7 +23,7 @@ public class CmlOptions {
 	
 	// Set by command line options (default values)
 	public static String APP_VERSION = "1.0.0";
-	public static String DB_LANGUAGE = "de";	
+	public static String DB_LANGUAGE = "";	
 	public static boolean SHOW_ERRORS = false;
 	public static boolean SHOW_LOGS = true;
 	public static boolean DOWNLOAD_ALL = true;
@@ -39,6 +39,7 @@ public class CmlOptions {
 	public static boolean SHOPPING_CART = false;
 	public static boolean ONLY_SHOPPING_CART = false;
 	public static boolean ZUR_ROSE_DB = false;
+	public static String STATS = "";	
 	public static String OPT_MED_TITLE = "";
 	public static String OPT_MED_REGNR = "";
 	public static String OPT_MED_OWNER = "";

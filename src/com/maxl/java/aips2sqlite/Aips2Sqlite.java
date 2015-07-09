@@ -145,6 +145,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("plain")) {				
 				CmlOptions.PLAIN = true;
 			}
+			if (cmd.hasOption("stats")) {
+				CmlOptions.STATS = cmd.getOptionValue("stats");
+			}
 		} catch (ParseException e) {
 			System.err.println("Parsing failed: " + e.getMessage());
 		}
@@ -173,10 +176,19 @@ public class Aips2Sqlite {
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
 		addOption(options, "plain", "does not update the package section", false, false);
+		addOption(options, "stats", "generates statistics for given user", true, false);
 
 		// Parse command line options
 		commandLineParse(options, args);
 
+		// Generates statistics 
+		if (!CmlOptions.STATS.isEmpty()) {
+			System.out.println("processing " + CmlOptions.STATS + " stats");
+			String user = CmlOptions.STATS;
+			CalcStats cs = new CalcStats(user);
+			cs.processIbsaData();
+		}
+		
 		// Download all files and save them in appropriate directories
 		// XML + XSD -> ./xml, XLS -> ./xls
 		if (CmlOptions.DOWNLOAD_ALL) {
