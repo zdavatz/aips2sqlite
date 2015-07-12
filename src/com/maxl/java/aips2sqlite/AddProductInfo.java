@@ -117,7 +117,7 @@ public class AddProductInfo {
 				add_info_str = p.group_title[lang_id()];
 				packages_str += name.toUpperCase() + ", " + u + ", " + size + "|" + p.size + "|" + u + "|" 
 						+ p.efp + "|" + p.pp + "|" + fap + "|" + fep + "|" + String.format("%.2f", p.vat) + "|"
-						+ p.swissmedic_cat + ",,|" + p.eancode + "|" + p.pharmacode + "|" + p.visible + "\n";
+						+ p.swissmedic_cat + ",,|" + p.eancode + "|" + p.pharmacode + "|" + p.visible + "|" + p.free_sample + "\n";
 				eancode_str += p.eancode + ", ";
 			}
 			if (eancode_str.endsWith(", "))
@@ -128,7 +128,7 @@ public class AddProductInfo {
 	
 	void clean(String author) {
 		List<Long> list_of_delete = new ArrayList<Long>();
-		// List all medis of author in sqlite db
+		// List all medis of author in sqlite db (excluing all pseudo FIs)
 		Map<Long, String> map_of_medis = m_sql_db.mapMedisExcludingPseudo(author);
 		// For each medi, check if ean code is in map_products
 		for (Map.Entry<Long, String> medi : map_of_medis.entrySet()) {
@@ -145,7 +145,7 @@ public class AddProductInfo {
 		}
 		// Delete unmatched entries
 		if (list_of_delete.size()>0) {
-			System.out.println("Deleted the following packages...");
+			System.out.println("Deleted the packages NOT in the list provided by " + author + "...");
 			for (Long idx : list_of_delete) {
 				System.out.println(map_of_medis.get(idx));
 				m_sql_db.deleteEntry(idx);

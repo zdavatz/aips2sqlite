@@ -1423,7 +1423,8 @@ public class RealExpertInfo {
 						String fap = "";
 						String vat = "";
 						String eancode = pi_row.get(14);
-						int visible = 0xff;
+						int visible = 0xff;		// by default visible to all!
+						int has_free_samples = 0x00;	// by default no free samples
 						// Exctract fep and fap pricing information
 						// FAP = Fabrikabgabepreis = EFP?
 						// FEP = Fachhandelseinkaufspreis
@@ -1437,6 +1438,7 @@ public class RealExpertInfo {
 							if (product.vat>0.0f)
 								vat = String.format("%.2f", product.vat);
 							visible = product.visible;
+							has_free_samples = product.free_sample;
 						}
 
 						// Some articles are listed in swissmedic_packages file but are not in the refdata file
@@ -1467,7 +1469,7 @@ public class RealExpertInfo {
 							m_list_of_packages.add(pi_row.get(1) + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" 
 									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
 									+ pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
-									+ eancode + "|" + pi_row.get(15) + "|" + visible + "\n");
+									+ eancode + "|" + pi_row.get(15) + "|" + visible + "|" + has_free_samples + "\n");
 							m_list_of_eancodes.add(eancode);
 						}
 						

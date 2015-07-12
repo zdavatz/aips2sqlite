@@ -29,9 +29,30 @@ public class ShoppingCart implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	boolean Debug = false;
+	boolean Muster = false;
 	Map<String, Conditions> m_map_conditions = null;
 	Map<String, Product> m_map_products = null;
 	Map<String, String> m_map_group_id = null;
+	
+	/**
+	 * visibility => 0xff
+	 * 0x08 -> doctors, pharmacy
+	 * 0x04 -> drugstore
+	 * 0x02 -> hospital
+	 * 0x01 -> wholesaler (grossist)
+	 * 0x00 -> not visible
+	 * 
+	 * free samples (muster) => 0xffff
+	 * 0x0080 -> empty
+	 * 0x0040 -> empty
+	 * 0x0020 -> B-doctor
+	 * 0x0010 -> A-doctor
+	 * 0x0008 -> B-pharmacy
+	 * 0x0004 -> A-pharmacy
+	 * 0x0002 -> B-drugstore
+	 * 0x0001 -> A-drugstore
+	 * 0x0000 -> no free samples
+	 */
 	
 	public ShoppingCart(Map<String, Product> map_products) {
 		m_map_products = map_products;		
@@ -143,6 +164,31 @@ public class ShoppingCart implements java.io.Serializable {
         assort_map.put(31, "drugstore-promo");	
         assort_map.put(35, "hospital");	
         return Collections.unmodifiableMap(assort_map);
+	}
+
+	private int getFreeSampleCode(String category, boolean has_free_samples) {
+		if (has_free_samples) {
+			if (category.equals("B-doctor"))
+				return 0x0001;
+			else if (category.equals("A-doctor"))
+				return 0x0002;
+			else if (category.equals("B-pharmacy"))
+				return 0x0004;
+			else if (category.equals("A-pharmacy"))
+				return 0x0008;
+			else if (category.equals("B-drugstore"))
+				return 0x0010;
+			else if (category.equals("A-drugstore"))
+				return 0x0020;
+			else if (category.equals("C-hospital"))
+				return 0x0040;
+			else if (category.equals("B-hospital"))
+				return 0x0080;
+			else if (category.equals("A-hospital"))
+				return 0x0100;			
+		}
+		// All other cases...
+		return 0x0000;
 	}
 	
 	private String toExcelColName(int number) {
@@ -303,20 +349,19 @@ public class ShoppingCart implements java.io.Serializable {
 							product.fap = fap;
 							product.vat = vat;
 							product.visible = visibility;
-							m_map_products.put(eancode, product);
 							
 							// Instantiate new med condition
-							Conditions cond = new Conditions(eancode, name.toUpperCase() + ", " + product.units[0] + ", " + product.size, fep, fap);	
-							System.out.println(eancode + " -> " + name);							
+							Conditions cond = new Conditions(eancode, name.toUpperCase() + ", " + product.units[0] + ", " + product.size, fep, fap);							
 
 							// Rebates
 							int col = 0;
 							try {
 								// Konditionen
 								for (Map.Entry<Integer, String> entry : cond_map.entrySet()) {
-									String value = entry.getValue();
+									String customer_group = entry.getValue();	// A-doctor, B-doctor, ...
 									col = entry.getKey();
-									extractDiscounts(cond, value, getCellValue(row.getCell(col)));
+									boolean has_free_samples = extractDiscounts(cond, customer_group, getCellValue(row.getCell(col)));
+									product.free_sample |= getFreeSampleCode(customer_group, has_free_samples);
 								}
 								// Assortierbarkeiten
 								for (Map.Entry<Integer, String> entry : assort_map.entrySet()) {
@@ -332,6 +377,11 @@ public class ShoppingCart implements java.io.Serializable {
 								e.printStackTrace();
 								System.exit(-1);
 							}
+							
+							System.out.println(eancode + " -> " + name + " (" + product.free_sample + ")");
+							
+							// Add to list of products
+							m_map_products.put(eancode, product);
 							// Add to list of conditions
 							m_map_conditions.put(eancode, cond);		
 						}
@@ -466,8 +516,10 @@ public class ShoppingCart implements java.io.Serializable {
 		}
 	}
 	
-	private void extractDiscounts(Conditions c, String category, String discount_str) 
+	private boolean extractDiscounts(Conditions c, String category, String discount_str) 
 		throws Exception {
+		boolean has_free_samples = false;
+		
 		if (!discount_str.isEmpty()) {
 			// All regex patterns
 			Pattern date_pattern1 = Pattern.compile("\\b(\\d{2}).(\\d{2}).(\\d{4})-(\\d{2})\\b", Pattern.DOTALL);
@@ -476,6 +528,8 @@ public class ShoppingCart implements java.io.Serializable {
 			Pattern rebate_pattern2 = Pattern.compile("\\((.*?)\\)", Pattern.DOTALL);	
 			Pattern rebate_pattern3 = Pattern.compile("([0-9]+):([0-9]+)(:[0-9]+)?", Pattern.DOTALL);
 
+			has_free_samples = false;
+			
 			// *** Complex date regex ***
 			Matcher date_match1 = date_pattern1.matcher(discount_str);	
 			while (date_match1.find()) {
@@ -606,9 +660,10 @@ public class ShoppingCart implements java.io.Serializable {
 					if (u==1 || u==2) {
 						// Found "Muster"! Barrabatt = -100%
 						units = String.format("%d", u);
-						if (Debug)
-							System.out.println("# muster -> " + units);						
+						if (Debug || Muster)
+							System.out.println("# muster -> " + units + " (" + category + ")");						
 						addDiscount(c, category, units, "-100");
+						has_free_samples = true;
 					} else {
 						// Loners are filled up to 100 units with a 10er increment
 						if (rebates.length==1 || i==(rebates.length-1)) {
@@ -640,6 +695,7 @@ public class ShoppingCart implements java.io.Serializable {
 				}
 			}
 		}
+		return has_free_samples;
 	}
 	
 	private boolean addDiscount(Conditions c, String category, String u, String d) {

@@ -14,6 +14,7 @@ public class Product {
 	public float pp = 0.0f;
 	public float fep = 0.0f;
 	public float fap = 0.0f;
-	public float vat = 8.0f;	// [%]
-	public int visible = 0xff;	
+	public float vat = 8.0f;			// [%]
+	public int visible = 0xff;			// product by default visible to all!
+	public int free_sample = 0x00; 		// product by default no free samples
 }
