@@ -133,6 +133,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("zurrose")) {				
 				CmlOptions.ZUR_ROSE_DB = true;
 			}
+			if (cmd.hasOption("desitin")) {
+				CmlOptions.DESITIN_DB = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -172,6 +175,7 @@ public class Aips2Sqlite {
 		addOption(options, "shop", "generate encrypted files for shopping cart", false, false);
 		addOption(options, "onlyshop", "skip generation of sqlite database", false, false);
 		addOption(options, "zurrose", "generate only zur Rose database", false, false);
+		addOption(options, "desitin", "generate encrypted files for Desitin", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -291,6 +295,8 @@ public class Aips2Sqlite {
 		} else {
 			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true)
 				a.downIBSA();
+			if (CmlOptions.DESITIN_DB==true)
+				a.downDesitin();
 			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
 			a.downRefdatabaseXml(Constants.FILE_REFDATA_PHARMA_XML);

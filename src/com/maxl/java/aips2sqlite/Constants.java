@@ -51,18 +51,21 @@ public class Constants {
 	// GLN Codes (Personen + Betriebe)
 	public static final String FILE_GLN_CODES_PEOPLE = "./downloads/gln_codes_people_xlsx.xlsx";
 	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";
-	// Files IBSA
+	// "Shopping" directory
+	public static final String DIR_SHOPPING = "./input/shop/";	
+	// Files Ibsa
+	public static final String DIR_IBSA = "./input/ibsa/";	
 	public static final String FILE_CUST_GLNS = "customer_glns.csv";
 	public static final String FILE_TARG_GLNS = "targeting_glns.csv";
 	public static final String FILE_MOOS_ADDR = "moos_addresses.csv";
-	public static final String DIR_IBSA = "./input/ibsa/";
-	// "Shopping" directory
-	public static final String DIR_SHOPPING = "./input/shop/";	
 	// Files zur Rose
+	public static final String DIR_ZURROSE = "./input/zurrose/";		
 	public static final String CSV_FILE_DISPO_ZR = "artikel_stamm_zurrose.csv";
 	public static final String CSV_LIKE_DB_ZR = "like_db_zurrose.csv";
-	// "Shopping" directory
-	public static final String DIR_ZURROSE = "./input/zurrose/";	
+	// Files Desitin
+	public static final String DIR_DESITIN = "./input/desitin/";		
+	public static final String FILE_CUST_DESITIN = "customer_desitin.csv";
+	public static final String FILE_ARTICLES_DESITIN = "artikel_desitin.csv";
 	// ****** ATC class xls file (DE != FR) ******
 	// public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";	// 2013
 	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0114_xls.xls";		// 2014

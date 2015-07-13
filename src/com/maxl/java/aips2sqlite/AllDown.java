@@ -709,6 +709,86 @@ public class AllDown {
 		}
 	}
 	
+	public void downDesitin() {
+		String fl = "";
+		String fp = "";
+		String fs = "";
+		try {
+			FileInputStream access = new FileInputStream(Constants.DIR_DESITIN + "/access.ami.csv");
+			BufferedReader br = new BufferedReader(new InputStreamReader(access, "UTF-8"));
+			String line;
+			while ((line=br.readLine()) !=null ) {
+				// Semicolon is used as a separator
+				String[] gln = line.split(";");
+				if (gln.length>2) {
+					if (gln[0].equals("ftp_amiko")) {
+						fl = gln[0];
+						fp = gln[1];
+						fs = gln[2];
+					}
+				}
+			}		
+			br.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		FTPClient ftp_client = new FTPClient();				
+		try {
+			ftp_client.connect(fs, 21);
+			ftp_client.login(fl, fp);
+			ftp_client.enterLocalPassiveMode();
+			ftp_client.setFileType(FTP.BINARY_FILE_TYPE);
+
+			System.out.println("- Connected to server " + fs + "...");
+
+			// Set working directory
+			String working_dir = "ywesee_in";				
+			ftp_client.changeWorkingDirectory(working_dir);
+			int reply = ftp_client.getReplyCode();
+			if (!FTPReply.isPositiveCompletion(reply)) {
+				ftp_client.disconnect();
+				System.err.println("FTP server refused connection.");
+				return;
+			}
+			// Get list of filenames
+            FTPFile[] ftpFiles = ftp_client.listFiles();            
+            if (ftpFiles!=null && ftpFiles.length>0) {
+            	// ... then download all csv files
+            	for (FTPFile f : ftpFiles) {
+            		String remote_file = f.getName();
+            		if (remote_file.endsWith("csv")) {
+            			String local_file = remote_file;
+            			if (remote_file.startsWith("Kunden"))
+            				local_file = Constants.FILE_CUST_DESITIN;
+            			if (remote_file.startsWith("Artikel"))
+            				local_file = Constants.FILE_ARTICLES_DESITIN;
+            			OutputStream os = new FileOutputStream(Constants.DIR_DESITIN + "/" + local_file);
+                    	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
+                    	boolean done = ftp_client.retrieveFile(remote_file, os);
+                    	if (done)
+                    		System.out.println("success.");
+                    	else
+                    		System.out.println("error.");
+                    	os.close();
+            		}
+            	}
+            }
+		} catch (IOException ex) {
+			System.out.println("Error: " + ex.getMessage());
+			ex.printStackTrace();
+		} finally {
+			try {
+				if (ftp_client.isConnected()) {
+					ftp_client.logout();
+					ftp_client.disconnect();
+				}
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+	
     /*
      *  fix for exception 
      *  javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException:
