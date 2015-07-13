@@ -46,7 +46,7 @@ public class AddProductInfo {
 			for (int i=0; i<packs.length; ++i) {
 				if (!packs[i].isEmpty()) {
 					String p[] = packs[i].split("\\|");
-					if (p.length==12) {
+					if (p.length==13) {
 						String title = p[0].trim();
 						if (title.toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())) {
 							String eancode = p[9].trim();	
