@@ -714,7 +714,7 @@ public class AllDown {
 		String fp = "";
 		String fs = "";
 		try {
-			FileInputStream access = new FileInputStream(Constants.DIR_DESITIN + "/access.ami.csv");
+			FileInputStream access = new FileInputStream(Constants.DIR_SHOPPING + "/access.ami.csv");
 			BufferedReader br = new BufferedReader(new InputStreamReader(access, "UTF-8"));
 			String line;
 			while ((line=br.readLine()) !=null ) {
