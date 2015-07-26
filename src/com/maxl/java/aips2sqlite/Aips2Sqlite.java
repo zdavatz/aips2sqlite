@@ -136,6 +136,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("desitin")) {
 				CmlOptions.DESITIN_DB = true;
 			}
+			if (cmd.hasOption("onlydesitin")) {
+				CmlOptions.ONLY_DESITIN_DB = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -176,6 +179,7 @@ public class Aips2Sqlite {
 		addOption(options, "onlyshop", "skip generation of sqlite database", false, false);
 		addOption(options, "zurrose", "generate only zur Rose database", false, false);
 		addOption(options, "desitin", "generate encrypted files for Desitin", false, false);
+		addOption(options, "onlydesitin", "skip generation of sqlite database", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -238,7 +242,7 @@ public class Aips2Sqlite {
 			}			
 
 			// Generate encrypted files for shopping cart (desitin)
-			if (CmlOptions.DESITIN_DB==true) {
+			if (CmlOptions.DESITIN_DB==true || CmlOptions.ONLY_DESITIN_DB==true) {
 				ShoppingCartDesitin sc_desitin = new ShoppingCartDesitin(map_products);
 				sc_desitin.listFiles(Constants.DIR_DESITIN);
 				sc_desitin.processConditionFile(Constants.DIR_DESITIN);
@@ -247,7 +251,7 @@ public class Aips2Sqlite {
 				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);	// Same file for all customization
 			}
 			
-			if (CmlOptions.ONLY_SHOPPING_CART==false) {
+			if (CmlOptions.ONLY_SHOPPING_CART==false && CmlOptions.ONLY_DESITIN_DB==false) {
 				if (CmlOptions.SHOW_LOGS) {
 					System.out.println("");
 					System.out.println("- Generating sqlite database... ");

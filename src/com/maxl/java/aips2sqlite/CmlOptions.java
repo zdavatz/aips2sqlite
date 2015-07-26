@@ -40,6 +40,7 @@ public class CmlOptions {
 	public static boolean ONLY_SHOPPING_CART = false;
 	public static boolean ZUR_ROSE_DB = false;
 	public static boolean DESITIN_DB = false;
+	public static boolean ONLY_DESITIN_DB = false;
 	public static String STATS = "";	
 	public static String OPT_MED_TITLE = "";
 	public static String OPT_MED_REGNR = "";
