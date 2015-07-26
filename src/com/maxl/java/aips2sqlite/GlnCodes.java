@@ -11,39 +11,109 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.maxl.java.shared.User;
+import com.opencsv.CSVReader;
 
 public class GlnCodes implements java.io.Serializable {
 	
 	XSSFSheet m_gln_codes_people_sheet = null;
 	XSSFSheet m_gln_codes_companies_sheet = null;
+	//
 	Map<String, String> m_gln_codes_moos_cond = null;
 	Map<String, String> m_gln_codes_moos_targ = null;
 	Map<String, String> m_gln_codes_moos_full = null;
-	Map<String, User> m_gln_codes_complete = null;	// GLN+TYPE -> Information
+	Map<String, String> m_gln_codes_desitin_full = null;
+	//
+	Map<String, User> m_medreg_addresses = null;
+	Map<String, User> m_ibsa_addresses = null;	// GLN+TYPE -> Information
+	Map<String, User> m_desitin_addresses = null;
+	//
+	Map<String, String> m_debitor_to_gln = new HashMap<String, String>();
 	
 	public GlnCodes() {
 		// Load medreg files
 		m_gln_codes_people_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_PEOPLE, 0);
 		m_gln_codes_companies_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_COMPANIES, 0);
 		// Mosberger conditions
-		m_gln_codes_moos_cond = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_CUST_GLNS);
-		m_gln_codes_moos_targ = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_TARG_GLNS);
+		m_gln_codes_moos_cond = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_CUST_IBSA);
+		m_gln_codes_moos_targ = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_TARG_IBSA);
 		// Mosberger full info without conditions
-		m_gln_codes_moos_full = readFromComplexCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_MOOS_ADDR, 16);
+		m_gln_codes_moos_full = readIbsaAddressCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_MOOS_ADDR, 16);
+		// Desitin full info without conditions
+		m_gln_codes_desitin_full = readDesitinAddressCsvToMap(Constants.DIR_DESITIN + Constants.FILE_CUST_DESITIN);
 		// Complete list of gln_codes
-		m_gln_codes_complete = new HashMap<String, User>();
+		m_medreg_addresses = new HashMap<String, User>();
+		m_ibsa_addresses = new HashMap<String, User>();
+		m_desitin_addresses = new HashMap<String, User>();
 	}
 	
-	public void generateCsvFile() {						
-		long startTime = System.currentTimeMillis();	
+	public void generateCsvFile() {	
+		// Process both medreg address files
+		processMedRegFiles();
+
+		{
+			// Initialize desitin addresses with medreg addresses
+			for (Map.Entry<String, User> entry : m_medreg_addresses.entrySet()) {
+				m_desitin_addresses.put(entry.getKey(), entry.getValue());
+			}
+			// Loop through the desitin address file (augment medreg info)
+			for (Map.Entry<String, String> entry : m_gln_codes_desitin_full.entrySet()) {
+				processDesitinFull(entry.getValue());
+			}		
+			if (CmlOptions.SHOW_LOGS)
+				System.out.println("- Processed desitin main address file... (" + m_desitin_addresses.size() + ")");			
+		}
+		// Write ibsa address file to file
+		writeMapToCsv(m_desitin_addresses, '|', "gln_codes_desitin_csv.csv", "", 'd');					
+		// Encrypt and serialize
+		encryptMapToDir(m_desitin_addresses, "gln_codes_desitin.ser");
+		// ... and zip it
+		FileOps.zipToFile(Constants.DIR_OUTPUT, "gln_codes_desitin.ser");		
 		
-		// Process first people's file
+		{
+			// Loop through the ibsa condition files (augment medreg info)
+			for (Map.Entry<String, String> entry : m_gln_codes_moos_cond.entrySet()) {
+				preProcessWithMedreg(entry.getKey(), entry.getValue(), "i");
+			}
+			if (CmlOptions.SHOW_LOGS)
+				System.out.println("- Processed gln codes mosberger conditions file... (" + m_ibsa_addresses.size() + ")");		
+	
+			// Loop through the ibsa targeting file (augment medreg info)
+			for (Map.Entry<String, String> entry : m_gln_codes_moos_targ.entrySet()) {
+				preProcessWithMedreg(entry.getKey(), entry.getValue(), "i");
+			}	
+			if (CmlOptions.SHOW_LOGS)
+				System.out.println("- Processed gln codes mosberger targetting file... (" + m_ibsa_addresses.size() + ")");			
+					
+			// Loop through the moosberger full info without conditions
+			int no_gln_cnt = 0;
+			for (Map.Entry<String, String> entry : m_gln_codes_moos_full.entrySet()) {
+				if (processMoosFull(entry.getValue()))
+					no_gln_cnt++;
+				/*
+				 * String gln = entry.getKey();
+				 * processMoosFull(gln, entry.getValue());
+				 */
+			}	
+			if (CmlOptions.SHOW_LOGS)
+				System.out.println("- Processed gln codes mosberger address file... (" + m_ibsa_addresses.size() + ") - " + no_gln_cnt + " entries have no gln code.");		
+		}
+		// Write ibsa address file to file
+		writeMapToCsv(m_ibsa_addresses, '|', "gln_codes_ibsa_csv.csv", "", 'i');					
+		// Encrypt and serialize
+		encryptMapToDir(m_ibsa_addresses, "gln_codes.ser");
+		// ... and zip it
+		FileOps.zipToFile(Constants.DIR_OUTPUT, "gln_codes.ser");
+	}
+
+	private void processMedRegFiles() {
+		// Process MEDREG people's file - these are PUBLIC data
 		Iterator<Row> rowIterator = m_gln_codes_people_sheet.iterator();
 		int num_rows = 0;		
 		while (rowIterator.hasNext()) {
@@ -76,15 +146,15 @@ public class GlnCodes implements java.io.Serializable {
 				
 				if (!cust.gln_code.isEmpty()) {
 					String key = cust.gln_code + cust.addr_type;
-					m_gln_codes_complete.put(key, cust);
+					m_medreg_addresses.put(key, cust);
 				}
 			}
 			num_rows++;
 		}
 		if (CmlOptions.SHOW_LOGS)
-			System.out.println("- Processed gln codes people... (" + m_gln_codes_complete.size() + ")");		
+			System.out.println("- Processed gln codes people... (" + m_medreg_addresses.size() + ")");		
 		
-		// Process companies' file
+		// Process MEDREG companies' file - these are PUBLIC data
 		rowIterator = m_gln_codes_companies_sheet.iterator();
 		num_rows = 0;
 		while (rowIterator.hasNext()) {
@@ -106,9 +176,9 @@ public class GlnCodes implements java.io.Serializable {
 					cust.zip = row.getCell(5).getStringCellValue();
 				if (row.getCell(6)!=null) 
 					cust.city = row.getCell(6).getStringCellValue();
+				
 				if (row.getCell(9)!=null) 
 					cust.category = row.getCell(9).getStringCellValue();
-
 				if (cust.category.matches(".*Apotheke.*"))
 					cust.category = "Apotheke";		
 				else if (cust.category.matches(".*[Ss]pital.*"))
@@ -123,64 +193,22 @@ public class GlnCodes implements java.io.Serializable {
 				
 				if (!cust.gln_code.isEmpty()) {
 					String key = cust.gln_code + cust.addr_type;
-					m_gln_codes_complete.put(key, cust);
+					m_medreg_addresses.put(key, cust);
 				}
 			}
 			num_rows++;
 		}
 		if (CmlOptions.SHOW_LOGS)
-			System.out.println("- Processed gln codes companies... (" + m_gln_codes_complete.size() + ")");		
-		
-		// Loop through the moosberger_glns file
-		for (Map.Entry<String, String> entry : m_gln_codes_moos_cond.entrySet()) {
-			processGlns(entry.getKey(), entry.getValue(), "i");
-		}
-		if (CmlOptions.SHOW_LOGS)
-			System.out.println("- Processed gln codes mosberger conditions file... (" + m_gln_codes_complete.size() + ")");		
-
-		// Loop through the targeting_glns file
-		for (Map.Entry<String, String> entry : m_gln_codes_moos_targ.entrySet()) {
-			processGlns(entry.getKey(), entry.getValue(), "i");
-		}	
-		if (CmlOptions.SHOW_LOGS)
-			System.out.println("- Processed gln codes mosberger targetting file... (" + m_gln_codes_complete.size() + ")");			
-				
-		// Loop through the moosberger full info without conditions
-		int no_gln_cnt = 0;
-		for (Map.Entry<String, String> entry : m_gln_codes_moos_full.entrySet()) {
-			if (processMoosFull(entry.getValue()))
-				no_gln_cnt++;
-			/*
-			 * String gln = entry.getKey();
-			 * processMoosFull(gln, entry.getValue());
-			 */
-		}	
-		if (CmlOptions.SHOW_LOGS)
-			System.out.println("- Processed gln codes mosberger address file... (" + m_gln_codes_complete.size() + ") - " + no_gln_cnt + " entries have no gln code.");		
-		
-		// Write to file
-		int rows = writeMapToCsv(m_gln_codes_complete, '|', "gln_codes_csv.csv", "");		
-		// ... and zip it
-		// FileOps.zipToFile(Constants.DIR_OUTPUT, "gln_codes_csv.csv");	
-		
-		// Encrypt and serialize
-		encryptMapToDir(m_gln_codes_complete, "gln_codes.ser");
-		// ... and zip it
-		FileOps.zipToFile(Constants.DIR_OUTPUT, "gln_codes.ser");
-		
-		long stopTime = System.currentTimeMillis();
-		if (CmlOptions.SHOW_LOGS) {
-			System.out.println("- Processed " + rows + " rows in "
-					+ (stopTime - startTime) / 1000.0f + " sec");
-		}
+			System.out.println("- Processed gln codes companies... (" + m_medreg_addresses.size() + ")");		
 	}
-
-	private void processGlns(String gln, String cat, String owner) {
+	
+	private void preProcessWithMedreg(String gln, String cat, String owner) {
 		String key = gln + "S";
 
-		if (m_gln_codes_complete.containsKey(key)) {
+		if (m_medreg_addresses.containsKey(key)) {
+			// This GLN exists already in the MEDREG database
 			String t[] = cat.split(";");
-			User cust = m_gln_codes_complete.get(key);
+			User cust = m_medreg_addresses.get(key);
 			if (t[1].matches(".*[Dd]rogerie.*")) {
 				// Replace type string with "Drogerie"
 				cust.category = "Drogerie";
@@ -194,8 +222,11 @@ public class GlnCodes implements java.io.Serializable {
 				cust.email = t[2];
 			cust.addr_type = "S";
 			cust.owner = owner;
-			m_gln_codes_complete.put(key, cust);			
-		} else {	// Create new entry
+			//
+			if (owner.equals("i"))
+				m_ibsa_addresses.put(key, cust);
+		} else {	
+			// Create new entry by getting INFORMATION from address file (non-MEDREG)
 			if (gln.length()==13) {
 				String t[] = cat.split(";");			
 				User cust = new User();
@@ -221,19 +252,26 @@ public class GlnCodes implements java.io.Serializable {
 				cust.addr_type = "S";				
 				cust.owner = owner;				
 				cust.category = type;
-				m_gln_codes_complete.put(key, cust);
+				//
+				if (owner.equals("i"))
+					m_ibsa_addresses.put(key, cust);
 			} else {
 				System.out.println("Found wrong GLN code: " + gln);
 			}
 		}
 	}
 	
+	/**
+	 * Completes address information according to mosberger's master file
+	 * @param value
+	 * @return
+	 */
 	private boolean processMoosFull(String value) {	
 		boolean no_gln_flag = false;
 		String[] token = value.split(";", -1);
 		String extended_gln_code = token[1] + token[0];
-		if (m_gln_codes_complete.containsKey(extended_gln_code)) {
-			User cust = m_gln_codes_complete.get(extended_gln_code);
+		if (m_ibsa_addresses.containsKey(extended_gln_code)) {
+			User cust = m_ibsa_addresses.get(extended_gln_code);
 			// Check if this is an IBSA customer, if yes, complete information...						
 			if (!cust.owner.isEmpty() && cust.owner.charAt(0)=='i') {
 				// Address type and gln code "should" already be correct...
@@ -269,7 +307,7 @@ public class GlnCodes implements java.io.Serializable {
 				if (cust.email.isEmpty())
 					cust.email = token[15];
 				cust.owner = "";				
-				m_gln_codes_complete.put(extended_gln_code, cust);
+				m_ibsa_addresses.put(extended_gln_code, cust);
 			}
 		} else {	// Create new entry		
 			if (extended_gln_code.length()==14) {				
@@ -291,13 +329,49 @@ public class GlnCodes implements java.io.Serializable {
 				cust.fax = token[14];
 				cust.email = token[15];
 				cust.owner = "i";
-				m_gln_codes_complete.put(extended_gln_code, cust);
+				m_ibsa_addresses.put(extended_gln_code, cust);
 			} else {
 				no_gln_flag = true;
-				System.out.println("No gln code: " + extended_gln_code + " -> " + token[3]);
+				// System.out.println("No gln code: " + extended_gln_code + " -> " + token[3]);
 			}
 		}
 		return no_gln_flag;
+	}
+	
+	private void processDesitinFull(String value) {
+		User cust = null;
+
+		String[] token = value.split(";", -1);
+		if (token[2].isEmpty())
+			token[2] = m_debitor_to_gln.get(token[1]);
+		if (token[2]!=null && token[2].length()==13) {
+			String extended_gln_code = token[2] + token[0];	// Gln code + {S,B,O}					
+			// 1. pass: use information from medreg
+			if (m_medreg_addresses.containsKey(extended_gln_code)) {
+				cust = m_medreg_addresses.get(extended_gln_code);
+				cust.addr_type = token[0];
+				cust.owner = "d";
+				m_desitin_addresses.put(extended_gln_code, cust);
+			}
+			// 2. pass: use information from desitin file
+			if (m_desitin_addresses.containsKey(extended_gln_code))
+				cust = m_desitin_addresses.get(extended_gln_code);	
+			else
+				cust = new User();
+			
+			cust.addr_type = token[0];
+			cust.gln_code = token[2];				
+			cust.name1 = token[7];			
+			cust.name3 = token[5];	
+			cust.street = token[8];			
+			cust.country = token[10];
+			cust.zip = token[11];
+			cust.city = token[12];
+			cust.phone = token[13];
+			cust.email = token[14];
+			cust.owner = "d";
+			m_desitin_addresses.put(extended_gln_code, cust);
+		}
 	}
 	
 	private Map<String, String> readFromSimpleCsvToMap(String file_name) {
@@ -329,7 +403,7 @@ public class GlnCodes implements java.io.Serializable {
 		return map;
 	}	
 	
-	private Map<String, String> readFromComplexCsvToMap(String file_name, int num_entries) {
+	private Map<String, String> readIbsaAddressCsvToMap(String file_name, int num_entries) {
 		Map<String, String> map = new HashMap<String, String>();
 		try {
 			File file = new File(file_name);
@@ -371,6 +445,46 @@ public class GlnCodes implements java.io.Serializable {
 		return map;
 	}
 	
+	private Map<String, String> readDesitinAddressCsvToMap(String file_name) {
+		Map<String, String> map = new HashMap<String, String>();
+		try {
+			File file = new File(file_name);
+			if (!file.exists()) 
+				return null;
+			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(file_name)));	// Encoding: "Cp1252" 
+			List<String[]> my_entries = reader.readAll();
+			int num_lines = 0;
+			for (String[] token : my_entries) {
+				if (num_lines>0) {
+					// Create debitor ID to gln code map
+					if (!token[2].isEmpty())
+						m_debitor_to_gln.put(token[1], token[2]);
+					// Use abbreviation
+					if (token[0].contains("Ship"))
+						token[0] = "S";
+					else if (token[0].contains("Bill"))
+						token[0] = "B";		// this category has no gln code!!
+					// 
+					String extended_key = token[1] + token[0];	// debitor + addr_type (S,B,O)
+					if (map.containsKey(extended_key))
+						System.out.println("GLN code exists already! This is unlikely...");
+					// Fill in map
+					String value_str = "";
+					for (int i=0; i<token.length-1; ++i) {
+						value_str += token[i] + ";";
+					}
+					value_str += token[token.length-1];
+					map.put(extended_key, value_str);
+				}
+				num_lines++;
+			}
+			reader.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return map;
+	}
+	
 	private void encryptMapToDir(Map<String, User> map, String file_name) {
 		// First serialize into a byte array output stream, then encrypt
 		Crypto crypto = new Crypto();
@@ -386,33 +500,57 @@ public class GlnCodes implements java.io.Serializable {
 		System.out.println("Saved encrypted file " + file_name);
 	}
 	
-	private int writeMapToCsv(Map<String, User> map, char separator, String file_name, String add_str) {
+	private int writeMapToCsv(Map<String, User> map, char separator, String file_name, String add_str, char owner) {
 		String csv_file = add_str;
 		int num_rows = 0;
 		System.out.print("- Generating GLN codes csv file...");
 		List<User> customer_list = new ArrayList<User>(map.values());
-		for (User c : customer_list) {	
-			csv_file += c.gln_code + separator 
-					+ c.ideale_id + separator
-					+ c.xpris_id + separator
-					+ c.addr_type + separator
-					+ c.category + separator
-					+ c.title + separator
-					+ c.first_name + separator
-					+ c.last_name + separator
-					+ c.name1 + separator
-					+ c.name2 + separator
-					+ c.name3 + separator
-					+ c.street + " " + c.number + separator
-					+ c.zip + separator
-					+ c.city + separator
-					+ c.phone + separator
-					+ c.fax + separator
-					+ c.email + separator
-					+ c.selbst_disp + separator
-					+ c.bet_mittel + "\n";
-			num_rows++;
-			System.out.print("\r- Generating GLN codes csv file... " + num_rows + "   ");
+		if (owner=='i') {
+			for (User c : customer_list) {	
+				csv_file += c.gln_code + separator 
+						+ c.ideale_id + separator
+						+ c.xpris_id + separator
+						+ c.addr_type + separator
+						+ c.category + separator
+						+ c.title + separator
+						+ c.first_name + separator
+						+ c.last_name + separator
+						+ c.name1 + separator
+						+ c.name2 + separator
+						+ c.name3 + separator
+						+ c.street + " " + c.number + separator
+						+ c.zip + separator
+						+ c.city + separator
+						+ c.phone + separator
+						+ c.fax + separator
+						+ c.email + separator
+						+ c.selbst_disp + separator
+						+ c.bet_mittel + "\n";
+				num_rows++;
+				System.out.print("\r- Generating ibsa address csv file... " + num_rows + "   ");
+			}
+		} else if (owner=='d') {
+			for (User c : customer_list) {	
+				csv_file += c.gln_code + separator 
+						+ c.addr_type + separator
+						+ c.category + separator
+						+ c.title + separator
+						+ c.first_name + separator
+						+ c.last_name + separator
+						+ c.name1 + separator
+						+ c.name2 + separator
+						+ c.name3 + separator
+						+ c.street + " " + c.number + separator
+						+ c.zip + separator
+						+ c.city + separator
+						+ c.phone + separator
+						+ c.fax + separator
+						+ c.email + separator
+						+ c.selbst_disp + separator
+						+ c.bet_mittel + "\n";
+				num_rows++;
+				System.out.print("\r- Generating desitin address csv file... " + num_rows + "   ");
+			}
 		}
 		System.out.println();
 		FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT, file_name);

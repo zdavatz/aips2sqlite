@@ -225,17 +225,28 @@ public class Aips2Sqlite {
 			// Pointer to product map, extraction order = insertion order
 			Map<String, Product> map_products = new LinkedHashMap<String, Product>();
 			
-			// Generate encrypted files for shopping cart
+			// Generate encrypted files for shopping cart (ibsa)
 			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true) {
-				ShoppingCart sc = new ShoppingCart(map_products);
-				sc.listFiles(Constants.DIR_SHOPPING);
-				Map<String, String> map_pharma_groups = sc.readPharmacyGroups();
-				sc.encryptConditionsToDir(Constants.DIR_SHOPPING, Constants.DIR_OUTPUT, "ibsa_conditions");
+				ShoppingCartIbsa sc_ibsa = new ShoppingCartIbsa(map_products);
+				sc_ibsa.listFiles(Constants.DIR_SHOPPING);
+				Map<String, String> map_pharma_groups = sc_ibsa.readPharmacyGroups();
+				sc_ibsa.processConditionsFiles(Constants.DIR_SHOPPING);
+				sc_ibsa.encryptConditionsToDir(Constants.DIR_OUTPUT, "ibsa_conditions");
 				FileOps.encryptCsvToDir("customer_glns", "targeting_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
 				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);
-				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);
+				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);	// Same file for all customization
 			}			
 
+			// Generate encrypted files for shopping cart (desitin)
+			if (CmlOptions.DESITIN_DB==true) {
+				ShoppingCartDesitin sc_desitin = new ShoppingCartDesitin(map_products);
+				sc_desitin.listFiles(Constants.DIR_DESITIN);
+				sc_desitin.processConditionFile(Constants.DIR_DESITIN);
+				sc_desitin.encryptConditionsToDir(Constants.DIR_OUTPUT, "desitin_conditions");
+				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);		
+				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);	// Same file for all customization
+			}
+			
 			if (CmlOptions.ONLY_SHOPPING_CART==false) {
 				if (CmlOptions.SHOW_LOGS) {
 					System.out.println("");
