@@ -212,14 +212,7 @@ public class Aips2Sqlite {
 		}
 		
 		System.out.println("");
-		if (!CmlOptions.DB_LANGUAGE.isEmpty() && CmlOptions.ZUR_ROSE_DB==false) {	
-			// Extract drug interactions information
-			if (CmlOptions.ADD_INTERACTIONS==true) {
-				Interactions inter = new Interactions(CmlOptions.DB_LANGUAGE);
-				// Generate in various data exchange files
-				inter.generateDataExchangeFiles();
-			}			
-			
+		if (!CmlOptions.DB_LANGUAGE.isEmpty() && CmlOptions.ZUR_ROSE_DB==false) {					
 			// Generate a csv file with all the GLN codes pertinent information
 			if (CmlOptions.GLN_CODES==true) {
 				GlnCodes glns = new GlnCodes();
@@ -249,6 +242,13 @@ public class Aips2Sqlite {
 				sc_desitin.encryptConditionsToDir(Constants.DIR_OUTPUT, "desitin_conditions");
 				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);		
 				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);	// Same file for all customization
+			}
+			
+			// Extract drug interactions information
+			if (CmlOptions.ADD_INTERACTIONS==true) {
+				Interactions inter = new Interactions(CmlOptions.DB_LANGUAGE);
+				// Generate in various data exchange files
+				inter.generateDataExchangeFiles();
 			}
 			
 			if (CmlOptions.ONLY_SHOPPING_CART==false && CmlOptions.ONLY_DESITIN_DB==false) {
@@ -310,7 +310,7 @@ public class Aips2Sqlite {
 		} else {
 			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true)
 				a.downIBSA();
-			if (CmlOptions.DESITIN_DB==true)
+			if (CmlOptions.DESITIN_DB==true || CmlOptions.ONLY_DESITIN_DB==true)
 				a.downDesitin();
 			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
