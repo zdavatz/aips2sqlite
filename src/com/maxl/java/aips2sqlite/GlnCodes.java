@@ -70,11 +70,11 @@ public class GlnCodes implements java.io.Serializable {
 				System.out.println("- Processed desitin main address file... (" + m_desitin_addresses.size() + ")");			
 		}
 		// Write ibsa address file to file
-		writeMapToCsv(m_desitin_addresses, '|', "gln_codes_desitin_csv.csv", "", 'd');					
+		writeMapToCsv(m_desitin_addresses, '|', "desitin_gln_codes_csv.csv", "", 'd');					
 		// Encrypt and serialize
-		encryptMapToDir(m_desitin_addresses, "gln_codes_desitin.ser");
+		encryptMapToDir(m_desitin_addresses, "desitin_gln_codes.ser");
 		// ... and zip it
-		FileOps.zipToFile(Constants.DIR_OUTPUT, "gln_codes_desitin.ser");		
+		FileOps.zipToFile(Constants.DIR_OUTPUT, "desitin_gln_codes.ser");		
 		
 		{
 			// Loop through the ibsa condition files (augment medreg info)
@@ -105,7 +105,7 @@ public class GlnCodes implements java.io.Serializable {
 				System.out.println("- Processed gln codes mosberger address file... (" + m_ibsa_addresses.size() + ") - " + no_gln_cnt + " entries have no gln code.");		
 		}
 		// Write ibsa address file to file
-		writeMapToCsv(m_ibsa_addresses, '|', "gln_codes_ibsa_csv.csv", "", 'i');					
+		writeMapToCsv(m_ibsa_addresses, '|', "ibsa_gln_codes_csv.csv", "", 'i');					
 		// Encrypt and serialize
 		encryptMapToDir(m_ibsa_addresses, "gln_codes.ser");
 		// ... and zip it
