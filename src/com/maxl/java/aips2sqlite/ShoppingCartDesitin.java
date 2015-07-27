@@ -11,8 +11,6 @@ import java.util.TreeMap;
 import com.opencsv.CSVReader;
 
 public class ShoppingCartDesitin {
-
-	private static final long serialVersionUID = 1L;
 	
 	// GLN -> (EAN, Rebate)
 	Map<String, TreeMap<String, Float>> m_map_conditions = null;

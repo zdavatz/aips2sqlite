@@ -225,13 +225,13 @@ public class Aips2Sqlite {
 			// Generate encrypted files for shopping cart (ibsa)
 			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true) {
 				ShoppingCartIbsa sc_ibsa = new ShoppingCartIbsa(map_products);
-				sc_ibsa.listFiles(Constants.DIR_SHOPPING);
+				sc_ibsa.listFiles(Constants.DIR_IBSA);
 				Map<String, String> map_pharma_groups = sc_ibsa.readPharmacyGroups();
-				sc_ibsa.processConditionsFiles(Constants.DIR_SHOPPING);
+				sc_ibsa.processConditionsFiles(Constants.DIR_IBSA);
 				sc_ibsa.encryptConditionsToDir(Constants.DIR_OUTPUT, "ibsa_conditions");
-				FileOps.encryptCsvToDir("customer_glns", "targeting_glns", Constants.DIR_SHOPPING, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
-				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);
-				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);	// Same file for all customization
+				FileOps.encryptCsvToDir("customer_glns", "targeting_glns", Constants.DIR_IBSA, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
+				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_IBSA, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);
+				FileOps.encryptFileToDir("authors.ami", Constants.DIR_IBSA);	// Same file for all customization
 			}			
 
 			// Generate encrypted files for shopping cart (desitin)
@@ -240,8 +240,8 @@ public class Aips2Sqlite {
 				sc_desitin.listFiles(Constants.DIR_DESITIN);
 				sc_desitin.processConditionFile(Constants.DIR_DESITIN);
 				sc_desitin.encryptConditionsToDir(Constants.DIR_OUTPUT, "desitin_conditions");
-				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_SHOPPING, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);		
-				FileOps.encryptFileToDir("authors.ami", Constants.DIR_SHOPPING);	// Same file for all customization
+				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_DESITIN, "desitin_access.ami", Constants.DIR_OUTPUT, 0, 4, null);		
+				FileOps.encryptFileToDir("authors.ami", Constants.DIR_DESITIN);	// Same file for all customization
 			}
 			
 			// Extract drug interactions information

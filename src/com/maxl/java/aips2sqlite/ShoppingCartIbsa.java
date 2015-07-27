@@ -92,7 +92,7 @@ public class ShoppingCartIbsa implements java.io.Serializable {
 		
 		try {
 			// Load ibsa xls file			
-			FileInputStream pharma_conditions = new FileInputStream(Constants.DIR_SHOPPING + "ibsa_pharma_conditions.xlsx");
+			FileInputStream pharma_conditions = new FileInputStream(Constants.DIR_IBSA + "ibsa_pharma_conditions.xlsx");
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 			XSSFWorkbook ibsa_workbook = new XSSFWorkbook(pharma_conditions);
 			// Get first sheet from workbook

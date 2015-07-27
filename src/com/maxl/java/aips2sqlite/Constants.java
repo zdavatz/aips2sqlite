@@ -51,8 +51,8 @@ public class Constants {
 	// GLN Codes (Personen + Betriebe)
 	public static final String FILE_GLN_CODES_PEOPLE = "./downloads/gln_codes_people_xlsx.xlsx";
 	public static final String FILE_GLN_CODES_COMPANIES = "./downloads/gln_codes_companies_xlsx.xlsx";
-	// "Shopping" directory
-	public static final String DIR_SHOPPING = "./input/shop/";	
+	// Files Crypto
+	public static final String DIR_CRYPTO = "./input/crypto/";
 	// Files Ibsa
 	public static final String DIR_IBSA = "./input/ibsa/";	
 	public static final String FILE_CUST_IBSA = "customer_glns.csv";

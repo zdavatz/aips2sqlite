@@ -41,10 +41,10 @@ public class GlnCodes implements java.io.Serializable {
 		m_gln_codes_people_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_PEOPLE, 0);
 		m_gln_codes_companies_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_COMPANIES, 0);
 		// Mosberger conditions
-		m_gln_codes_moos_cond = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_CUST_IBSA);
-		m_gln_codes_moos_targ = readFromSimpleCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_TARG_IBSA);
+		m_gln_codes_moos_cond = readFromSimpleCsvToMap(Constants.DIR_IBSA + Constants.FILE_CUST_IBSA);
+		m_gln_codes_moos_targ = readFromSimpleCsvToMap(Constants.DIR_IBSA + Constants.FILE_TARG_IBSA);
 		// Mosberger full info without conditions
-		m_gln_codes_moos_full = readIbsaAddressCsvToMap(Constants.DIR_SHOPPING + Constants.FILE_MOOS_ADDR, 16);
+		m_gln_codes_moos_full = readIbsaAddressCsvToMap(Constants.DIR_IBSA + Constants.FILE_MOOS_ADDR, 16);
 		// Desitin full info without conditions
 		m_gln_codes_desitin_full = readDesitinAddressCsvToMap(Constants.DIR_DESITIN + Constants.FILE_CUST_DESITIN);
 		// Complete list of gln_codes

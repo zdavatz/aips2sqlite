@@ -557,7 +557,7 @@ public class AllDown {
 		String fp = "";
 		String fs = "";
 		try {
-			FileInputStream glnCodesCsv = new FileInputStream(Constants.DIR_SHOPPING + "/access.ami.csv");
+			FileInputStream glnCodesCsv = new FileInputStream(Constants.DIR_IBSA + "/access.ami.csv");
 			BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
 			String line;
 			while ((line=br.readLine()) !=null ) {
@@ -601,7 +601,7 @@ public class AllDown {
             if (ftpFiles!=null && ftpFiles.length>0) {
             	int index = 0;
             	for (String remote_file : list_remote_files) {
-	            	OutputStream os = new FileOutputStream(Constants.DIR_SHOPPING + "/" + list_local_files.get(index));
+	            	OutputStream os = new FileOutputStream(Constants.DIR_IBSA + "/" + list_local_files.get(index));
 	            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
 	
 	            	boolean done = ftp_client.retrieveFile(remote_file, os);
@@ -714,7 +714,7 @@ public class AllDown {
 		String fp = "";
 		String fs = "";
 		try {
-			FileInputStream access = new FileInputStream(Constants.DIR_SHOPPING + "/access.ami.csv");
+			FileInputStream access = new FileInputStream(Constants.DIR_DESITIN + "/access.ami.csv");
 			BufferedReader br = new BufferedReader(new InputStreamReader(access, "UTF-8"));
 			String line;
 			while ((line=br.readLine()) !=null ) {
