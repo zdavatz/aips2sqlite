@@ -212,36 +212,41 @@ public class Aips2Sqlite {
 		}
 		
 		System.out.println("");
+		
+		// Pointer to product map, extraction order = insertion order
+		Map<String, Product> map_products = new LinkedHashMap<String, Product>();
+		
+		// Generate encrypted files for shopping cart (ibsa)
+		if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true) {
+			ShoppingCartIbsa sc_ibsa = new ShoppingCartIbsa(map_products);
+			sc_ibsa.listFiles(Constants.DIR_IBSA);
+			Map<String, String> map_pharma_groups = sc_ibsa.readPharmacyGroups();
+			sc_ibsa.processConditionsFiles(Constants.DIR_IBSA);
+			sc_ibsa.encryptConditionsToDir(Constants.DIR_OUTPUT, "ibsa_conditions");
+			FileOps.encryptCsvToDir("customer_glns", "targeting_glns", Constants.DIR_IBSA, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
+			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_IBSA, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);
+			FileOps.encryptFileToDir("authors.ami", Constants.DIR_IBSA);	// Same file for all customization
+			if (CmlOptions.ONLY_SHOPPING_CART)
+				System.exit(0);
+		}			
+
+		// Generate encrypted files for shopping cart (desitin)
+		if (CmlOptions.DESITIN_DB==true || CmlOptions.ONLY_DESITIN_DB==true) {
+			ShoppingCartDesitin sc_desitin = new ShoppingCartDesitin(map_products);
+			sc_desitin.listFiles(Constants.DIR_DESITIN);
+			sc_desitin.processConditionFile(Constants.DIR_DESITIN);
+			sc_desitin.encryptConditionsToDir(Constants.DIR_OUTPUT, "desitin_conditions");
+			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_DESITIN, "desitin_access.ami", Constants.DIR_OUTPUT, 0, 4, null);		
+			FileOps.encryptFileToDir("authors.ami", Constants.DIR_DESITIN);	// Same file for all customization
+			if (CmlOptions.ONLY_DESITIN_DB==true)
+				System.exit(0);
+		}
+		
 		if (!CmlOptions.DB_LANGUAGE.isEmpty() && CmlOptions.ZUR_ROSE_DB==false) {					
 			// Generate a csv file with all the GLN codes pertinent information
 			if (CmlOptions.GLN_CODES==true) {
 				GlnCodes glns = new GlnCodes();
 				glns.generateCsvFile();
-			}
-			
-			// Pointer to product map, extraction order = insertion order
-			Map<String, Product> map_products = new LinkedHashMap<String, Product>();
-			
-			// Generate encrypted files for shopping cart (ibsa)
-			if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true) {
-				ShoppingCartIbsa sc_ibsa = new ShoppingCartIbsa(map_products);
-				sc_ibsa.listFiles(Constants.DIR_IBSA);
-				Map<String, String> map_pharma_groups = sc_ibsa.readPharmacyGroups();
-				sc_ibsa.processConditionsFiles(Constants.DIR_IBSA);
-				sc_ibsa.encryptConditionsToDir(Constants.DIR_OUTPUT, "ibsa_conditions");
-				FileOps.encryptCsvToDir("customer_glns", "targeting_glns", Constants.DIR_IBSA, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
-				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_IBSA, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);
-				FileOps.encryptFileToDir("authors.ami", Constants.DIR_IBSA);	// Same file for all customization
-			}			
-
-			// Generate encrypted files for shopping cart (desitin)
-			if (CmlOptions.DESITIN_DB==true || CmlOptions.ONLY_DESITIN_DB==true) {
-				ShoppingCartDesitin sc_desitin = new ShoppingCartDesitin(map_products);
-				sc_desitin.listFiles(Constants.DIR_DESITIN);
-				sc_desitin.processConditionFile(Constants.DIR_DESITIN);
-				sc_desitin.encryptConditionsToDir(Constants.DIR_OUTPUT, "desitin_conditions");
-				FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_DESITIN, "desitin_access.ami", Constants.DIR_OUTPUT, 0, 4, null);		
-				FileOps.encryptFileToDir("authors.ami", Constants.DIR_DESITIN);	// Same file for all customization
 			}
 			
 			// Extract drug interactions information
