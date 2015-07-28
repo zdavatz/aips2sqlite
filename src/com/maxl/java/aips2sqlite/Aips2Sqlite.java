@@ -215,6 +215,7 @@ public class Aips2Sqlite {
 		
 		// Pointer to product map, extraction order = insertion order
 		Map<String, Product> map_products = new LinkedHashMap<String, Product>();
+		boolean no_db = false;
 		
 		// Generate encrypted files for shopping cart (ibsa)
 		if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true) {
@@ -225,9 +226,9 @@ public class Aips2Sqlite {
 			sc_ibsa.encryptConditionsToDir(Constants.DIR_OUTPUT, "ibsa_conditions");
 			FileOps.encryptCsvToDir("customer_glns", "targeting_glns", Constants.DIR_IBSA, "ibsa_glns", Constants.DIR_OUTPUT, 0, 5, map_pharma_groups);
 			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_IBSA, "access.ami", Constants.DIR_OUTPUT, 0, 4, null);
-			FileOps.encryptFileToDir("authors.ami", Constants.DIR_IBSA);	// Same file for all customization
+			FileOps.encryptFileToDir("authors.ami", Constants.DIR_CRYPTO);	// Same file for all customization
 			if (CmlOptions.ONLY_SHOPPING_CART)
-				System.exit(0);
+				no_db = true;
 		}			
 
 		// Generate encrypted files for shopping cart (desitin)
@@ -237,18 +238,18 @@ public class Aips2Sqlite {
 			sc_desitin.processConditionFile(Constants.DIR_DESITIN);
 			sc_desitin.encryptConditionsToDir(Constants.DIR_OUTPUT, "desitin_conditions");
 			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_DESITIN, "desitin_access.ami", Constants.DIR_OUTPUT, 0, 4, null);		
-			FileOps.encryptFileToDir("authors.ami", Constants.DIR_DESITIN);	// Same file for all customization
+			FileOps.encryptFileToDir("authors.ami", Constants.DIR_CRYPTO);	// Same file for all customization
 			if (CmlOptions.ONLY_DESITIN_DB==true)
-				System.exit(0);
+				no_db = true;
 		}
 		
-		if (!CmlOptions.DB_LANGUAGE.isEmpty() && CmlOptions.ZUR_ROSE_DB==false) {					
-			// Generate a csv file with all the GLN codes pertinent information
-			if (CmlOptions.GLN_CODES==true) {
-				GlnCodes glns = new GlnCodes();
-				glns.generateCsvFile();
-			}
-			
+		// Generate a csv file with all the GLN codes pertinent information
+		if (CmlOptions.GLN_CODES==true) {
+			GlnCodes glns = new GlnCodes();
+			glns.generateCsvFile();
+		}
+		
+		if (!CmlOptions.DB_LANGUAGE.isEmpty() && CmlOptions.ZUR_ROSE_DB==false && no_db==false) {							
 			// Extract drug interactions information
 			if (CmlOptions.ADD_INTERACTIONS==true) {
 				Interactions inter = new Interactions(CmlOptions.DB_LANGUAGE);
