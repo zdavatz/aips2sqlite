@@ -269,6 +269,62 @@ public class SqlDatabase {
 		}
 	}
 	
+	public void updatePackInfo(long index, String pack_info_str) {
+		try {
+			stat = conn.createStatement();
+			String query = "UPDATE amikodb SET pack_info_str='" + pack_info_str + "' WHERE _id=" + index + ";";
+			stat.executeUpdate(query);
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in updatePackInfo!");
+			e.printStackTrace();
+		}
+	}
+
+	public String getPackInfoWithID(long index) {
+		String packInfo = "";		
+		
+		try {
+			stat = conn.createStatement();
+			String query = "SELECT pack_info_str FROM amikodb WHERE _id=" + index + ";";
+			ResultSet rs = stat.executeQuery(query);
+			while (rs.next()) {
+				packInfo = rs.getString(1);
+			} 
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in getPackInfoWithID!");
+		}		
+		
+		return packInfo;
+	}
+			
+	public void updatePackages(long index, String packages_str) {
+		try {
+			stat = conn.createStatement();
+			String query = "UPDATE amikodb SET packages='" + packages_str + "' WHERE _id=" + index + ";";
+			stat.executeUpdate(query);
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in updatePackages!");
+			e.printStackTrace();
+		}
+	}
+	
+	public String getPackagesWithID(long index) {
+		String packages = "";
+		
+		try {
+			stat = conn.createStatement();
+			String query = "SELECT packages FROM amikodb WHERE _id=" + index;
+			ResultSet rs = stat.executeQuery(query);
+			while (rs.next()) {
+				packages = rs.getString(1);
+			} 
+		} catch (SQLException e) {
+			System.err.println(">> SqlDatabase: SQLException in getPackagesWithID!");
+		}		
+		
+		return packages;
+	}	
+
 	public void addExpertDB(MedicalInformations.MedicalInformation m) {
 		try {
 			m_prep_amikodb.setString(1, m.getTitle());

@@ -294,7 +294,7 @@ public class Aips2Sqlite {
 			pi.process();
 		}
 	
-		if (CmlOptions.SHOPPING_CART==true) {
+		if (CmlOptions.SHOPPING_CART==true || CmlOptions.DESITIN_DB==true) {
 			AddProductInfo api = new AddProductInfo(sql_db, map_products);
 			api.process();
 			api.clean("ibsa");

@@ -50,10 +50,18 @@ public class ShoppingCartDesitin {
 			List<String[]> my_entries = reader.readAll();
 			int num_lines = 0;
 			for (String[] s : my_entries) {
-				if (s.length>7 && num_lines>0) {
+				if (s.length>8 && num_lines>0) {
+					Product product = new Product();
 					String gln = s[1];
 					String ean = s[7];
-					float rebate = Float.valueOf(s[5]);	
+					float rebate = Float.valueOf(s[5]);						
+					float exfactory_price = Float.valueOf(s[8]);
+					// Fill in product map
+					product.eancode = ean;
+					product.fap = product.efp = exfactory_price;
+					product.author = "Desitin Pharma GmbH";
+					m_map_products.put(ean, product);				
+					// Fill in rebate map
 					TreeMap<String, Float> product_rebate = new TreeMap<String, Float>();
 					if (m_map_conditions.containsKey(gln)) {
 						product_rebate = m_map_conditions.get(gln);

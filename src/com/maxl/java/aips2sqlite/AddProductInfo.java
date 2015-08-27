@@ -32,17 +32,90 @@ public class AddProductInfo {
 			return 1;
 		return 0;
 	}
-	
+
+	private String[] update_packages_str(String packages_str)
+	{
+		// pack_info_str += name.toUpperCase() + ", " + u + ", " + size + ", " + fap + " [" + swissmedic_cat + "]\n";
+		
+		/**			
+			important entries:
+				0 - pack title*
+				3 - ex factory price
+				4 - public price
+				5 - fap price*
+				6 - fep price
+				8 - additional info (e.g. swissmedic_cat)*
+				9 - ean code
+		*/
+		String new_packages_str = "";
+		String new_pack_info_str = "";
+		// Decompose packages_str
+		String[] packages = packages_str.split("\n");
+		if (packages!=null) {
+			for (String p : packages) {
+				if (!p.isEmpty()) {
+					String[] entry = p.split("\\|");
+					if (entry.length>10) {		
+						String eancode = entry[9];
+						if (m_map_products.containsKey(eancode)) {
+							Product product = m_map_products.get(eancode);
+							float p_fap = product.fap;
+							float p_efp = product.efp;
+							// Do something only if there is no EFP and the product EFP is >=0
+							if (entry[3].isEmpty() && p_efp>=0.0f) {
+								entry[3] = String.format("CHF %.2f", p_efp);
+								String entry_8 = "";
+								// Remove unnecessary commas in additional info string
+								if (!entry[8].isEmpty()) {
+									String[] add_info = entry[8].split(",", -1);
+									for (String a : add_info) {
+										if (!a.replaceAll("\\s",	"").isEmpty())
+											entry_8 += (a + ", ");
+									}
+									// Remove last comma
+									if (entry_8.length()>2)
+										entry_8 = entry_8.substring(0, entry_8.length()-2);
+								}
+								new_pack_info_str = entry[0] + String.format(", EFP %.2f", p_fap) + " [" + entry_8 + "]";
+								System.out.println("Re-processed pack info string: " + new_pack_info_str);
+							}
+							if (entry[5].isEmpty() && p_fap>=0.0f)
+								entry[5] = String.format("CHF %.2f", p_fap);
+						}
+						// Build new packages string with updated price info!	
+						for (int i=0; i<=10; ++i) {
+							new_packages_str += entry[i] + "|";
+						}
+						// Visibility
+						if (entry.length>11) {
+							if (!entry[11].isEmpty()) {
+								new_packages_str += entry[11] + "|";
+							}
+						}
+						// Free samples
+						if (entry.length>12) {
+							if (!entry[12].isEmpty())
+								new_packages_str += entry[12];
+						}
+						new_packages_str += "\n";
+					}
+				}
+			}
+		}
+		
+		return new String[] {new_packages_str, new_pack_info_str};		
+	}
+			
 	public void process() {
 		
-		System.out.println("Processing all non-swissmedic xml products ...");	
+		System.out.println("Re-reprocessing sqlite db: cleaning and updating information...");	
 		
 		// List all products in 'db', compare with products in 'map_products', flag packages found
-		Map<Long, String> map_of_packages = m_sql_db.mapProducts();
+		Map<Long, String> map_of_packages_in_sql_db = m_sql_db.mapProducts();
 		// Loop through all packages
-		for (Map.Entry<Long, String> entry : map_of_packages.entrySet()) {
-			long id = entry.getKey();
-			String packs[] = entry.getValue().split("\n");
+		for (Map.Entry<Long, String> pack_in_sql_db : map_of_packages_in_sql_db.entrySet()) {
+			long id = pack_in_sql_db.getKey();
+			String packs[] = pack_in_sql_db.getValue().split("\n");
 			for (int i=0; i<packs.length; ++i) {
 				if (!packs[i].isEmpty()) {
 					String p[] = packs[i].split("\\|");
@@ -50,13 +123,26 @@ public class AddProductInfo {
 						String title = p[0].trim();
 						if (title.toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())) {
 							String eancode = p[9].trim();	
-							// Check if eancode has been already processed
+							// Check if eancode has been already processed. 
+							// If yes, update group title and pricing information!
 							if (m_map_products.containsKey(eancode)) {
 								Product product = m_map_products.get(eancode);
 								product.processed = true;
 								m_map_products.put(eancode, product);							
 								// Update db with group name
-								m_sql_db.updateAddInfo(id, product.group_title[lang_id()]);							
+								m_sql_db.updateAddInfo(id, product.group_title[lang_id()]);	
+								// Update of pricing info in "packages_str" (see sql_db)
+								String packages_str = m_sql_db.getPackagesWithID(id);
+								String pack_info_str = m_sql_db.getPackInfoWithID(id);
+								// 
+								String new_packs[] = update_packages_str(packages_str);
+								packages_str = new_packs[0];
+								pack_info_str = new_packs[1];
+								//
+								if (!packages_str.isEmpty())
+									m_sql_db.updatePackages(id, packages_str);
+								if (!pack_info_str.isEmpty())
+									m_sql_db.updatePackInfo(id, pack_info_str);
 							}
 						}
 					}
@@ -109,7 +195,7 @@ public class AddProductInfo {
 				String swissmedic_cat = p.swissmedic_cat;
 				if (swissmedic_cat.isEmpty())
 					swissmedic_cat = na();
-				String fap = String.format("CHF %.2f", p.fap);	// Fabrikabgabepreis
+				String fap = String.format("CHF %.2f", p.fap);	// Fabrikabgabepreis = ex factory Preis
 				String fep = String.format("CHF %.2f", p.fep);	// Fachhandelseinkaufspreis	
 				// 
 				author = p.author;				

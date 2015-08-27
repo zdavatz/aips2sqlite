@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1180,15 +1183,20 @@ public class RealExpertInfo {
 							
 							if (CmlOptions.XML_FILE==true) {
 								if (!regnr_str.isEmpty()) {
+									// Generate and add hash code 
+									String html_str_no_timestamp = mContent_str.replaceAll("<p class=\"footer\">.*?</p>", "");
+									String hash_code = html_utils.calcHashCode(html_str_no_timestamp);
+									
 									// Add header to html file
 									mContent_str = mContent_str.replaceAll("<head>", "<head>" + 
-											"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />" +
-											"<style>" + amiko_style_v1_str + "</style>");												
+											"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" name=\"fi_" + hash_code + "\"/>" +
+											"<style>" + amiko_style_v1_str + "</style>");	
+									
 									// Note: the following line is not necessary!
 									// m.setContent(mContent_str);
 																		
 									// Add header to xml file
-									String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);									
+									String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);							
 									xml_str = html_utils.addHeaderToXml("singlefi", xml_str);
 									fi_complete_xml += (xml_str + "\n");
 									
@@ -1372,6 +1380,18 @@ public class RealExpertInfo {
 			key = swissmedicNo5 + String.valueOf(n).format("%d", n);	
 		return key;
 	}	
+	
+	final protected static char[] hexArray = "0123456789abcdef".toCharArray();
+	
+	private String bytesToHex(byte[] bytes) {
+	    char[] hexChars = new char[bytes.length * 2];
+	    for (int j=0; j<bytes.length; j++) {
+	        int v = bytes[j] & 0xFF;
+	        hexChars[j*2] = hexArray[v >>> 4];
+	        hexChars[j*2+1] = hexArray[v & 0x0F];
+	    }
+	    return new String(hexChars);
+	}
 	
 	private String updateSectionPackungen(String title, String atc_code, Map<String, ArrayList<String>> pack_info, 
 			String regnr_str, String content_str, List<String> tIndex_list) {
