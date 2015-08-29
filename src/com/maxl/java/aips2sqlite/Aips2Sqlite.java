@@ -22,6 +22,7 @@ package com.maxl.java.aips2sqlite;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -297,7 +298,8 @@ public class Aips2Sqlite {
 		if (CmlOptions.SHOPPING_CART==true || CmlOptions.DESITIN_DB==true) {
 			AddProductInfo api = new AddProductInfo(sql_db, map_products);
 			api.process();
-			api.clean("ibsa");
+			api.complete(Arrays.asList("ibsa"));
+			api.clean(Arrays.asList("ibsa"));
 		}
 		
 		// Finalize tables and close db
