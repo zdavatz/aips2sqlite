@@ -1451,11 +1451,18 @@ public class RealExpertInfo {
 						// EFP = FAP < FEP < PUP
 						if (m_map_products!=null && eancode!=null && m_map_products.containsKey(eancode)) {
 							Product product = m_map_products.get(eancode);
+							// Correct these prices, if necessary... the m_map_products info comes from the owner directly!
+							// @maxl: Added on 30.08.2015
+							if (product.efp>0.0f)
+								efp = String.format("CHF %.2f", product.fep);
+							if (product.pp>0.0f)
+								pup = String.format("CHF %.2f", product.pp);
+							// 
 							if (product.fap>0.0f)
 								fap = String.format("CHF %.2f", product.fap);							
 							if (product.fep>0.0f)
 								fep = String.format("CHF %.2f", product.fep);
-							if (product.vat>0.0f)
+							if (product.vat>0.0f)								
 								vat = String.format("%.2f", product.vat);
 							visible = product.visible;
 							has_free_samples = product.free_sample;

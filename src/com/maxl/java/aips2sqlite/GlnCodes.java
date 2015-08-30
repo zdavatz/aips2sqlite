@@ -168,10 +168,10 @@ public class GlnCodes implements java.io.Serializable {
 					cust.name1 = row.getCell(1).getStringCellValue();
 				if (row.getCell(2)!=null) 
 					cust.name2 = row.getCell(2).getStringCellValue();
-				if (row.getCell(3)!=null && row.getCell(4)!=null)
-					cust.street = row.getCell(3).getStringCellValue().trim();
 				if (row.getCell(4)!=null)
 					cust.number = row.getCell(4).getStringCellValue().trim();
+				if (row.getCell(3)!=null)
+					cust.street = row.getCell(3).getStringCellValue().trim() + " " + cust.number;	// = street + number
 				if (row.getCell(5)!=null)
 					cust.zip = row.getCell(5).getStringCellValue();
 				if (row.getCell(6)!=null) 
@@ -293,9 +293,7 @@ public class GlnCodes implements java.io.Serializable {
 					cust.name3 = token[9];
 				// Street is special - because Mosberger and medreg do not conform
 				if (cust.street.isEmpty())
-					cust.street = token[10];
-				else
-					cust.street = cust.street + " " + cust.number;
+					cust.street = token[10];	// = street + number
 				if (cust.zip.isEmpty())
 					cust.zip = token[11];
 				if (cust.city.isEmpty())
@@ -322,7 +320,7 @@ public class GlnCodes implements java.io.Serializable {
 				cust.name1 = token[7];
 				cust.name2 = token[8];
 				cust.name3 = token[9];
-				cust.street = token[10];
+				cust.street = token[10];	// = street + number
 				cust.zip = token[11];
 				cust.city = token[12];
 				cust.phone = token[13];
@@ -363,7 +361,7 @@ public class GlnCodes implements java.io.Serializable {
 			cust.gln_code = token[2];				
 			cust.name1 = token[7];			
 			cust.name3 = token[5];	
-			cust.street = token[8];			
+			cust.street = token[8];		// = street + number!		
 			cust.country = token[10];
 			cust.zip = token[11];
 			cust.city = token[12];
@@ -518,7 +516,7 @@ public class GlnCodes implements java.io.Serializable {
 						+ c.name1 + separator
 						+ c.name2 + separator
 						+ c.name3 + separator
-						+ c.street + " " + c.number + separator
+						+ c.street + separator
 						+ c.zip + separator
 						+ c.city + separator
 						+ c.phone + separator
@@ -540,7 +538,7 @@ public class GlnCodes implements java.io.Serializable {
 						+ c.name1 + separator
 						+ c.name2 + separator
 						+ c.name3 + separator
-						+ c.street + " " + c.number + separator
+						+ c.street + separator
 						+ c.zip + separator
 						+ c.city + separator
 						+ c.phone + separator

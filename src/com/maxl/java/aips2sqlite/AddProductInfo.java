@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class AddProductInfo {
 
 	// Main sqlite database
@@ -33,7 +35,7 @@ public class AddProductInfo {
 		return 0;
 	}
 
-	private String[] update_packages_str(String packages_str)
+	private String[] update_packages_str(String packages_str, String ean)
 	{
 		// pack_info_str += name.toUpperCase() + ", " + u + ", " + size + ", " + fap + " [" + swissmedic_cat + "]\n";
 		
@@ -52,12 +54,17 @@ public class AddProductInfo {
 		// Decompose packages_str
 		String[] packages = packages_str.split("\n");
 		if (packages!=null) {
+			// Loop through all packages 
 			for (String p : packages) {
+				// Extract relevant info for this package
 				if (!p.isEmpty()) {
 					String[] entry = p.split("\\|");
 					if (entry.length>10) {		
+						String name = entry[0];
 						String eancode = entry[9];
-						if (m_map_products.containsKey(eancode)) {
+						// Check if ean code is in list sent by author
+						if (eancode.equals(ean) && m_map_products.containsKey(eancode)) {
+							System.out.println("match with authors' data: " + ean + " | " + eancode + " -> " + name);
 							Product product = m_map_products.get(eancode);
 							float p_fap = product.fap;
 							float p_efp = product.efp;
@@ -69,7 +76,7 @@ public class AddProductInfo {
 								if (!entry[8].isEmpty()) {
 									String[] add_info = entry[8].split(",", -1);
 									for (String a : add_info) {
-										if (!a.replaceAll("\\s",	"").isEmpty())
+										if (!a.replaceAll("\\s", "").isEmpty())
 											entry_8 += (a + ", ");
 									}
 									// Remove last comma
@@ -110,6 +117,7 @@ public class AddProductInfo {
 		System.out.println("Post-processing sqlite db: cleaning and updating information...");	
 		
 		// List all products in 'db', compare with products in 'map_products', flag packages found
+		// Note: each package has ONE ean code
 		Map<Long, String> map_of_packages_in_sql_db = m_sql_db.mapProducts();
 		// Loop through all packages
 		for (Map.Entry<Long, String> pack_in_sql_db : map_of_packages_in_sql_db.entrySet()) {
@@ -124,17 +132,18 @@ public class AddProductInfo {
 							String eancode = p[9].trim();	
 							// Check if eancode has been already processed. 
 							// If yes, update group title and pricing information!
+							// m_map_products contains the products listed in the authors' excel sheet or csv tables!
 							if (m_map_products.containsKey(eancode)) {
 								Product product = m_map_products.get(eancode);
 								product.processed = true;
 								m_map_products.put(eancode, product);							
 								// Update db with group name
 								m_sql_db.updateAddInfo(id, product.group_title[lang_id()]);	
-								// Update of pricing info in "packages_str" (see sql_db)
+								// Update pricing info in "packages_str" (see sql_db)
 								String packages_str = m_sql_db.getPackagesWithID(id);
 								String pack_info_str = m_sql_db.getPackInfoWithID(id);
 								// 
-								String new_packs[] = update_packages_str(packages_str);
+								String new_packs[] = update_packages_str(packages_str, eancode);
 								packages_str = new_packs[0];
 								pack_info_str = new_packs[1];
 								//
