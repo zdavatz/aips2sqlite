@@ -1454,10 +1454,9 @@ public class RealExpertInfo {
 							// Correct these prices, if necessary... the m_map_products info comes from the owner directly!
 							// @maxl: Added on 30.08.2015
 							if (product.efp>0.0f)
-								efp = String.format("CHF %.2f", product.fep);
+								efp = String.format("CHF %.2f", product.efp);
 							if (product.pp>0.0f)
 								pup = String.format("CHF %.2f", product.pp);
-							// 
 							if (product.fap>0.0f)
 								fap = String.format("CHF %.2f", product.fap);							
 							if (product.fep>0.0f)
