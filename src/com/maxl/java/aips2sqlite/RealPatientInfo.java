@@ -137,11 +137,11 @@ public class RealPatientInfo {
 					String add_info_str = ""; 	// Contains additional information separated by ;
 					String ean_code_str = "";
 
-					// 0: Zulassungsnummer, 1: Dosisstärkenummer, 2: Präparat, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
+					// 0: Zulassungsnummer, 1: Dosisstärkenummer, 2: Präparatebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
 					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Packungscode, 11: Packungsgrösse
 					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisstärke, 15: Abgabekategorie Präparat, 
-					// 16: Wirkstoff, 15: Zusammensetzung, 16: Anwendungsgebiet Präparat, 17: Anwendungsgebiet Dosisstärke, 18: Gentechnisch hergestellte Wirkstoffe
-					// 19: Kategorie bei Insulinen, 20: Betäubungsmittelhaltigen Präparaten
+					// 16: Wirkstoff, 17: Zusammensetzung, 18: Anwendungsgebiet Präparat, 19: Anwendungsgebiet Dosisstärke, 20: Gentechnisch hergestellte Wirkstoffe
+					// 21: Kategorie bei Insulinen, 22: Betäubungsmittelhaltigen Präparaten
 						
 					// @cybermax: 15.10.2013 - work around for Excel cells of type "Special" (cell0 and cell10)
 					if (row.getCell(0) != null)
@@ -156,8 +156,8 @@ public class RealPatientInfo {
 						package_unit = row.getCell(12).getStringCellValue();	// Einheit
 					if (row.getCell(13) != null)
 						swissmedic_cat = row.getCell(13).getStringCellValue();	// Abgabekategorie	
-					if (row.getCell(16) != null)
-						application_area = row.getCell(16).getStringCellValue();	// Anwendungsgebiet				
+					if (row.getCell(18) != null)
+						application_area = row.getCell(18).getStringCellValue();	// Anwendungsgebiet				
 					if (row.getCell(10) != null) {							
 						package_id = String.format("%03d", (int)(row.getCell(10).getNumericCellValue()));		// Verpackungs ID
 						swissmedic_no8 = swissmedic_no5 + package_id;
