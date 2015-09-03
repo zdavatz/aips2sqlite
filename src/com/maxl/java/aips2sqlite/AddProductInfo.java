@@ -125,9 +125,9 @@ public class AddProductInfo {
 			String packs[] = pack_in_sql_db.getValue().split("\n");
 			for (int i=0; i<packs.length; ++i) {
 				if (!packs[i].isEmpty()) {
-					String p[] = packs[i].split("\\|");
+					String p[] = packs[i].split("\\|");					
 					if (p.length==13) {
-						String title = p[0].trim();
+						String title = p[0].trim();						
 						if (title.toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())) {
 							String eancode = p[9].trim();	
 							// Check if eancode has been already processed. 
@@ -135,7 +135,7 @@ public class AddProductInfo {
 							// m_map_products contains the products listed in the authors' excel sheet or csv tables!
 							if (m_map_products.containsKey(eancode)) {
 								Product product = m_map_products.get(eancode);
-								product.processed = true;
+								product.processed = true;							
 								m_map_products.put(eancode, product);							
 								// Update db with group name
 								m_sql_db.updateAddInfo(id, product.group_title[lang_id()]);	

@@ -97,6 +97,10 @@ public class GlnCodes implements java.io.Serializable {
 				if (processMoosFull(entry.getValue()))
 					no_gln_cnt++;
 				/*
+				if (entry.getKey().startsWith("0125936"))
+					System.out.println(entry.getValue());
+				*/
+				/*
 				 * String gln = entry.getKey();
 				 * processMoosFull(gln, entry.getValue());
 				 */

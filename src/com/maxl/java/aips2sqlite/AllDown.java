@@ -249,7 +249,7 @@ public class AllDown {
 		}		
 	}
 	
-	public void downRefdatabaseXml(String file_refdata_pharma_xml) {		
+	public void downRefdataPharmaXml(String file_refdata_pharma_xml) {		
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();	
 		
@@ -257,9 +257,9 @@ public class AllDown {
 			// Start timer 
 			long startTime = System.currentTimeMillis();
 			if (disp)
-				System.out.print("- Downloading Refdatabase file... ");
+				System.out.print("- Downloading Refdatabase pharma file... ");
 			else {
-				pb.init("- Downloading Refdatabase file... ");
+				pb.init("- Downloading Refdatabase pharma file... ");
 				pb.start();
 			}
 			
@@ -280,7 +280,7 @@ public class AllDown {
 			soapBodyElement2.addTextNode("ALL");	
 			soapRequest.saveChanges();
 			// If needed print out soapRequest in a pretty format
-			// prettyFormatSoapXml(soapRequest);
+			// System.out.println(prettyFormatSoapXml(soapRequest));
 			// Create connection to SOAP server
 			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();			
 			SOAPConnection connection = soapConnectionFactory.createConnection();			
@@ -299,14 +299,76 @@ public class AllDown {
 			if (!disp)
 				pb.stopp();
 			long stopTime = System.currentTimeMillis();	
-			System.out.println("\r- Downloading Refdatabase file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			System.out.println("\r- Downloading Refdata pharma file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 			
 			connection.close();			
 			
 		} catch (Exception e) {
 			if (!disp)
 				pb.stopp();			
-			System.err.println(" Exception: in 'downRefdatabaseXml'");
+			System.err.println(" Exception: in 'downRefdataPharmaXml'");
+			e.printStackTrace();
+		}		
+	}
+	
+	public void downRefdataPartnerXml(String file_refdata_partner_xml) {		
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();	
+		
+		try {
+			// Start timer 
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading Refdata partner file... ");
+			else {
+				pb.init("- Downloading Refdata partner file... ");
+				pb.start();
+			}
+			
+			// Create soaprequest
+			SOAPMessage soapRequest = MessageFactory.newInstance().createMessage();
+			// Set SOAPAction header line
+			MimeHeaders headers = soapRequest.getMimeHeaders();
+			headers.addHeader("SOAPAction", "http://refdatabase.refdata.ch/Download");		        
+			// Set SOAP main request part
+			SOAPPart soapPart = soapRequest.getSOAPPart();
+			SOAPEnvelope envelope = soapPart.getEnvelope();
+			SOAPBody soapBody = envelope.getBody();
+			// Construct SOAP request message
+			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadPartnerInput");
+			soapBodyElement1.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/");				
+			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("PTYPE");
+			soapBodyElement2.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/Partner_in");			
+			soapBodyElement2.addTextNode("ALL");	
+			soapRequest.saveChanges();
+			// If needed print out soapRequest in a pretty format
+			// System.out.println(prettyFormatSoapXml(soapRequest));
+			// Create connection to SOAP server
+			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();			
+			SOAPConnection connection = soapConnectionFactory.createConnection();			
+			// wsURL contains service end point
+			String wsURL = "http://refdatabase.refdata.ch/Service/Partner.asmx?WSDL";
+			SOAPMessage soapResponse = connection.call(soapRequest, wsURL);
+			// Extract response
+			Document doc = soapResponse.getSOAPBody().extractContentAsDocument();
+			String strBody = getStringFromDoc(doc);
+			String xmlBody = prettyFormat(strBody);			
+			// Note: parsing the Document tree and using the removeAttribute function is hopeless! 			
+			xmlBody = xmlBody.replaceAll("xmlns.*?\".*?\" ", "");			
+			
+			long len = writeToFile(xmlBody, file_refdata_partner_xml);
+			
+			if (!disp)
+				pb.stopp();
+			long stopTime = System.currentTimeMillis();	
+			System.out.println("\r- Downloading Refdata partner file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			
+			connection.close();			
+			
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();			
+			System.err.println(" Exception: in 'downRefdataPartnerXml'");
 			e.printStackTrace();
 		}		
 	}

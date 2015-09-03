@@ -322,7 +322,8 @@ public class Aips2Sqlite {
 				a.downDesitin();
 			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
-			a.downRefdatabaseXml(Constants.FILE_REFDATA_PHARMA_XML);
+			a.downRefdataPharmaXml(Constants.FILE_REFDATA_PHARMA_XML);
+			a.downRefdataPartnerXml(Constants.FILE_REFDATA_PARTNER_XML);			
 			/* Pre-July 2015
 			a.downSwissindexXml("DE", Constants.FILE_REFDATA_PHARMA_DE_XML);
 			a.downSwissindexXml("FR", Constants.FILE_REFDATA_PHARMA_FR_XML);

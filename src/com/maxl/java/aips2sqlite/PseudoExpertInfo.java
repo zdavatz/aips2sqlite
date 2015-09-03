@@ -249,12 +249,17 @@ public class PseudoExpertInfo {
 							String swissmedic_cat = "";
 							String pharma_code = "";
 							int visible = 0xff;
+							int has_free_samples = 0x00;	// by default no free samples
 							// Exctract fep and fap pricing information
 							// FAP = Fabrikabgabepreis = EFP?
 							// FEP = Fachhandelseinkaufspreis
 							// EFP = FAP < FEP < PUP							
 							if (m_map_products!=null && eanCode!=null && m_map_products.containsKey(eanCode)) {
 								Product product = m_map_products.get(eanCode);
+								if (product.efp>0.0f)
+									efp = String.format("CHF %.2f", product.efp);
+								if (product.pp>0.0f)
+									pup = String.format("CHF %.2f", product.pp);
 								if (product.fap>0.0f)
 									fap = String.format("CHF %.2f", product.fap);							
 								if (product.fep>0.0f)
@@ -270,11 +275,12 @@ public class PseudoExpertInfo {
 								if (product.pharmacode!=null && !product.pharmacode.isEmpty())
 									pharma_code = product.pharmacode;
 								visible = product.visible;
+								has_free_samples = product.free_sample;
 							}						
 							m_list_of_packages.add(mediTitle.toUpperCase() + ", " + units + ", " + size + "|" 
 									+ size + "|" + units + "|" 
 									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
-									+ swissmedic_cat + ",,|" + eanCode + "|" + pharma_code + "|" + visible + "\n");
+									+ swissmedic_cat + ",,|" + eanCode + "|" + pharma_code + "|" + visible + "|" + has_free_samples + "\n");
 							// Generate bar codes
 							BarCode bc = new BarCode();								
 							String barcodeImg64 = bc.encode(eanCode);
