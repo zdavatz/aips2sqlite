@@ -1,6 +1,8 @@
 aips2sqlite
 ===========
 
+[![Join the chat at https://gitter.im/zdavatz/aips2sqlite](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zdavatz/aips2sqlite?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 aips2sqlite - creates an SQLite DB from AIPS, Swissmedic, BAG and Refdata
 
 ## Requirements
