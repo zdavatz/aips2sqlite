@@ -3,7 +3,6 @@ package com.maxl.java.aips2sqlite;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -11,11 +10,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.maxl.java.shared.User;
 import com.opencsv.CSVReader;
@@ -38,8 +35,8 @@ public class GlnCodes implements java.io.Serializable {
 	
 	public GlnCodes() {
 		// Load medreg files
-		m_gln_codes_people_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_PEOPLE, 0);
-		m_gln_codes_companies_sheet = getSheetsFromFile(Constants.FILE_GLN_CODES_COMPANIES, 0);
+		m_gln_codes_people_sheet = ExcelOps.getSheetsFromFile(Constants.FILE_GLN_CODES_PEOPLE, 0);
+		m_gln_codes_companies_sheet = ExcelOps.getSheetsFromFile(Constants.FILE_GLN_CODES_COMPANIES, 0);
 		// Mosberger conditions
 		m_gln_codes_moos_cond = readFromSimpleCsvToMap(Constants.DIR_IBSA + Constants.FILE_CUST_IBSA);
 		m_gln_codes_moos_targ = readFromSimpleCsvToMap(Constants.DIR_IBSA + Constants.FILE_TARG_IBSA);
@@ -508,7 +505,7 @@ public class GlnCodes implements java.io.Serializable {
 		System.out.print("- Generating GLN codes csv file...");
 		List<User> customer_list = new ArrayList<User>(map.values());
 		if (owner=='i') {
-			for (User c : customer_list) {	
+			for (User c : customer_list) {					
 				csv_file += c.gln_code + separator 
 						+ c.ideale_id + separator
 						+ c.xpris_id + separator
@@ -568,21 +565,4 @@ public class GlnCodes implements java.io.Serializable {
 		}
 		FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT, file_name);
 	}		
-	
-	private XSSFSheet getSheetsFromFile(String filename, int n) {
-		XSSFSheet sheet = null;		
-		try {
-			FileInputStream file = new FileInputStream(filename);
-			// Get workbook
-			XSSFWorkbook workbook = new XSSFWorkbook(file);
-			// Get sheet
-			sheet = workbook.getSheetAt(n);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		return sheet;
-	}
 }

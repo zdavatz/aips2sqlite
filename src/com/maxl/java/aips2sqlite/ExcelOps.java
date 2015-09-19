@@ -1,6 +1,12 @@
 package com.maxl.java.aips2sqlite;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelOps {
 	
@@ -16,6 +22,24 @@ public class ExcelOps {
 		    }
 		}
 		return "";
+	}
+
+	
+	static public XSSFSheet getSheetsFromFile(String filename, int n) {
+		XSSFSheet sheet = null;		
+		try {
+			FileInputStream file = new FileInputStream(filename);
+			// Get workbook
+			XSSFWorkbook workbook = new XSSFWorkbook(file);
+			// Get sheet
+			sheet = workbook.getSheetAt(n);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return sheet;
 	}
 	
 }

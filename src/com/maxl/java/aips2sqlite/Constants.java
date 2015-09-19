@@ -67,6 +67,12 @@ public class Constants {
 	public static final String DIR_DESITIN = "./input/desitin/";		
 	public static final String FILE_CUST_DESITIN = "customer_desitin.csv";
 	public static final String FILE_ARTICLES_DESITIN = "artikel_desitin.csv";
+	// Files Takeda
+	public static final String DIR_TAKEDA = "./input/takeda/";
+	public static final String FILE_SAP_TAKEDA = "Auszug_SAP_Kunden_CH_2015_09_02.xlsx";
+	// Files Ywesee
+	public static final String DIR_YWESEE = "./input/ywesee/";
+	public static final String FILE_YAML_YWESEE = "medreg_doctors.yaml";
 	// ****** ATC class xls file (DE != FR) ******
 	// public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0113_xls.xls";	// 2013
 	public static final String FILE_ATC_CLASSES_XLS = "./input/wido_arz_amtl_atc_index_0114_xls.xls";		// 2014

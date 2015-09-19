@@ -140,6 +140,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("onlydesitin")) {
 				CmlOptions.ONLY_DESITIN_DB = true;
 			}
+			if (cmd.hasOption("takeda")) {
+				CmlOptions.TAKEDA_SAP = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -181,6 +184,7 @@ public class Aips2Sqlite {
 		addOption(options, "zurrose", "generate only zur Rose database", false, false);
 		addOption(options, "desitin", "generate encrypted files for Desitin", false, false);
 		addOption(options, "onlydesitin", "skip generation of sqlite database", false, false);
+		addOption(options, "takeda", "generate sap/gln matching file", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -210,6 +214,13 @@ public class Aips2Sqlite {
 			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_ZURROSE, "access_rose.ami", Constants.DIR_OUTPUT, 0, 4, null);						
 			DispoParse dp = new DispoParse();		
 			dp.process("csv");
+		}
+		
+		// Generate Takeda SAP/GLN matching file
+		if (CmlOptions.TAKEDA_SAP==true) {
+			TakedaParse tp = new TakedaParse();
+			tp.process();
+			tp.merge();
 		}
 		
 		System.out.println("");
