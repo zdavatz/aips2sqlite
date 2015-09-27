@@ -220,7 +220,6 @@ public class Aips2Sqlite {
 		if (CmlOptions.TAKEDA_SAP==true) {
 			TakedaParse tp = new TakedaParse();
 			tp.process();
-			tp.merge();
 		}
 		
 		System.out.println("");
