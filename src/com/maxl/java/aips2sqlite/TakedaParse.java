@@ -89,7 +89,8 @@ public class TakedaParse {
 	}
 	
 	private String cleanString(String str) {
-		str = str.toLowerCase().replaceAll("dr\\.|med\\.|méd\\.|[\\s.\\.]med\\s|dres\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|standort|apotheke|kantonsspital|fmh|\\.|&|\\+|filiale", "").trim();
+		str = str.toLowerCase().replaceAll("dr\\.|med\\.|méd\\.|[\\s.\\.]med\\s|dres\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|fmh|\\.|&|\\+", "").trim();
+		str = str.toLowerCase().replaceAll("standort|apotheke|pharmacie|kantonsspital|filiale", "").trim();
 		str = str.replaceAll("\\s+|-", " ").trim();
 		return replaceUmlauteAndChars(str);
 	}
@@ -300,12 +301,9 @@ public class TakedaParse {
 		String sap_street = user.street.toLowerCase();
 		
 		String match_type = "";
-		
-		boolean perfect_match = false;
 	
 		int i=0;		
 		for (RefdataItem ref : m_refdata_list) {
-			perfect_match = false;
 			String status = ref.status;
 			
 			if (status.equals("A") || status.equals("I")) {
@@ -318,15 +316,22 @@ public class TakedaParse {
 					//
 					if (ref_street!=null)
 						ref_street = ref_street.toLowerCase() + " " + ref.number;
+					else
+						ref_street = "";
+					if (ref_zip==null)
+						ref_zip = "";
+					
 					// Init bools
 					boolean possible_match = false;
-					boolean name_match = false;
+					boolean name1_match = false;
 					
+					// Assumpation: both names are NOT empty
 					if (ref_name1.contains(sap_name1)) {
 						// Simple check first
 						prox = 1.0;
 						possible_match = true;
-						name_match = true;
+						if (ref_name1.equals(sap_name1))
+							name1_match = true;
 					} else {
 						// Less simple check... edit distances
 						double jc_prox = jaccard.proximity(sap_name1, ref_name1);
@@ -335,83 +340,102 @@ public class TakedaParse {
 						if (jc_prox>=0.5 || (jc_prox>0.1 && jw_prox>0.66)) {
 							prox = jc_prox;
 							possible_match = true;
-							name_match = false;
 						}
 					}
 					if (possible_match) {
-						if (ref_zip!=null && ref_zip.equals(sap_zip)) {
-							if (ref_street!=null) {
-								if (!sap_street.isEmpty() && !ref_street.isEmpty() && sap_street.equals(ref_street)) {
-									// Case 1: Perfect match... we're happy!
-									perfect_match = true;
-									match_type = ".."; // "perfect";
-									// System.out.println("REF-PM-> " + sap_name1 + " (" + sap_street + ") / " + ref_name1 + " (" + ref_street + ")");
-									prox = 1.5;	// Make sure that we can continue
+						if (ref_name2.length()>2 && sap_name2.length()>2) {
+							if (ref_name2.equals(sap_name2)) {
+								// Perfect match
+								if (name1_match) {
+									match_type = "..";
+									prox = 1.5;
 									index = i;
 									break;
+								}
+							} else {
+								// Less simple check... edit distances
+								double jc_prox = jaccard.proximity(sap_name2, ref_name2);
+								double jw_prox = jaro_winkler.proximity(sap_name2, ref_name2);
+								// Strict
+								if (jc_prox>=0.75 || (jc_prox>0.33 && jw_prox>0.75)) {
+									if (name1_match) {
+										// System.out.println(jc_prox + " / " + jw_prox + " -> " + sap_name2 + " / " + ref_name2);
+										match_type = "..";
+										prox = 1.5;
+										index = i;
+										break;
+									}
+								}
+							}
+						}
+						if (sap_street.length()>2 && ref_street.length()>2) {
+							if (sap_street.equals(ref_street)) {
+								// Case 1: Perfect match... we're happy!
+								match_type = ".."; // "perfect";
+								// System.out.println("REF-PM-> " + sap_name1 + " (" + sap_street + ") / " + ref_name1 + " (" + ref_street + ")");
+								prox = 1.5;	// Make sure that we can continue
+								index = i;
+								break;
+							} else {
+								// Case 2: The street match is not perfect... how close are we?
+								sap_street = replaceUmlauteAndChars(sap_street).replaceAll("-|\\.", "").trim();
+								ref_street = replaceUmlauteAndChars(ref_street).replaceAll("-|\\.", "");
+								double jc_prox = jaccard.proximity(sap_street, ref_street);
+								double jw_prox = jaro_winkler.proximity(sap_street, ref_street);
+								if (jc_prox>=0.5 || (jc_prox>0.1 && jw_prox>0.66)) {
+									// Case 2a: Partial match of addresses and perfect ZIP match
+									if (!ref_zip.isEmpty() && ref_zip.equals(sap_zip)) {
+										// System.out.println("REF2-  -> (" + jc_prox + "," + jw_prox + ") " + sap_street + " / " + ref_street);
+										match_type = ".."; // "perfect, but address typo";
+										prox = 1.5;
+										index = i;
+										break;
+									}
 								} else {
-									// Case 2: The street match is not perfect... how close are we?
-									sap_street = replaceUmlauteAndChars(sap_street);
-									sap_street = sap_street.replaceAll("-|\\.", "").trim();
-									if (sap_street.length()>2) {
-										ref_street = replaceUmlauteAndChars(ref_street);
-										ref_street = ref_street.replaceAll("-|\\.", "");
-										double jc_prox = jaccard.proximity(sap_street, ref_street);
-										double jw_prox = jaro_winkler.proximity(sap_street, ref_street);
-										if (jc_prox>=0.5 || (jc_prox>0.1 && jw_prox>0.66)) {
-											// Case 2a
-											// System.out.println("REF2-  -> (" + jc_prox + "," + jw_prox + ") " + sap_street + " / " + ref_street);
-											perfect_match = true;
-											match_type = ".."; // "perfect, but address typo";
-											prox = jc_prox + 0.5;
+									// Case 2b: Address match pretty bad, but the ZIPs match?
+									if (!ref_zip.isEmpty() && ref_zip.equals(sap_zip)) {
+										if (name1_match) {
+											match_type = "ZO"; // "perfect, but address typo";
+											prox = 1.0;
 											index = i;
-											break;
-										}
-										// Case 2b
-										match_type = "??"; // "weird, zip match, but no address match";
-										index = i;
-										if (name_match)
-											break;
-									} else {
-										// Case 3: The match cannot be completed because street information is missing...
-										// System.out.println("REF3-NS-> (No street) " + sap_street + " / " + ref_street);
-										prox = 0.5;
-										index = i;
-										perfect_match = false;
-										match_type = "NS"; // "weird, no address in SAP file!";
-										double jc_prox = jaccard.proximity(sap_name1, ref_name1);
-										double jw_prox = jaro_winkler.proximity(sap_name1, ref_name1);
-										// Not too strict!
-										if (jc_prox>=0.66 || (jc_prox>0.1 && jw_prox>0.66)) {
 											break;
 										}
 									}
 								}
 							}
 						} else {
-							// Zip codes do not match!
-							if (!sap_name2.isEmpty() && !ref_name2.isEmpty() && sap_name2.equals(ref_name2)) {
-								// First and second name match perfectly, we're lucky!
-								System.out.println(sap_name2 + " / " + ref_name2);
-								prox = 1.0;
-								index = i;
-								perfect_match = true;
-								match_type = ".."; // "perfect match, but no zip!";
-								break;
-							} else {
-								double jc_prox = jaccard.proximity(sap_name2, ref_name2);
-								double jw_prox = jaro_winkler.proximity(sap_name2, ref_name2);
-								if (jc_prox>=0.6 || (jc_prox>0.25 && jw_prox>0.6)) {	
-									// System.out.println("REF4-  > (" + jc_prox + "," + jw_prox + ") " + sap_name2 + " / " + ref_name2);
-									prox = 0.5;
+							// Case 3:
+							if (sap_name2.length()>2 && ref_name2.length()>2) {
+								if (ref_name2.contains(sap_name2)) {
+									if (!ref_zip.isEmpty() && ref_zip.equals(sap_zip)) {
+										// Case 4: First and second name match perfectly, we're lucky!
+										// System.out.println(sap_name2 + " / " + ref_name2);
+										prox = 1.0;
+										index = i;
+										match_type = ".."; // "perfect match, but no zip!";
+										break;
+									}
+								}
+							}
+							// Case 4: The match cannot be completed because street information is missing...
+							// System.out.println("REF3-NS-> (No street) " + sap_street + " / " + ref_street);
+							if (sap_street.isEmpty() || ref_street.isEmpty()) {
+								if (!ref_zip.isEmpty() && ref_zip.equals(sap_zip)) {
+									prox = 1.0;
+									match_type = "NS"; // "weird, no address in SAP/Refdata file!";
 									index = i;
-									perfect_match = false;
-									match_type = "??"; // "weird, zips do not match and names match only partially!";
 									break;
+								} else {
+									if (name1_match) {
+										prox = 1.0;
+										match_type = "MI"; // "weird, no address in SAP/Refdata file!";
+										index = i;
+										break;
+									}
 								}
 							}
 						}
-					}
+					}				
 				}
 			}
 			i++;
@@ -432,12 +456,6 @@ public class TakedaParse {
 		RetPair ret = new RetPair(gln, "NO");	
 		if (!gln.isEmpty()) {
 			ret.second = match_type;
-			/*
-			if (perfect_match)
-				ret.second = "..";
-			else
-				ret.second = "??";
-			*/
 		}
 		
 		return ret;
