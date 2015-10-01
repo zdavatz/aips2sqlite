@@ -44,7 +44,13 @@ public class TakedaParse {
 	Map<String, User> m_medreg_gln_user_map = null;
 	Map<String, User> m_yaml_user_map = null;
 	Map<String, String> m_sap_gln_map = null;
+
+	JaroWinklerDistance m_jaro_winkler = JaroWinklerDistance.JARO_WINKLER_DISTANCE;
+    TokenizerFactory tokenizerFactory = IndoEuropeanTokenizerFactory.INSTANCE;
+    JaccardDistance m_jaccard = new JaccardDistance(tokenizerFactory);
 	
+    boolean DEBUG = false;
+    
 	public TakedaParse() {
 		
 	}
@@ -74,24 +80,22 @@ public class TakedaParse {
 	}
 	
 	private void testJaccard() {
-        TokenizerFactory tokenizerFactory = IndoEuropeanTokenizerFactory.INSTANCE; //CharacterTokenizerFactory.INSTANCE;
-        JaccardDistance jaccard = new JaccardDistance(tokenizerFactory);
-        JaroWinklerDistance jaro_winkler = JaroWinklerDistance.JARO_WINKLER_DISTANCE;
-        System.out.println(jaccard.proximity("Sidler S", "Trachsel Rudolf"));
-        System.out.println(jaccard.proximity("R Champion", "Champion Rolf"));
-        System.out.println(jaccard.proximity("B Arnet", "Arnet Bernhard"));
-        System.out.println(jaccard.proximity("Ch. & U. Köppel", "Christian Köppel"));
-        System.out.println(jaro_winkler.proximity("Nüesch Hans-Jakob", "HJ Nüesch"));
+        System.out.println(m_jaccard.proximity("Sidler S", "Trachsel Rudolf"));
+        System.out.println(m_jaccard.proximity("R Champion", "Champion Rolf"));
+        System.out.println(m_jaccard.proximity("B Arnet", "Arnet Bernhard"));
+        System.out.println(m_jaccard.proximity("Ch. & U. Köppel", "Christian Köppel"));
+        System.out.println(m_jaro_winkler.proximity("Nüesch Hans-Jakob", "HJ Nüesch"));
 	}
 	
 	private String minimalCleanString(String str) {
+		str = str.toLowerCase().replaceAll("dr\\.|sc\\.|nat\\.|med\\.|méd\\.|[\\s.\\.]med\\s|dres\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|fmh|\\.|&|\\s+\\s*co$|\\+", "").trim();		
 		str = str.replaceAll("\\s+|-", " ").trim();
 		return replaceUmlauteAndChars(str);
 	}
 	
 	private String cleanString(String str) {
 		str = str.toLowerCase().replaceAll("standort|apotheke|farmacia|pharmacie|filiale|\\sag$|\\ssa$|\\sgmbh$\\sde\\s|rg\\.|/\\s*rechg|/\\s*apo", "").trim();
-		str = str.toLowerCase().replaceAll("dr\\.|sc\\.|nat\\.|med\\.|méd\\.|[\\s.\\.]med\\s|dres\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|fmh|\\.|&|\\+", "").trim();
+		str = str.toLowerCase().replaceAll("dr\\.|sc\\.|nat\\.|med\\.|méd\\.|[\\s.\\.]med\\s|dres\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|fmh|\\.|&|\\s+\\s*co$|\\+", "").trim();
 		str = str.replaceAll("\\s+|-", " ").trim();
 		return replaceUmlauteAndChars(str);
 	}
@@ -100,6 +104,14 @@ public class TakedaParse {
 		str = str.replaceAll("ph", "f");
 		str = str.replaceAll("è", "e").replaceAll("é", "e").replaceAll("à", "a");
 		return str.replaceAll("ä", "ae").replace("ö", "oe").replaceAll("ü", "ue");
+	}
+	
+	private boolean stringsMatch(String str1, String str2) {  
+		double jc_prox = m_jaccard.proximity(str1, str2);
+		if (jc_prox>0.98) {
+			return true;	
+		}
+		return false;
 	}
 	
 	private class RetPair {
@@ -289,7 +301,6 @@ public class TakedaParse {
 		int fallback_index = -1;
 		String match_type = "";
 		String fallback_match_type = "";
-		double prox = 0.0;
 
 		JaroWinklerDistance jaro_winkler = JaroWinklerDistance.JARO_WINKLER_DISTANCE;
         TokenizerFactory tokenizerFactory = IndoEuropeanTokenizerFactory.INSTANCE;
@@ -332,27 +343,41 @@ public class TakedaParse {
 					// Init bools
 					boolean possible_match = false;
 					boolean name1_match = false;
-
-					// Assumpation: both names are NOT empty
-					if (!ref_name1.isEmpty() && !sap_name1.isEmpty() && ref_name1.contains(sap_name1)) {
-						prox = 1.0;
+					
+					if (!name1_match && !ref_name1.isEmpty() && !sap_name1.isEmpty() && stringsMatch(ref_name1, sap_name1)) {
+						possible_match = name1_match = true;
+					}
+					if (!name1_match && !ref_name2.isEmpty() && !sap_name2.isEmpty() && stringsMatch(ref_name2, sap_name2)) {
+						// Lowest prio
+						possible_match = true;
+					}
+					if (!name1_match && !ref_name2.isEmpty() && !sap_name1.isEmpty() && stringsMatch(ref_name2, sap_name1)) {
+						possible_match = name1_match = true;
+					}
+					if (!name1_match && !ref_name1.isEmpty() && !sap_name2.isEmpty() && stringsMatch(ref_name1, sap_name2)) {
+						possible_match = name1_match = true;
+					}					
+					if (!ref_name1.isEmpty() && !sap_name1.isEmpty() && (ref_name1.contains(sap_name1) || sap_name1.contains(ref_name1))) {
 						possible_match = true;
 						if (ref_name1.equals(sap_name1))
 							name1_match = true;
 					}
 					if (!name1_match && !ref_name2.isEmpty() && !sap_name1.isEmpty() && ref_name2.contains(sap_name1)) {
-						prox = 1.0;
 						possible_match = true;
 						if (ref_name2.equals(sap_name1))
 							name1_match = true;
 					}
+					if (!name1_match && !ref_name1.isEmpty() && !sap_name2.isEmpty() && ref_name1.contains(sap_name2)) {
+						possible_match = true;
+						if (ref_name1.equals(sap_name2))
+							name1_match = true;
+					}					
 					if (!name1_match) {
 						// Less simple check... edit distances
 						double jc_prox = jaccard.proximity(sap_name1, ref_name1);
 						double jw_prox = jaro_winkler.proximity(sap_name1, ref_name1);
 						// Not too strict!
 						if (jc_prox>=0.5 || (jc_prox>0.1 && jw_prox>0.66)) {
-							prox = jc_prox;
 							possible_match = true;
 						}
 					}
@@ -360,11 +385,11 @@ public class TakedaParse {
 						if (!ref_name2.isEmpty() && !sap_name2.isEmpty()) {
 							double jc_prox_name2 = jaccard.proximity(sap_name2, ref_name2);
 							if (ref_name2.equals(sap_name2) || jc_prox_name2>0.9) {
-								System.out.println(jc_prox_name2 + " -> " + sap_name2 + " / " + ref_name2);
 								// Perfect match
 								if (name1_match) {
+									if (DEBUG)
+										System.out.println(jc_prox_name2 + " -> " + sap_name2 + " / " + ref_name2);
 									match_type = "..";
-									prox = 1.5;
 									index = i;
 									break;
 								}
@@ -375,9 +400,9 @@ public class TakedaParse {
 								// Strict
 								if (jc_prox>=0.75 || (jc_prox>0.33 && jw_prox>0.75)) {
 									if (name1_match) {
-										// System.out.println(jc_prox + " / " + jw_prox + " -> " + sap_name2 + " / " + ref_name2);
+										if (DEBUG)
+											System.out.println(jc_prox + " / " + jw_prox + " -> " + sap_name2 + " / " + ref_name2);
 										match_type = "..";
-										prox = 1.5;
 										index = i;
 										break;
 									}
@@ -388,15 +413,13 @@ public class TakedaParse {
 							if (sap_street.equals(ref_street)) {
 								if (!ref_zip.isEmpty() && !sap_zip.isEmpty() && ref_zip.equals(sap_zip)) {
 									// Case 1: Perfect match... we're happy!
+									if (DEBUG)
+										System.out.println("REF-PM-> " + sap_name1 + " (" + sap_street + ") / " + ref_name1 + " (" + ref_street + ")");
 									match_type = ".."; // "perfect";
-									// System.out.println("REF-PM-> " + sap_name1 + " (" + sap_street + ") / " + ref_name1 + " (" + ref_street + ")");
-									prox = 1.5;	// Make sure that we can continue
 									index = i;
 									break;
 								} else {
-									prox = 1.0;	// Make sure that we can continue
 									fallback_match_type = "MI"; // "perfect";
-									// System.out.println("REF-PM-> " + sap_name1 + " (" + sap_street + ") / " + ref_name1 + " (" + ref_street + ")");
 									fallback_index = i;
 								}
 							} else {
@@ -408,9 +431,9 @@ public class TakedaParse {
 								if (jc_prox>=0.5 || (jc_prox>0.1 && jw_prox>0.66)) {
 									// Case 2a: Partial match of addresses and perfect ZIP match
 									if (!ref_zip.isEmpty() && ref_zip.equals(sap_zip)) {
-										// System.out.println("REF2-  -> (" + jc_prox + "," + jw_prox + ") " + sap_street + " / " + ref_street);
+										if (DEBUG)
+											System.out.println("REF2-  -> (" + jc_prox + "," + jw_prox + ") " + sap_street + " / " + ref_street);
 										match_type = ".."; // "perfect, but address typo";
-										prox = 1.5;
 										index = i;
 										break;
 									}
@@ -418,8 +441,9 @@ public class TakedaParse {
 									// Case 2b: Address match pretty bad, but the ZIPs match?
 									if (!ref_zip.isEmpty() && ref_zip.equals(sap_zip)) {
 										if (name1_match) {
+											if (DEBUG)
+												System.out.println("ZO   -> (" + jc_prox + "," + jw_prox + ") " + sap_zip + " / " + ref_zip);
 											match_type = "ZO"; // "perfect, but address typo";
-											prox = 1.0;
 											index = i;
 											break;
 										}
@@ -434,8 +458,8 @@ public class TakedaParse {
 								if (ref_name2.contains(sap_name2)) {
 									if (!ref_zip.isEmpty() && ref_zip.equals(sap_zip)) {
 										// Case 4: First and second name match perfectly, we're lucky!
-										// System.out.println(sap_name2 + " / " + ref_name2);
-										prox = 1.0;
+										if (DEBUG)
+											System.out.println(sap_name2 + " / " + ref_name2);
 										index = i;
 										match_type = ".."; // "perfect match, but no zip!";
 										break;
@@ -443,17 +467,14 @@ public class TakedaParse {
 								}
 							}
 							// Case 4: The match cannot be completed because street information is missing...
-							// System.out.println("REF3-NS-> (No street) " + sap_street + " / " + ref_street);
 							if (sap_street.isEmpty() || ref_street.isEmpty()) {
 								if (!ref_zip.isEmpty() && ref_zip.equals(sap_zip)) {
 									if (name1_match) {
-										prox = 1.0;
 										fallback_match_type = "NS"; // "weird, no address in SAP/Refdata file!";
 										fallback_index = i;
 									}
 								} else {
 									if (name1_match) {
-										prox = 1.0;
 										fallback_match_type = "MI"; // "weird, no address in SAP/Refdata file!";
 										fallback_index = i;
 									}
@@ -472,15 +493,12 @@ public class TakedaParse {
 			index = fallback_index;
 			match_type = fallback_match_type;
 		}
-		if (prox<2.0) {
-			if (gln.isEmpty()) {
-				if (index>=0) {
-					RefdataItem ref = m_refdata_list.get(index);
-					if (ref!=null)
-						gln = ref.gln_code;
-				}
-			}
+		if (index>=0) {
+			RefdataItem ref = m_refdata_list.get(index);
+			if (ref!=null)
+				gln = ref.gln_code;
 		}
+
 		// Phase 3: Filter
 		RetPair ret = new RetPair(gln, "NO");	
 		if (!gln.isEmpty()) {
@@ -499,7 +517,7 @@ public class TakedaParse {
 			String sap_id = entry.getKey();
 			User sap_entry = entry.getValue();
 			// First process all "NAT" (natürliche Personen)
-			if (/*sap_id.contains("180273")*/ true) {
+			if (sap_id.contains("17643") /* true */) {
 				if (sap_entry.is_human) {
 					// Next instruction is the heavy-weight!
 					RetPair ret_pair = retrieveGlnCodeNat(sap_entry);
