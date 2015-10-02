@@ -44,12 +44,23 @@ public class TakedaParse {
 	Map<String, User> m_medreg_gln_user_map = null;
 	Map<String, User> m_yaml_user_map = null;
 	Map<String, String> m_sap_gln_map = null;
+	Map<String, RetPair> m_sap_flag_map = null;
 
 	JaroWinklerDistance m_jaro_winkler = JaroWinklerDistance.JARO_WINKLER_DISTANCE;
     TokenizerFactory tokenizerFactory = IndoEuropeanTokenizerFactory.INSTANCE;
     JaccardDistance m_jaccard = new JaccardDistance(tokenizerFactory);
 	
     boolean DEBUG = false;
+	
+	private class RetPair {
+		String first;
+		String second;		
+		
+		RetPair(String first, String second) {
+			this.first = first;
+			this.second = second;
+		}
+	}
     
 	public TakedaParse() {
 		
@@ -112,16 +123,6 @@ public class TakedaParse {
 			return true;	
 		}
 		return false;
-	}
-	
-	private class RetPair {
-		String first;
-		String second;		
-		
-		RetPair(String first, String second) {
-			this.first = first;
-			this.second = second;
-		}
 	}
 	
 	private RetPair retrieveGlnCodeNat(User user) {
@@ -510,6 +511,7 @@ public class TakedaParse {
 	
 	private void generateGlnSapMap() {
 		m_sap_gln_map = new TreeMap<String, String>();
+		m_sap_flag_map = new TreeMap<String, RetPair>();
 		//		
 		int num_entries = 1;
 		// Loop trough Takeda's SAP to customer map
@@ -517,10 +519,11 @@ public class TakedaParse {
 			String sap_id = entry.getKey();
 			User sap_entry = entry.getValue();
 			// First process all "NAT" (natürliche Personen)
-			if (sap_id.contains("17643") /* true */) {
+			if (/*sap_id.contains("1766")*/ true) {
 				if (sap_entry.is_human) {
 					// Next instruction is the heavy-weight!
 					RetPair ret_pair = retrieveGlnCodeNat(sap_entry);
+					m_sap_flag_map.put(sap_id, ret_pair);
 					// Extract gln code
 					String gln_code = ret_pair.first;
 					if (gln_code!=null && !gln_code.isEmpty()) {
@@ -540,6 +543,7 @@ public class TakedaParse {
 				} else {
 					// Next instruction is the heavy-weight!
 					RetPair ret_pair = retrieveGlnCodeJur(sap_entry);
+					m_sap_flag_map.put(sap_id, ret_pair);
 					// Extract gln code
 					String gln_code = ret_pair.first;
 					if (gln_code!=null && !gln_code.isEmpty()) {
@@ -564,7 +568,7 @@ public class TakedaParse {
 	}
 	
 	void exportCsvFile() {
-		String csv_file = "sap_id;gln_code;name1;name2;sd;bm;specialities;status" + "\n";
+		String csv_file = "sap_id;gln_code;name1;name2;sd;bm;specialities;status;flag" + "\n";
 		for (Map.Entry<String, String> entry : m_sap_gln_map.entrySet()) {
 			String sap_id = entry.getKey();
 			String gln_code = entry.getValue();
@@ -574,6 +578,8 @@ public class TakedaParse {
 			String bm = "";
 			String specialities = "";
 			String status = "";
+			String matching_flag = "";
+
 			// Medreg file
 			if (m_medreg_gln_user_map.containsKey(gln_code)) {
 				sd = m_medreg_gln_user_map.get(gln_code).selbst_disp ? "ja" : "nein";
@@ -597,6 +603,10 @@ public class TakedaParse {
 					status = user.status.equals("A") ? "ja" : "nein";
 				}
 			}
+			// Get flag
+			if (m_sap_flag_map.containsKey(sap_id))
+				matching_flag = m_sap_flag_map.get(sap_id).second;
+			
 			csv_file += sap_id + ";" 
 					+ gln_code + ";" 
 					+ name1 + ";" 
@@ -604,7 +614,8 @@ public class TakedaParse {
 					+ sd + ";" 
 					+ bm + ";" 
 					+ specialities + ";" 
-					+ status 
+					+ status + ";"
+					+ matching_flag
 					+ System.getProperty("line.separator"); 
 		}		
 		FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT, "takeda_clean.csv");
