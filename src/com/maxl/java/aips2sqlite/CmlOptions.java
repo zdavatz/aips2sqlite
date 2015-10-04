@@ -42,6 +42,7 @@ public class CmlOptions {
 	public static boolean DESITIN_DB = false;
 	public static boolean ONLY_DESITIN_DB = false;
 	public static boolean TAKEDA_SAP = false;
+	public static String TAKEDA_RANGE = "";
 	public static String STATS = "";	
 	public static String OPT_MED_TITLE = "";
 	public static String OPT_MED_REGNR = "";

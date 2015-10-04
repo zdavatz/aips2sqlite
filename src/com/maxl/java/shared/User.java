@@ -30,6 +30,7 @@ public class User implements java.io.Serializable {
 	public String sap_id = "";
 	public String specialities = "";
 	public String capabilities = "";
+	public String bm_type = "";
 	public String status = "A";		// Default: Aktiv
 	
 	public User() {
