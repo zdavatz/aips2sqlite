@@ -50,7 +50,7 @@ public class TakedaParse {
     TokenizerFactory tokenizerFactory = IndoEuropeanTokenizerFactory.INSTANCE;
     JaccardDistance m_jaccard = new JaccardDistance(tokenizerFactory);
 
-    boolean DEBUG = false;
+    boolean DEBUG = true;
 	
 	private class RetPair {
 		String first;
@@ -108,8 +108,9 @@ public class TakedaParse {
 	private String minimalCleanString(String str) {
 		str = str.toLowerCase();
 		str = str.replaceAll("\\sag$|\\ssa$|\\sgmbh$", "");
-		str = str.replaceAll("dr\\.|sc\\.|nat\\.|med\\.|méd\\.|[\\s.\\.]med\\s|gebr\\.|dres\\.|pharm\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|monsieur\\s|fmh|\\.|&|&amp;|\\+\\s*co$|\\+", "").trim();		
-		str = str.replaceAll("\\sde\\s|\\sde\\s*la\\s|\\s+|-|/", " ").trim();
+		str = str.replaceAll("dr\\.|sc\\.|nat\\.|med\\.|méd\\.|[\\s.\\.]med\\s|gebr\\.|dres\\.|pharm\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|madame\\s|monsieur\\s|fmh|\\.|&|&amp;|\\+\\s*co$|\\+", "").trim();		
+		str = str.replaceAll("\\s+|-|/", " ").trim();
+		str = str.replaceAll("\\sde\\s|\\sde\\s*la\\s", " ").trim();
 		return replaceUmlauteAndChars(str);
 	}
 	
@@ -118,8 +119,9 @@ public class TakedaParse {
 		// removed: apotheke|farmacia|pharmacie
 		str = str.replaceAll("standort|filiale|\\sag$|\\ssa$|\\sgmbh$|rg\\.|/\\s*rechg|/\\s*apo", "").trim();
 		str = str.replaceAll("regionalspital|kantonales\\s*spital", "spital").trim();
-		str = str.replaceAll("dr\\.|sc\\.|nat\\.|med\\.|méd\\.|[\\s.\\.]med\\s|gebr\\.|dres\\.|pharm\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|monsieur\\s|fmh|\\.|&|&amp;|\\+\\s*co$|\\+", "").trim();
-		str = str.replaceAll("\\sde\\s|\\sde\\s*la\\s|\\s+|-|/", " ").trim();
+		str = str.replaceAll("dr\\.|sc\\.|nat\\.|med\\.|méd\\.|[\\s.\\.]med\\s|gebr\\.|dres\\.|pharm\\.|docteur|docteuer|pd\\s|professeur|prof\\.|frau\\s|herr\\s|herrn\\s|madame\\s|monsieur\\s|fmh|\\.|&|&amp;|\\+\\s*co$|\\+", "").trim();
+		str = str.replaceAll("\\s+|-|/", " ").trim();
+		str = str.replaceAll("\\sde\\s|\\sde\\s*la\\s", " ").trim();
 		return replaceUmlauteAndChars(str);
 	}
 	
@@ -379,7 +381,7 @@ public class TakedaParse {
 					boolean street_special = false;
 					
 					// First check if ref_name contains "gruppierung"
-					String[] groups = {"sun store", "galenicare"};
+					String[] groups = {"sun store", "galenicare", "farmacieplus"};
 					for (String g : groups) {
 						if (!ref_zip.isEmpty() && !ref_street.isEmpty()) {
 							if (sap_name1.contains(g) || sap_name2.contains(g)) {
@@ -392,13 +394,11 @@ public class TakedaParse {
 								street_special = true;
 							}
 						}			
-					}
-
-					/*
-					if (sap_street.contains("de saule") && ref_street.contains("de saule"))
-						System.out.println(sap_name1 + " / " + sap_name2 + " -> " + ref_name1 + " / " + ref_name2);
-					*/
+					}			
 					
+					if (sap_name1.contains("cura drogerie") && ref_name1.contains("cura drogerie"))
+						System.out.println(sap_name1 + " / " + ref_name1);
+
 					if (!name1_match && !ref_name1.isEmpty() && !combo_sap_name.isEmpty() && stringsMatch(ref_name1, combo_sap_name)) {
 						possible_match = name1_match = true;												
 					}
@@ -408,7 +408,6 @@ public class TakedaParse {
 					if (!name1_match && !sap_name1.isEmpty() && !combo_ref_name.isEmpty() && stringsMatch(sap_name1, combo_ref_name)) {
 						possible_match = name1_match = true;												
 					}
-
 					if (!name1_match && !ref_name1.isEmpty() && !sap_name1.isEmpty() && stringsMatch(ref_name1, sap_name1)) {
 						possible_match = name1_match = true;
 					}
@@ -441,7 +440,7 @@ public class TakedaParse {
 						double jc_prox = jaccard.proximity(sap_name1, ref_name1);
 						double jw_prox = jaro_winkler.proximity(sap_name1, ref_name1);
 						// Not too strict!
-						if (jc_prox>=0.7 || (jc_prox>0.2 && jw_prox>0.7)) {
+						if (jc_prox>=0.66 || (jc_prox>0.2 && jw_prox>0.7)) {
 							possible_match = true;
 						}
 					}
@@ -511,7 +510,8 @@ public class TakedaParse {
 											match_type = ".."; // "perfect, but address typo";
 											index = i;
 											match_level = 6;
-											// break;
+											if (jc_prox>=0.75)
+												break;
 										} else {
 											if (!street_special && match_level<5) {
 												if (DEBUG)
