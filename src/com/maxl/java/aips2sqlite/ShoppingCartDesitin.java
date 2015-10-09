@@ -59,6 +59,7 @@ public class ShoppingCartDesitin {
 					// Fill in product map
 					product.eancode = ean;
 					product.fap = product.efp = exfactory_price;
+					product.vat = 2.5f;	// see ZD email 9/10/2015
 					product.author = "Desitin Pharma GmbH";
 					m_map_products.put(ean, product);				
 					// Fill in rebate map

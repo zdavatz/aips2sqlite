@@ -368,7 +368,17 @@ public class GlnCodes implements java.io.Serializable {
 			cust.city = token[12];
 			cust.phone = token[13];
 			cust.email = token[14];
-			cust.owner = "d";
+			String type = token[24];
+			if (type.equals("10"))
+				cust.category = "Spital";
+			else if (type.equals("20"))
+				cust.category = "Arzt";
+			else if (type.equals("30"))
+				cust.category = "Apotheke";
+			else if (type.equals("40"))
+				cust.category = "Grossist";
+			cust.owner = "d";			// d = Desitin
+
 			m_desitin_addresses.put(extended_gln_code, cust);
 		}
 	}

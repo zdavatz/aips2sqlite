@@ -46,6 +46,7 @@ public class AddProductInfo {
 				4 - public price
 				5 - fap price*
 				6 - fep price
+				7 - vat
 				8 - additional info (e.g. swissmedic_cat)*
 				9 - ean code
 		*/
@@ -68,6 +69,7 @@ public class AddProductInfo {
 							Product product = m_map_products.get(eancode);
 							float p_fap = product.fap;
 							float p_efp = product.efp;
+							float p_vat = product.vat;
 							// Do something only if there is no EFP and the product EFP is >=0
 							if (entry[3].isEmpty() && p_efp>=0.0f) {
 								entry[3] = String.format("CHF %.2f", p_efp);
@@ -86,8 +88,12 @@ public class AddProductInfo {
 								new_pack_info_str = entry[0] + String.format(", EFP %.2f", p_fap) + " [" + entry_8 + "]";
 								System.out.println("Re-processed pack info string: " + new_pack_info_str);
 							}
+							// FAP
 							if (entry[5].isEmpty() && p_fap>=0.0f)
 								entry[5] = String.format("CHF %.2f", p_fap);
+							// VAT
+							if (entry[7].isEmpty() && p_vat>=0.0f)
+								entry[7] = String.format("%.2f", p_vat);;
 						}
 						// Build new packages string with updated price info!	
 						for (int i=0; i<=10; ++i) {
