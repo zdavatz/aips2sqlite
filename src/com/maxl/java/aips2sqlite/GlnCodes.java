@@ -368,7 +368,9 @@ public class GlnCodes implements java.io.Serializable {
 			cust.city = token[12];
 			cust.phone = token[13];
 			cust.email = token[14];
-			String type = token[24];
+			String type = "";
+			if (token.length>23)
+				type = token[23];
 			if (type.equals("10"))
 				cust.category = "Spital";
 			else if (type.equals("20"))
