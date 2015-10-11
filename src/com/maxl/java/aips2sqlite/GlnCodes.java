@@ -369,15 +369,15 @@ public class GlnCodes implements java.io.Serializable {
 			cust.phone = token[13];
 			cust.email = token[14];
 			String type = "";
-			if (token.length>23)
-				type = token[23];
-			if (type.equals("10"))
+			if (token.length>22)
+				type = token[22];
+			if (type.equals("10") || type.toLowerCase().equals("spital"))
 				cust.category = "Spital";
-			else if (type.equals("20"))
+			else if (type.equals("20") || type.toLowerCase().equals("arzt"))
 				cust.category = "Arzt";
-			else if (type.equals("30"))
+			else if (type.equals("30") || type.toLowerCase().equals("apotheke"))
 				cust.category = "Apotheke";
-			else if (type.equals("40"))
+			else if (type.equals("40") || type.toLowerCase().equals("grossist"))
 				cust.category = "Grossist";
 			cust.owner = "d";			// d = Desitin
 
