@@ -46,7 +46,7 @@ public class ShoppingCartDesitin {
 		// Read from file
 		String file_name = in_dir + "/" + Constants.FILE_ARTICLES_DESITIN;
 		try {
-			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(file_name), "UTF-8"));
+			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(file_name), "Cp1252"));
 			List<String[]> my_entries = reader.readAll();
 			int num_lines = 0;
 			for (String[] s : my_entries) {

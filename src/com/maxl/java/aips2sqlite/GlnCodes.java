@@ -462,7 +462,7 @@ public class GlnCodes implements java.io.Serializable {
 			File file = new File(file_name);
 			if (!file.exists()) 
 				return null;
-			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(file_name)));	// Encoding: "Cp1252" 
+			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(file_name), "Cp1252"));	// Encoding: "Cp1252" 
 			List<String[]> my_entries = reader.readAll();
 			int num_lines = 0;
 			for (String[] token : my_entries) {
