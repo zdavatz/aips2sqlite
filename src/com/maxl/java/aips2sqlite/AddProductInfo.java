@@ -235,6 +235,10 @@ public class AddProductInfo {
 		}
 	}
 	
+	/**
+	 * Prune pricing information - these medis cannot be ordered
+	 * @param list_of_authors
+	 */
 	void clean(List<String> list_of_authors) {
 		for (String author : list_of_authors) {
 			List<Long> list_of_delete = new ArrayList<Long>();

@@ -310,7 +310,7 @@ public class Aips2Sqlite {
 			AddProductInfo api = new AddProductInfo(sql_db, map_products);
 			api.process();
 			api.complete(Arrays.asList("ibsa"));
-			api.clean(Arrays.asList("ibsa"));
+			// api.clean(Arrays.asList("ibsa"));
 		}
 		
 		// Finalize tables and close db

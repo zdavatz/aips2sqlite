@@ -794,7 +794,8 @@ public class RealExpertInfo {
 			
 			for (MedicalInformations.MedicalInformation m : m_med_list) {
 				// --> Read FACHINFOS! <--				
-				if (m.getLang().equals(CmlOptions.DB_LANGUAGE) && m.getType().equals("fi")) {
+				if (m.getLang().equals(CmlOptions.DB_LANGUAGE) && m.getType().equals("fi")
+						/* && m.getAuthHolder().toLowerCase().contains("ibsa") */) {				
 					// Database contains less than 5000 medis - this is a safe upperbound!
 					if (tot_med_counter<5000) {						
 						// Trim titles of leading and trailing spaces
