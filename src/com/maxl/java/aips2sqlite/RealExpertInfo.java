@@ -1075,7 +1075,8 @@ public class RealExpertInfo {
 									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
 									int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
 									try {
-										section_indications = html_sanitized.substring(idx1, idx1+idx2);
+										if (idx1>=0 && idx2>=0 && idx1<(idx1+idx2))
+											section_indications = html_sanitized.substring(idx1, idx1+idx2);
 									} catch(StringIndexOutOfBoundsException e) {
 										e.printStackTrace();
 									}
