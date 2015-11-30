@@ -1486,12 +1486,22 @@ public class RealExpertInfo {
 						String withdrawn_str = "";
 						if (pi_row.get(10).length()>0)
 							withdrawn_str = ", " + pi_row.get(10);
-						// --> Add ex factory price information
-						String price_efp = !efp.isEmpty() ? "EFP" + efp.replace("CHF", "") : "FEP" + fep.replace("CHF", "");
-						String price_pp = !pup.isEmpty() ? ", PP" + pup.replace("CHF", "") : "";
-						if (efp.length()>0 || fep.length()>0) {
+						// --> Add ex factory and public price information
+						String price_efp = !efp.isEmpty() ? "EFP" + efp.replace("CHF", "") : "";
+						String price_fep = !fep.isEmpty() ? "FEP" + fep.replace("CHF", "") : "";
+						String price_pp = !pup.isEmpty() ? "PP" + pup.replace("CHF", "") : "";
+
+						String price_info = "";
+						if (price_efp.length()>0)
+							price_info += ", " + price_efp;
+						else if (price_fep.length()>0)
+							price_info += ", " + price_fep;							
+						if (price_pp.length()>0)
+							price_info += ", " + price_pp;
+						
+						if (price_info.length()>0) {
 							// The rest of the package information
-							String append_str = ", " + price_efp + price_pp 
+							String append_str = price_info 
 									+ withdrawn_str + " [" + pi_row.get(5) 
 									+ pi_row.get(11) + pi_row.get(12) 
 									+ flagsb_str + orggen_str + "]";

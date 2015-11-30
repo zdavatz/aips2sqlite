@@ -27,6 +27,7 @@ public class User implements java.io.Serializable {
 	public boolean selbst_disp = false;
 	public boolean bet_mittel = false;
 	public boolean is_human = true;
+	
 	public String sap_id = "";
 	public String specialities = "";
 	public String capabilities = "";
