@@ -62,6 +62,7 @@ public class Constants {
 	// Files zur Rose
 	public static final String DIR_ZURROSE = "./input/zurrose/";		
 	public static final String CSV_FILE_DISPO_ZR = "artikel_stamm_zurrose.csv";
+	public static final String CSV_FILE_DISPO_NEW_ZR = "artikel_stamm_zurrose_neu.csv";	
 	public static final String CSV_LIKE_DB_ZR = "like_db_zurrose.csv";
 	// Files Desitin
 	public static final String DIR_DESITIN = "./input/desitin/";		

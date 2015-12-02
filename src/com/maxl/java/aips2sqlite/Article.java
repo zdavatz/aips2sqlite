@@ -14,6 +14,9 @@ public class Article {
 	public String rose_supplier = "";
 	public String availability = "";
 	public String rose_base_price = "";
+	public String replace_ean_code = "";
+	public String replace_pharma_code = "";
+	public boolean off_the_market = false;
 	public int pack_size = 0;			// Packungsinhalt
 	public int stock = 0;
 	public int likes = 0;

@@ -990,17 +990,15 @@ public class HtmlUtils {
 		mDoc.select("date").first().text(date_str);
 
 		// Add hash code
-		mDoc.select("date").after("<hash></hash>");
-		mDoc.select("hash").first().text(hash_code);
+		mDoc.select("date").first().after("<hash>" + hash_code + "</hash>");
 		
 		// Add language
-		mDoc.select("hash").after("<lang></lang>");
 		if (mLanguage.equals("de"))
-			mDoc.select("lang").first().text("DE");
+			mDoc.select("hash").first().after("<lang>DE</lang>");
 		else if (mLanguage.equals("fr"))
-			mDoc.select("lang").first().text("FR");
+			mDoc.select("hash").first().after("<lang>FR</lang>");
 		else if (mLanguage.equals("it"))
-			mDoc.select("lang").first().text("IT");
+			mDoc.select("hash").first().after("<lang>IT</lang>");			
 		else
 			return "";
 		

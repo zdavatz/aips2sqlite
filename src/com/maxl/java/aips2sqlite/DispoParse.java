@@ -23,8 +23,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -40,8 +40,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -60,7 +63,7 @@ public class DispoParse {
 	
 	private Set<String> unit_set = new HashSet<String>();
 	
-	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes";
+	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, replacepharma, offmarket";
 	
 	public DispoParse() {
 		// Initialize the database
@@ -70,7 +73,9 @@ public class DispoParse {
 	public void process(String type) {		
 		// Process atc map
 		getAtcMap();
-
+		// Get SL map
+		getSLMap();
+		
 		if (type.equals("csv")) {
 			// Process likes
 			processLikes();
@@ -85,7 +90,7 @@ public class DispoParse {
 			Class.forName("org.sqlite.JDBC");
 			
 			// Touch db file if it does not exist
-			String db_url = System.getProperty("user.dir") + "/output/rose_db_full.db";
+			String db_url = System.getProperty("user.dir") + "/output/rose_db_new_full.db";
 			m_db_file = FileOps.touchFile(db_url);				
 			if (m_db_file==null)
 				throw new IOException();
@@ -121,7 +126,8 @@ public class DispoParse {
 		return "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 	        		"title TEXT, size TEXT, galen TEXT, unit TEXT, " +
 	        		"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
-	        		"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER);";
+	        		"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
+	        		"replaceean TEXT, replacepharma TEXT, offmarket INTEGER);";
 	}
 	
 	private void createArticleDB()  {		       
@@ -130,7 +136,7 @@ public class DispoParse {
 	        stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
 	        stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
 	        // Insert statement	
-	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
+	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
@@ -152,6 +158,9 @@ public class DispoParse {
 			m_prep_rosedb.setString(11, article.availability);
 			m_prep_rosedb.setString(12, article.rose_supplier);		
 			m_prep_rosedb.setInt(13, article.likes);
+			m_prep_rosedb.setString(14, article.replace_ean_code);
+			m_prep_rosedb.setString(15, article.pharma_code);
+			m_prep_rosedb.setBoolean(16, article.off_the_market);
 			m_prep_rosedb.addBatch();        
 			conn.setAutoCommit(false);
 			m_prep_rosedb.executeBatch();
@@ -268,9 +277,12 @@ public class DispoParse {
 		 *  10: Galen. Form
 		 *  11: Dosierung
 		 *  12: Rose Basispreis (rbp)
+		 *  13: EAN
+		 *  14: Ersatzarztartikelnummer
+		 *  15: ausser Handel (a.H.)
 		 */
 		try {
-			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_DISPO_ZR);
+			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_DISPO_NEW_ZR);
 			if (!file.exists()) 
 				return;
 			FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
@@ -278,9 +290,9 @@ public class DispoParse {
 			String line;
 			int num_rows = 0;
 			List<Article> list_of_articles = new ArrayList<Article>();
-			while ((line = br.readLine())!=null && num_rows<9000) {
-				String token[] = line.split(";");
-				if (num_rows>0 && token.length>12) {
+			while ((line = br.readLine())!=null && num_rows<10000) {
+				String token[] = line.split(";", -1);
+				if (num_rows>0 && token.length>15) {
 					Article article = new Article();					
 					// Pharmacode
 					if (token[0]!=null)	
@@ -342,6 +354,18 @@ public class DispoParse {
 						if (token[12].matches("^[0-9]+(\\.[0-9]{1,2})?$"))
 							article.rose_base_price = String.format("%.2f", Float.parseFloat(token[12]));
 					}
+					// Ersatzartikel EAN
+					if (token[13]!=null) {
+						if (token[13].length()==13)
+							article.replace_ean_code = token[13];
+					}
+					// Ersatzartikel Pharma
+					if (token[14]!=null)
+						article.replace_pharma_code = token[14];
+					// Ausser Handel
+					if (token[15]!=null)
+						article.off_the_market = token[15].toLowerCase().equals("ja");
+					
 					list_of_articles.add(article);
 					addArticleDB(article);
 					System.out.println(num_rows + " -> " + article.pack_title + " / likes = " + article.likes);
@@ -428,6 +452,56 @@ public class DispoParse {
 		if (token.length>1) {
 			unit_set.add(token[1].trim());
 		}
+	}
+
+	private void getSLMap() {
+		HashMap<String, Boolean> sl_map = new HashMap<String, Boolean>();
+		String tag_content = null;
+		XMLInputFactory xml_factory = XMLInputFactory.newInstance();
+		// Next instruction allows to read "escape characters", e.g. &amp;
+		xml_factory.setProperty("javax.xml.stream.isCoalescing", true);  // Decodes entities into one string
+		
+		try {
+			InputStream in = new FileInputStream(Constants.FILE_PREPARATIONS_XML);
+			XMLStreamReader reader = xml_factory.createXMLStreamReader(in, "UTF-8");
+			int num_rows = 0;
+			
+			// Keep moving the cursor forward
+			while (reader.hasNext()) {
+				int event = reader.next();
+				// Check if the element that the cursor is currently pointing to is a start element
+				switch(event) {
+				case XMLStreamConstants.START_DOCUMENT:
+					break;
+				case XMLStreamConstants.START_ELEMENT:
+					switch(reader.getLocalName().toLowerCase()) {
+					case "preparations":
+						break;
+					}
+					break;
+				case XMLStreamConstants.CHARACTERS:
+					tag_content = reader.getText().trim();
+					break;
+				case XMLStreamConstants.END_ELEMENT:
+					switch (reader.getLocalName().toLowerCase()) {
+					case "preparation":
+						num_rows++;
+						System.out.print("\rProcessing Refdata Partner file... " + num_rows);
+						break;
+					case "namede":
+						break;		
+					case "swissmedicno5":
+						break;
+					case "flagitlimitation":
+						break;					
+					}
+					break;
+				}
+			}
+		} catch(XMLStreamException | FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	
 	}
 	
 	private void getAtcMap() {
