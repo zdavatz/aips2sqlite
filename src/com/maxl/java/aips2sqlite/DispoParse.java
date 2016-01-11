@@ -59,11 +59,13 @@ public class DispoParse {
 	private PreparedStatement m_prep_rosedb;	
 	private Map<String, String> m_atc_map = null;
 	private Map<String, Integer> m_ean_likes = null;
+	private HashMap<String, String> m_flags_map = null;
 	private XSSFSheet m_dispo_articles_sheet = null;
 	
 	private Set<String> unit_set = new HashSet<String>();
 	
-	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, replacepharma, offmarket";
+	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, " +
+			"replacepharma, offmarket, flags";
 	
 	public DispoParse() {
 		// Initialize the database
@@ -127,7 +129,8 @@ public class DispoParse {
 	        		"title TEXT, size TEXT, galen TEXT, unit TEXT, " +
 	        		"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
 	        		"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
-	        		"replaceean TEXT, replacepharma TEXT, offmarket INTEGER);";
+	        		"replaceean TEXT, replacepharma TEXT, offmarket INTEGER, " +
+	        		"flags TEXT);";
 	}
 	
 	private void createArticleDB()  {		       
@@ -136,7 +139,7 @@ public class DispoParse {
 	        stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
 	        stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
 	        // Insert statement	
-	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
+	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
@@ -159,8 +162,9 @@ public class DispoParse {
 			m_prep_rosedb.setString(12, article.rose_supplier);		
 			m_prep_rosedb.setInt(13, article.likes);
 			m_prep_rosedb.setString(14, article.replace_ean_code);
-			m_prep_rosedb.setString(15, article.pharma_code);
+			m_prep_rosedb.setString(15, article.replace_pharma_code);
 			m_prep_rosedb.setBoolean(16, article.off_the_market);
+			m_prep_rosedb.setString(17, article.flags);
 			m_prep_rosedb.addBatch();        
 			conn.setAutoCommit(false);
 			m_prep_rosedb.executeBatch();
@@ -306,6 +310,13 @@ public class DispoParse {
 						if (article.ean_code.length()==13) {
 							String ean = article.ean_code;
 							article.regnr = ean.substring(4,9);
+							if (m_flags_map.containsKey(article.regnr)) {
+								String flags = m_flags_map.get(article.regnr);
+								if (flags.equals("Y"))
+									article.flags = "SL, SB 20%";
+								else if (flags.equals("N"))
+									article.flags = "SL, SB 10%";									
+							}
 							if (m_ean_likes.containsKey(ean))
 								article.likes = m_ean_likes.get(ean);	// LIKES!!!
 							else 
@@ -455,8 +466,9 @@ public class DispoParse {
 	}
 
 	private void getSLMap() {
-		HashMap<String, Boolean> sl_map = new HashMap<String, Boolean>();
-		String tag_content = null;
+		m_flags_map = new HashMap<String, String>();
+		String tag_content = "";
+		
 		XMLInputFactory xml_factory = XMLInputFactory.newInstance();
 		// Next instruction allows to read "escape characters", e.g. &amp;
 		xml_factory.setProperty("javax.xml.stream.isCoalescing", true);  // Decodes entities into one string
@@ -464,8 +476,11 @@ public class DispoParse {
 		try {
 			InputStream in = new FileInputStream(Constants.FILE_PREPARATIONS_XML);
 			XMLStreamReader reader = xml_factory.createXMLStreamReader(in, "UTF-8");
-			int num_rows = 0;
+
+			String swissmedicno5 = "";
+			String flagsb20 = "";
 			
+			int num_rows = 0;
 			// Keep moving the cursor forward
 			while (reader.hasNext()) {
 				int event = reader.next();
@@ -485,19 +500,28 @@ public class DispoParse {
 				case XMLStreamConstants.END_ELEMENT:
 					switch (reader.getLocalName().toLowerCase()) {
 					case "preparation":
+						m_flags_map.put(swissmedicno5, flagsb20);	// These meds are all in the SL-list
 						num_rows++;
 						System.out.print("\rProcessing Refdata Partner file... " + num_rows);
 						break;
-					case "namede":
-						break;		
 					case "swissmedicno5":
+						swissmedicno5 = tag_content;
 						break;
-					case "flagitlimitation":
-						break;					
+					case "flagsb20":
+						flagsb20 = tag_content;
+						break;
 					}
 					break;
 				}
 			}
+			// Test
+			/*
+			System.out.println("");
+			for (Map.Entry<String, String> s : m_flags_map.entrySet()) {
+				if (s.getKey().equals("55378"))
+					System.out.println(s.getKey() + " -> " + s.getValue());
+			}
+			*/
 		} catch(XMLStreamException | FileNotFoundException e) {
 			e.printStackTrace();
 		}

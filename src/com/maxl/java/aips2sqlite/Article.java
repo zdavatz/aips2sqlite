@@ -16,6 +16,7 @@ public class Article {
 	public String rose_base_price = "";
 	public String replace_ean_code = "";
 	public String replace_pharma_code = "";
+	public String flags = "";
 	public boolean off_the_market = false;
 	public int pack_size = 0;			// Packungsinhalt
 	public int stock = 0;

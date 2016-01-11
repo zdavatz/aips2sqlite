@@ -906,7 +906,7 @@ public class HtmlUtils {
 		mDoc.select("table[class]").removeAttr("class");
 		mDoc.select("table").removeAttr("cellspacing").removeAttr("cellpadding").removeAttr("border");
 		mDoc.select("colgroup").remove();
-		mDoc.select("td").removeAttr("class").removeAttr("colspan").removeAttr("rowspan");
+		mDoc.select("td").removeAttr("class");//.removeAttr("colspan").removeAttr("rowspan");
 		mDoc.select("tr").removeAttr("class");
 		elems = mDoc.select("div[class]");
 		for (Element e : elems) {
