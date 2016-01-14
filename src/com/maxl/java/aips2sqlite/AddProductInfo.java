@@ -70,29 +70,37 @@ public class AddProductInfo {
 							float p_fap = product.fap;
 							float p_efp = product.efp;
 							float p_vat = product.vat;
-							// Do something only if there is no EFP and the product EFP is >=0
-							if (entry[3].isEmpty() && p_efp>=0.0f) {
-								entry[3] = String.format("CHF %.2f", p_efp);
-								String entry_8 = "";
-								// Remove unnecessary commas in additional info string
-								if (!entry[8].isEmpty()) {
-									String[] add_info = entry[8].split(",", -1);
-									for (String a : add_info) {
-										if (!a.replaceAll("\\s", "").isEmpty())
-											entry_8 += (a + ", ");
-									}
-									// Remove last comma
-									if (entry_8.length()>2)
-										entry_8 = entry_8.substring(0, entry_8.length()-2);
+							
+							String entry_8 = "";
+							// Remove unnecessary commas in additional info string
+							if (!entry[8].isEmpty()) {
+								String[] add_info = entry[8].split(",", -1);
+								for (String a : add_info) {
+									if (!a.replaceAll("\\s", "").isEmpty())
+										entry_8 += (a + ", ");
 								}
-								new_pack_info_str = entry[0] + String.format(", EFP %.2f", p_fap) + " [" + entry_8 + "]";
-								System.out.println("Re-processed pack info string: " + new_pack_info_str);
+								// Remove last comma
+								if (entry_8.length()>2)
+									entry_8 = entry_8.substring(0, entry_8.length()-2);
 							}
+							
+							// Do something only if there is no EFP and the product EFP is >0
+							if (entry[3].isEmpty() && p_efp>0.0f && entry_8.contains("SL")) {
+								entry[3] = String.format("CHF %.2f", p_efp);
+								if (p_fap>0.0f)
+									new_pack_info_str = entry[0] + String.format(", EFP %.2f", p_fap) + " [" + entry_8 + "]";
+							} else
+								new_pack_info_str = entry[0] + " [" + entry_8 + "]";
+							
+							// @maxl: 14.Jan.2016 - If article not in SL-Liste (OTC) then remove price!
+							if (!entry_8.contains("SL"))
+								new_pack_info_str = entry[0] + " [" + entry_8 + "]";
+
 							// FAP
-							if (entry[5].isEmpty() && p_fap>=0.0f)
+							if (entry[5].isEmpty() && p_fap>0.0f)
 								entry[5] = String.format("CHF %.2f", p_fap);
 							// VAT
-							if (entry[7].isEmpty() && p_vat>=0.0f)
+							if (entry[7].isEmpty() && p_vat>0.0f)
 								entry[7] = String.format("%.2f", p_vat);;
 						}
 						// Build new packages string with updated price info!	

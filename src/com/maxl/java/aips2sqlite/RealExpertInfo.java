@@ -1416,8 +1416,8 @@ public class RealExpertInfo {
 						// | Exfactory price | Spezialitätenliste, Swissmedic Kategorie, Limitations
 						// | EAN code | Pharma code
 						String barcode_html = "";		
-						String pup = pi_row.get(7);	// public price
 						String efp = pi_row.get(8);	// exfactory price		
+						String pup = pi_row.get(7);	// public price
 						String fep = "";						
 						String fap = "";
 						String vat = "";
@@ -1444,6 +1444,15 @@ public class RealExpertInfo {
 								vat = String.format("%.2f", product.vat);
 							visible = product.visible;
 							has_free_samples = product.free_sample;
+							/*
+							System.out.println("--------------------------");
+							System.out.println("SM5 = " + swissmedicno8_key);
+							System.out.println("EFP = " + efp);
+							System.out.println("PUP = " + pup);
+							System.out.println("FAP = " + fap);
+							System.out.println("FEP = " + fep);							
+							System.out.println("--------------------------");
+							*/
 						}
 
 						// Some articles are listed in swissmedic_packages file but are not in the refdata file
@@ -1488,14 +1497,15 @@ public class RealExpertInfo {
 							withdrawn_str = ", " + pi_row.get(10);
 						// --> Add ex factory and public price information
 						String price_efp = !efp.isEmpty() ? "EFP" + efp.replace("CHF", "") : "";
-						String price_fep = !fep.isEmpty() ? "FEP" + fep.replace("CHF", "") : "";
+						String price_fap = !fap.isEmpty() ? "EFP" + fap.replace("CHF", "") : "";
+						// String price_fep = !fep.isEmpty() ? "FEP" + fep.replace("CHF", "") : "";
 						String price_pp = !pup.isEmpty() ? "PP" + pup.replace("CHF", "") : "";
 
 						String price_info = "";
 						if (price_efp.length()>0)
 							price_info += ", " + price_efp;
-						else if (price_fep.length()>0)
-							price_info += ", " + price_fep;							
+						else if (price_fap.length()>0)
+							price_info += ", " + price_fap;							
 						if (price_pp.length()>0)
 							price_info += ", " + price_pp;
 						
