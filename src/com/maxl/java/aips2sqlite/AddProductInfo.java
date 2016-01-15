@@ -52,6 +52,7 @@ public class AddProductInfo {
 		*/
 		String new_packages_str = "";
 		String new_pack_info_str = "";
+		
 		// Decompose packages_str
 		String[] packages = packages_str.split("\n");
 		if (packages!=null) {
@@ -63,38 +64,23 @@ public class AddProductInfo {
 					if (entry.length>10) {		
 						String name = entry[0];
 						String eancode = entry[9];
+												
 						// Check if ean code is in list sent by author
 						if (eancode.equals(ean) && m_map_products.containsKey(eancode)) {
-							System.out.println("match with authors' data: " + ean + " | " + eancode + " -> " + name);
 							Product product = m_map_products.get(eancode);
 							float p_fap = product.fap;
 							float p_efp = product.efp;
 							float p_vat = product.vat;
-							
-							String entry_8 = "";
-							// Remove unnecessary commas in additional info string
-							if (!entry[8].isEmpty()) {
-								String[] add_info = entry[8].split(",", -1);
-								for (String a : add_info) {
-									if (!a.replaceAll("\\s", "").isEmpty())
-										entry_8 += (a + ", ");
-								}
-								// Remove last comma
-								if (entry_8.length()>2)
-									entry_8 = entry_8.substring(0, entry_8.length()-2);
-							}
+
+							System.out.println("match with authors' data: " + ean + " | " + eancode + " -> " + name + " | efp = " + p_efp + " | fap = " + p_fap);
 							
 							// Do something only if there is no EFP and the product EFP is >0
-							if (entry[3].isEmpty() && p_efp>0.0f && entry_8.contains("SL")) {
-								entry[3] = String.format("CHF %.2f", p_efp);
-								if (p_fap>0.0f)
-									new_pack_info_str = entry[0] + String.format(", EFP %.2f", p_fap) + " [" + entry_8 + "]";
-							} else
-								new_pack_info_str = entry[0] + " [" + entry_8 + "]";
-							
-							// @maxl: 14.Jan.2016 - If article not in SL-Liste (OTC) then remove price!
-							if (!entry_8.contains("SL"))
-								new_pack_info_str = entry[0] + " [" + entry_8 + "]";
+							if (entry[3].isEmpty()) {
+								if (p_efp>0.0f)
+									entry[3] = String.format("CHF %.2f", p_efp);
+								else if (p_fap>0.0f)
+									entry[3] = String.format("CHF %.2f", p_fap);
+							}
 
 							// FAP
 							if (entry[5].isEmpty() && p_fap>0.0f)
@@ -107,19 +93,55 @@ public class AddProductInfo {
 						for (int i=0; i<=10; ++i) {
 							new_packages_str += entry[i] + "|";
 						}
-						// Visibility
+						// Add "visibility" flag
 						if (entry.length>11) {
 							if (!entry[11].isEmpty()) {
 								new_packages_str += entry[11] + "|";
 							}
 						}
-						// Free samples
+						// Add "free samples"
 						if (entry.length>12) {
 							if (!entry[12].isEmpty())
 								new_packages_str += entry[12];
 						}
 						new_packages_str += "\n";
 					}
+				}
+			}
+			
+			// Loop through all packages and generate new pack info str
+			packages = packages_str.split("\n");
+			// Loop through all packages 
+			for (String p : packages) {
+				// Extract relevant info for this package
+				if (!p.isEmpty()) {
+					String[] entry = p.split("\\|");
+					if (entry.length>10) {		
+						String name = entry[0];
+						String entry_8 = "";
+						// Remove unnecessary commas in additional info string
+						if (!entry[8].isEmpty()) {
+							String[] add_info = entry[8].split(",", -1);
+							for (String a : add_info) {
+								a = a.replaceAll("\\s+", "");
+								if (!a.isEmpty())
+									entry_8 += (a + ", ");
+							}
+							// Remove last comma
+							if (entry_8.length()>2)
+								entry_8 = entry_8.substring(0, entry_8.length()-2);
+						}
+						if (entry_8.contains("SL")) {
+							if (!entry[3].isEmpty())
+								new_pack_info_str += name + ", " + entry[3].replace("CHF", "EFP") + " [" + entry_8 + "]\n";
+							else if (!entry[5].isEmpty())
+								new_pack_info_str += name + ", " + entry[5].replace("CHF", "EFP") + " [" + entry_8 + "]\n";
+							else 
+								new_pack_info_str += name + " [" + entry_8 + "]\n";
+						}
+						else
+							new_pack_info_str += name + " [" + entry_8 + "]\n";
+					} 
 				}
 			}
 		}
@@ -159,7 +181,7 @@ public class AddProductInfo {
 								// 
 								String new_packs[] = update_packages_str(packages_str, eancode);
 								packages_str = new_packs[0];
-								pack_info_str = new_packs[1];
+								pack_info_str = new_packs[1];								
 								//
 								if (!packages_str.isEmpty())
 									m_sql_db.updatePackages(id, packages_str);

@@ -1500,7 +1500,7 @@ public class RealExpertInfo {
 						String price_fap = !fap.isEmpty() ? "EFP" + fap.replace("CHF", "") : "";
 						// String price_fep = !fep.isEmpty() ? "FEP" + fep.replace("CHF", "") : "";
 						String price_pp = !pup.isEmpty() ? "PP" + pup.replace("CHF", "") : "";
-
+						
 						String price_info = "";
 						if (price_efp.length()>0)
 							price_info += ", " + price_efp;
@@ -1511,10 +1511,13 @@ public class RealExpertInfo {
 						
 						if (price_info.length()>0) {
 							// The rest of the package information
-							String append_str = price_info 
-									+ withdrawn_str + " [" + pi_row.get(5) 
+							String append_str = withdrawn_str + " [" + pi_row.get(5) 
 									+ pi_row.get(11) + pi_row.get(12) 
 									+ flagsb_str + orggen_str + "]";
+							// @maxl 15.01.2016: For articles in SL add also pricing information
+							if (pi_row.get(11).contains("SL")) {
+								append_str = price_info + append_str; 
+							}
 							// Generate package info string
 							if (orggen_str.equals(", O"))
 								pinfo_originals_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>" + barcode_html);
