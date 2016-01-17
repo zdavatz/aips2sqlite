@@ -1,5 +1,7 @@
 package com.maxl.java.shared;
 
+import java.util.LinkedHashMap;
+
 public class User implements java.io.Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -33,6 +35,11 @@ public class User implements java.io.Serializable {
 	public String capabilities = "";
 	public String bm_type = "";
 	public String status = "A";		// Default: Aktiv
+		
+	// Map of GLN to list of company-specific rebate
+	public LinkedHashMap<String, Float> rebate_map = null;
+	// Map of GLN to list of company-specific expenses
+	public LinkedHashMap<String, Float> expenses_map = null;
 	
 	public User() {
 		// Struct-like class... 'nough said.

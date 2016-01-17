@@ -132,12 +132,22 @@ public class AddProductInfo {
 								entry_8 = entry_8.substring(0, entry_8.length()-2);
 						}
 						if (entry_8.contains("SL")) {
-							if (!entry[3].isEmpty())
-								new_pack_info_str += name + ", " + entry[3].replace("CHF", "EFP") + " [" + entry_8 + "]\n";
-							else if (!entry[5].isEmpty())
-								new_pack_info_str += name + ", " + entry[5].replace("CHF", "EFP") + " [" + entry_8 + "]\n";
-							else 
+							if (!entry[3].isEmpty()) {
+								// Case 1: EFP exists
+								if (!entry[4].isEmpty())
+									new_pack_info_str += name + ", " + entry[3].replace("CHF", "EFP") + ", " + entry[4].replace("CHF", "PP") + " [" + entry_8 + "]\n";
+								else
+									new_pack_info_str += name + ", " + entry[3].replace("CHF", "EFP") + " [" + entry_8 + "]\n";									
+							} else if (!entry[5].isEmpty()) {
+								// Case 2: FAP exists, EFP does NOT exist
+								if (!entry[4].isEmpty())
+									new_pack_info_str += name + ", " + entry[5].replace("CHF", "EFP") + ", " + entry[4].replace("CHF", "PP") + " [" + entry_8 + "]\n";
+								else
+									new_pack_info_str += name + ", " + entry[5].replace("CHF", "EFP") + " [" + entry_8 + "]\n";									
+							} else {
+								// Case 3: All other cases
 								new_pack_info_str += name + " [" + entry_8 + "]\n";
+							}
 						}
 						else
 							new_pack_info_str += name + " [" + entry_8 + "]\n";
