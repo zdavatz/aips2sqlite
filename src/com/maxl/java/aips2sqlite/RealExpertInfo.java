@@ -1515,7 +1515,7 @@ public class RealExpertInfo {
 									+ pi_row.get(11) + pi_row.get(12) 
 									+ flagsb_str + orggen_str + "]";
 							// @maxl 15.01.2016: For articles in SL add also pricing information
-							if (pi_row.get(11).contains("SL")) {
+							if (pi_row.get(11).contains("SL") || pi_row.get(11).contains("LS")) {
 								append_str = price_info + append_str; 
 							}
 							// Generate package info string

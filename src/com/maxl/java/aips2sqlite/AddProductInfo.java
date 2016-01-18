@@ -131,7 +131,7 @@ public class AddProductInfo {
 							if (entry_8.length()>2)
 								entry_8 = entry_8.substring(0, entry_8.length()-2);
 						}
-						if (entry_8.contains("SL")) {
+						if (entry_8.contains("SL") || entry_8.contains("LS")) {
 							if (!entry[3].isEmpty()) {
 								// Case 1: EFP exists
 								if (!entry[4].isEmpty())
