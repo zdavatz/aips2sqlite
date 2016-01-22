@@ -286,7 +286,7 @@ public class DispoParse {
 		 *  15: ausser Handel (a.H.)
 		 */
 		try {
-			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_DISPO_NEW_ZR);
+			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_DISPO_ZR);
 			if (!file.exists()) 
 				return;
 			FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
