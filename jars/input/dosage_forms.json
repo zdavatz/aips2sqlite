@@ -1,0 +1,432 @@
+{
+	"version": 1,
+	"dosage_forms": [
+		{
+			"galenic_full": "augentropfen",
+			"galenic_short": "gtt opht",
+			"route_adm_short": "OPHT",
+			"route_adm_full": "ophtalmic",
+			"units": "ml"
+		},			
+		{
+			"galenic_full": "auto injektor",
+			"galenic_short": "auto injektor",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg, mg, g"
+		},	
+		{
+			"galenic_full": "bitabs",
+			"galenic_short": "bitabs",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "brausetablette",
+			"galenic_short": "brausetabl",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "depocaps",
+			"galenic_short": "depocaps",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "depotabs",
+			"galenic_short": "depotabs",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "divitabs",
+			"galenic_short": "divitabs",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "durchstechflasche",
+			"galenic_short": "durchstf",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg/ml, mg/ml"
+		},			
+		{
+			"galenic_full": "dosieraerosol",
+			"galenic_short": "dosieraeros",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "ml"
+		},		
+		{
+			"galenic_full": "dragee",
+			"galenic_short": "drag",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mg"
+		},		
+		{
+			"galenic_full": "emulsion",
+			"galenic_short": "emul",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "ml"
+		},		
+		{
+			"galenic_full": "fertigpen",
+			"galenic_short": "fertpen",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "ml"
+		},					
+		{
+			"galenic_full": "fertigspritze",
+			"galenic_short": "fertspr",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "ml"
+		},			
+		{
+			"galenic_full": "filmtablette",
+			"galenic_short": "filmtabl",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},	
+		{
+			"galenic_full": "gel",
+			"galenic_short": "gel",
+			"route_adm_short": "TD",
+			"route_adm_full": "transdermal",
+			"units": "mcg, mg, g"
+		},				
+		{
+			"galenic_full": "granulat",
+			"galenic_short": "gran",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg g"
+		},
+		{
+			"galenic_full": "granulat für suspension",
+			"galenic_short": "gran susp",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},				
+		{
+			"galenic_full": "inhalation turbuhaler",
+			"galenic_short": "turbuhaler",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg"
+		},		
+		{
+			"galenic_full": "injektionslösung",
+			"galenic_short": "inj lös, inject",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "injektionspräparat",
+			"galenic_short": "inj präp",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg, mg, g"
+		},				
+		{
+			"galenic_full": "infusionskonzentrat",
+			"galenic_short": "inf konz",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "ml"
+		},						
+		{
+			"galenic_full": "infusionslösung",
+			"galenic_short": "inf lös",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "ml"
+		},		
+		{
+			"galenic_full": "infusionslösung minibag",
+			"galenic_short": "minibag",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "ml"
+		},		
+		{
+			"galenic_full": "infusionspräparat",
+			"galenic_short": "inf präp",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg, mg, g"
+		},				
+		{
+			"galenic_full": "inhalation",
+			"galenic_short": "breezhaler",
+			"route_adm_short": "inhal.powder",
+			"route_adm_full": "inhal.powder",
+			"units": "ml"
+		},					
+		{
+			"galenic_full": "kapsel",
+			"galenic_short": "caps, kaps",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "kaukapsel",
+			"galenic_short": "kaukaps",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},			
+		{
+			"galenic_full": "kautablette",
+			"galenic_short": "kautabl",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},			
+		{
+			"galenic_full": "klysmen",
+			"galenic_short": "klysmen",
+			"route_adm_short": "R",
+			"route_adm_full": "rektal",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "lacktablette",
+			"galenic_short": "lactabs",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "lösung",
+			"galenic_short": "lös",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "ml"
+		},
+		{
+			"galenic_full": "lutschtablette",
+			"galenic_short": "lutschtabl",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "matrixpflaster",
+			"galenic_short": "matrixpfl",
+			"route_adm_short": "TD",
+			"route_adm_full": "transdermal",
+			"units": "mcg/h, mg/h"
+		},				
+		{
+			"galenic_full": "multidosen pulverinhalator",
+			"galenic_short": "diskus multidosen",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "nasenspray",
+			"galenic_short": "nasenspray",
+			"route_adm_short": "N",
+			"route_adm_full": "nasal",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "nasentropfen",
+			"galenic_short": "gtt nas",
+			"route_adm_short": "N",
+			"route_adm_full": "nasal",
+			"units": "ml"
+		},						
+		{
+			"galenic_full": "ovulum",
+			"galenic_short": "ovula",
+			"route_adm_short": "V",
+			"route_adm_full": "vaginal",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "pulver",
+			"galenic_short": "plv",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},	
+		{
+			"galenic_full": "pulverinhalator",
+			"galenic_short": "inh plv",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "pumpspray",
+			"galenic_short": "vapo",
+			"route_adm_short": "oral aerosol",
+			"route_adm_full": "oral aerosol",
+			"units": "mcg, mg, g"
+		},				
+		{
+			"galenic_full": "rectal tube",
+			"galenic_short": "rectal tube",
+			"route_adm_short": "R",
+			"route_adm_full": "rektal",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "rektalschaum",
+			"galenic_short": "rektsch",
+			"route_adm_short": "R",
+			"route_adm_full": "rektal",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "retardtabletten",
+			"galenic_short": "retard",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "saft",
+			"galenic_short": "saft",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "ml"
+		},
+		{
+			"galenic_full": "schmelztablette",
+			"galenic_short": "schmelztabl",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "schmelzfilm",
+			"galenic_short": "solufilm",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "steriler schwamm",
+			"galenic_short": "schwamm",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg, mg, g"
+		},				
+		{
+			"galenic_full": "sirup",
+			"galenic_short": "sirup",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "ml"
+		},		
+		{
+			"galenic_full": "spray",
+			"galenic_short": "spray",
+			"route_adm_short": "N",
+			"route_adm_full": "nasal",
+			"units": "ml"
+		},
+		{
+			"galenic_full": "sublingualtablette",
+			"galenic_short": "subling",
+			"route_adm_short": "SL",
+			"route_adm_full": "sublingual",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "suppositorium",
+			"galenic_short": "supp",
+			"route_adm_short": "R",
+			"route_adm_full": "rektal",
+			"units": "mcg, mg, g"
+		},		
+		{
+			"galenic_full": "suspension",
+			"galenic_short": "susp",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "ml"
+		},			
+		{
+			"galenic_full": "tablette",
+			"galenic_short": "tabl",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		},
+		{
+			"galenic_full": "transdermales pflaster",
+			"galenic_short": "tts",
+			"route_adm_short": "TD",
+			"route_adm_full": "transdermal",
+			"units": "mcg/h, mg/h"
+		},		
+		{
+			"galenic_full": "tropfen",
+			"galenic_short": "tropfen",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "ml"
+		},
+		{
+			"galenic_full": "trockensubstanz mit lösungsmittel",
+			"galenic_short": "trockensub",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg/ml, mg/ml, g/ml"
+		},
+		{
+			"galenic_full": "vaginacreme",
+			"galenic_short": "vag cr",
+			"route_adm_short": "V",
+			"route_adm_full": "vaginal",
+			"units": "mcg, mg, g"
+		},	
+		{
+			"galenic_full": "vaginagel",
+			"galenic_short": "vag gel",
+			"route_adm_short": "V",
+			"route_adm_full": "vaginal",
+			"units": "mcg, mg, g"
+		},	
+		{
+			"galenic_full": "vaginaring",
+			"galenic_short": "vag ring",
+			"route_adm_short": "V",
+			"route_adm_full": "vaginal",
+			"units": "mcg, mg, g"
+		},	
+		{
+			"galenic_full": "vaginatablette",
+			"galenic_short": "vag tabl",
+			"route_adm_short": "V",
+			"route_adm_full": "vaginal",
+			"units": "mcg, mg, g"
+		},	
+		{
+			"galenic_full": "wochentablette",
+			"galenic_short": "wochentabl",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"units": "mcg, mg, g"
+		}
+	]
+}
