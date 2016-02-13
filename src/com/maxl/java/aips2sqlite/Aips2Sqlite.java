@@ -144,6 +144,9 @@ public class Aips2Sqlite {
 				CmlOptions.TAKEDA_SAP = true;
 				CmlOptions.TAKEDA_RANGE = cmd.getOptionValue("takeda");
 			}
+			if (cmd.hasOption("dailydrugcosts")) {
+				CmlOptions.DAILY_DRUG_COSTS = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -186,6 +189,7 @@ public class Aips2Sqlite {
 		addOption(options, "desitin", "generate encrypted files for Desitin", false, false);
 		addOption(options, "onlydesitin", "skip generation of sqlite database", false, false);
 		addOption(options, "takeda", "generate sap/gln matching file", true, false);
+		addOption(options, "dailydrugcosts", "calculates the daily drug costs", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -205,7 +209,7 @@ public class Aips2Sqlite {
 		
 		// Download all files and save them in appropriate directories
 		// XML + XSD -> ./xml, XLS -> ./xls
-		if (CmlOptions.DOWNLOAD_ALL) {
+		if (CmlOptions.DOWNLOAD_ALL==true) {
 			System.out.println("");
 			allDown();
 		}
@@ -226,6 +230,12 @@ public class Aips2Sqlite {
 		if (CmlOptions.TAKEDA_SAP==true) {
 			TakedaParse tp = new TakedaParse();
 			tp.process();
+		}
+		
+		// Calculates the daily drug costs (Tagestherapiekosten)
+		if (CmlOptions.DAILY_DRUG_COSTS==true) {
+			DailyDrugCosts ddc = new DailyDrugCosts();
+			ddc.process();
 		}
 		
 		System.out.println("");
