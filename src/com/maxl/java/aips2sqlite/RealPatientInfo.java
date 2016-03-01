@@ -504,8 +504,11 @@ public class RealPatientInfo {
 		int med_counter = 0;
 		int tot_med_counter = 0;
 		String pi_complete_xml = "";
+		String file_report = "";
 		
 		HtmlUtils html_utils = null;
+		
+		ArrayList<String> list_of_authnrs = new ArrayList<String>();
 		
 		System.out.println("Processing Patient Infos...");	
 		
@@ -528,8 +531,19 @@ public class RealPatientInfo {
 						}	
 						*/
 						
+						boolean exists = false;
+						if (list_of_authnrs.contains(m.getAuthNrs())) {
+							exists = true;
+						}
+						list_of_authnrs.add(m.getAuthNrs());
+						
 						System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + m.getAuthNrs());// + " ver -> "+ m.getVersion());						
-											
+						if (!exists) {
+							file_report += "   " + m.getAuthNrs() + " -> " + m.getTitle() + "\n";
+						} else {
+							file_report += "***" + m.getAuthNrs() + " -> " + m.getTitle() + "\n";
+						}
+												
 						// Clean html
 						html_utils = new HtmlUtils(m.getContent());
 						html_utils.setLanguage(CmlOptions.DB_LANGUAGE);
@@ -543,14 +557,13 @@ public class RealPatientInfo {
 						/*
 						 * Update "Packungen" section and extract therapeutisches index
 						 */
-						List<String> mTyIndex_list = new ArrayList<String>();						
-						mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, m.getAuthNrs(), html_sanitized, mTyIndex_list);
+						mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, m.getAuthNrs(), html_sanitized, new ArrayList<String>());
 					
 						if (CmlOptions.XML_FILE==true) {
 							// Add header to html file							
-							mContent_str = mContent_str.replaceAll("<head>", "<head>" + 
-									"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />" +
-									"<style>" + amiko_style_v1_str + "</style>");	
+							mContent_str = mContent_str.replaceAll("<head>", 
+									"<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><style>" + amiko_style_v1_str + "</style>");	
+
 							// --> Note: following line is not really necessary...
 							// m.setContent(mContent_str);
 									
@@ -581,6 +594,11 @@ public class RealPatientInfo {
 				tot_med_counter++;
 			}
 		}
+				
+		if (!file_report.isEmpty()) {
+			FileOps.writeToFile(file_report, Constants.DIR_OUTPUT, "pi_swissno5_parse_report.txt");
+		}
+		
 		System.out.println();
 		System.out.println("--------------------------------------------");
 		System.out.println("Total number of med infos in database: " + m_med_list.size());

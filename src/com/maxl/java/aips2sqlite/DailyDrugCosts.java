@@ -268,8 +268,12 @@ public class DailyDrugCosts {
 	
 	public void process() {
 		try {
+			int missing_atc_codes = 0;
+			String missing_atc_codes_str = "";
 			int missing_articles = 0;
+			String missing_articles_str = "";			
 			int unknown_galens = 0;
+			String quantity_zero_str = "";
 			
 			// Read core info from files
 			parseDosageFormsJson();
@@ -296,6 +300,7 @@ public class DailyDrugCosts {
 				String atc_code = p.atc_code;
 				float quantity = 0;
 				String unit = "";
+	
 				if (p.substance!=null) {
 					// Only one DDD per preparation exists!
 					DDD ddd = new DDD(p.substance.list_of_ddds.get(0).quantity, p.substance.list_of_ddds.get(0).unit, "");
@@ -476,19 +481,32 @@ public class DailyDrugCosts {
 													+ "\n";											
 										}
 									}
+								} else {
+									quantity_zero_str += p.name_de + " -> " + quantity + " / " + ddd.quantity + " / " + skip_next_one + "\n"; 
 								}
 							}
 						}
 					} else {
 						missing_articles += p.list_of_packs.size();
+						missing_articles_str += p.name_de + " (" + p.atc_code + ")\n";
 						System.out.print("\rPacks (articles) that are not ATC matchable -> " + missing_articles);
 					}
-				} 
+				} else {
+					missing_atc_codes += p.list_of_packs.size();
+					missing_atc_codes_str += p.name_de + " (" + p.atc_code + ")\n";					
+					System.out.print("\rPacks (articles) that have no ATC code -> " + missing_atc_codes);					
+				}
 			}
 			System.out.println("");
 			System.out.println("Nicht erkannte Darreichungsformen = " + unknown_galens);
 			if (!csv_str.isEmpty())
 				FileOps.writeToFile(csv_str, Constants.DIR_OUTPUT, "daily_drug_dosages.csv");
+			if (!missing_articles_str.isEmpty())
+				FileOps.writeToFile(missing_articles_str, Constants.DIR_OUTPUT, "missing_atc_codes.csv");
+			if (!missing_atc_codes_str.isEmpty())
+				FileOps.writeToFile(missing_atc_codes_str, Constants.DIR_OUTPUT, "articles_with_no_atc_code.csv");
+			if (!quantity_zero_str.isEmpty())
+				FileOps.writeToFile(quantity_zero_str, Constants.DIR_OUTPUT, "articles_no_quantity.csv");
 		} catch(XMLStreamException | IOException | JAXBException e) {
 			e.printStackTrace();
 		}
