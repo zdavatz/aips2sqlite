@@ -147,6 +147,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("dailydrugcosts")) {
 				CmlOptions.DAILY_DRUG_COSTS = true;
 			}
+			if (cmd.hasOption("smsequence")) {
+				CmlOptions.SWISS_MEDIC_SEQUENCE = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -190,6 +193,7 @@ public class Aips2Sqlite {
 		addOption(options, "onlydesitin", "skip generation of sqlite database", false, false);
 		addOption(options, "takeda", "generate sap/gln matching file", true, false);
 		addOption(options, "dailydrugcosts", "calculates the daily drug costs", false, false);
+		addOption(options, "smsequence", "generates swissmedic sequence csv", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -226,6 +230,8 @@ public class Aips2Sqlite {
 			dp.process("csv");
 		}
 		
+		boolean no_db = false;
+		
 		// Generate Takeda SAP/GLN matching file
 		if (CmlOptions.TAKEDA_SAP==true) {
 			TakedaParse tp = new TakedaParse();
@@ -236,13 +242,20 @@ public class Aips2Sqlite {
 		if (CmlOptions.DAILY_DRUG_COSTS==true) {
 			DailyDrugCosts ddc = new DailyDrugCosts();
 			ddc.process();
+			no_db = true;
+		}
+		
+		// Generates csv file containing a mapping from swissmedic sequences to clean refdata title and gtins
+		if (CmlOptions.SWISS_MEDIC_SEQUENCE==true) {
+			SwissMedSequences sms = new SwissMedSequences();
+			sms.process();
+			no_db = true;
 		}
 		
 		System.out.println("");
 		
 		// Pointer to product map, extraction order = insertion order
 		Map<String, Product> map_products = new LinkedHashMap<String, Product>();
-		boolean no_db = false;
 		
 		// Generate encrypted files for shopping cart (ibsa)
 		if (CmlOptions.SHOPPING_CART==true || CmlOptions.ONLY_SHOPPING_CART==true) {

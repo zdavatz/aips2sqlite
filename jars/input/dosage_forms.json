@@ -128,6 +128,13 @@
 			"units": "mcg, mg"
 		},		
 		{
+			"galenic_full": "injektionsinfusion",
+			"galenic_short": "inj inf",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg, mg, g"
+		},						
+		{
 			"galenic_full": "injektionslösung",
 			"galenic_short": "inj lös, inject",
 			"route_adm_short": "P",
@@ -137,6 +144,13 @@
 		{
 			"galenic_full": "injektionspräparat",
 			"galenic_short": "inj präp",
+			"route_adm_short": "P",
+			"route_adm_full": "parenteral",
+			"units": "mcg, mg, g"
+		},						
+		{
+			"galenic_full": "injektionssuspension",
+			"galenic_short": "inj susp",
 			"route_adm_short": "P",
 			"route_adm_full": "parenteral",
 			"units": "mcg, mg, g"

@@ -772,17 +772,7 @@ public class RealExpertInfo {
 		
 		// Extract between swissmedicno5 and names
 		extractReg5noNamesMapping();
-		
-		// TEST
-		for (Map.Entry<String, ArrayList<String>> entry : m_smn5_to_list_of_names.entrySet()) {
-			String regnr = entry.getKey();
-			ArrayList<String> listofnames = entry.getValue();
-			if (listofnames.size()>1) {
-				for (String lon : listofnames)
-					System.out.println(regnr + " -------> " + lon);
-			}
-		}
-		
+				
 		try {
 			// Load CSS file: used only for self-contained xml files
 			String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
