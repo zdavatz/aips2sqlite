@@ -383,7 +383,7 @@ public class DailyDrugCosts {
 									if (name_found==false) {
 										// Check exceptional cases using the refdata name
 										if (refdata_name_de.toLowerCase().contains("c solv")) {
-											galen_form = "trockensubstanz mit lösungsmittel";
+											galen_form = "trockensubstanz mit lï¿½sungsmittel";
 											route_adm = "P";
 											name_found = true;
 										} else if (refdata_name_de.toLowerCase().contains("nadelschutz fertspr")) {
@@ -391,7 +391,7 @@ public class DailyDrugCosts {
 											route_adm = "P";
 											name_found = true;
 										} else if (refdata_name_de.toLowerCase().contains("inj kit")) {
-											galen_form = "injektionslösung";
+											galen_form = "injektionslï¿½sung";
 											route_adm = "P";											
 											name_found = true;
 										} else if (refdata_name_de.toLowerCase().contains("durchstf")) {
@@ -399,7 +399,7 @@ public class DailyDrugCosts {
 											route_adm = "P";
 											name_found = true;
 										} else if (refdata_name_de.toLowerCase().contains("amp")) {
-											galen_form = "injektionslösung in ampulle";
+											galen_form = "injektionslï¿½sung in ampulle";
 											route_adm = "P";
 											name_found = true;
 										} else if (refdata_name_de.toLowerCase().contains("filmtab")) {

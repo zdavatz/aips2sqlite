@@ -43,8 +43,8 @@ public class Interactions {
 	 */
 	public Interactions(String language) {
 		m_language = language;
-		m_drug_interactions_map = new TreeMap<String, ArrayList<String>>();
-		m_atc1_atc2_html_map = new TreeMap<String, ArrayList<String>>();
+		m_drug_interactions_map = new TreeMap<>();
+		m_atc1_atc2_html_map = new TreeMap<>();
 	}
 	
 	/**

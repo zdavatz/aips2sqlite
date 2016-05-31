@@ -42,7 +42,7 @@ public class ShoppingCartDesitin {
 		}	
 		
 		// Initialize conditions map
-		m_map_conditions = new TreeMap<String, TreeMap<String, Float>>();
+		m_map_conditions = new TreeMap<>();
 		// Read from file
 		String file_name = in_dir + "/" + Constants.FILE_ARTICLES_DESITIN;
 		try {

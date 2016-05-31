@@ -27,9 +27,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SwissMedSequences {
 
-	TreeMap<String, ArrayList<Article>> m_smn5plus_to_article_map = null;
-	TreeMap<String, String> m_gtin_to_name_map = null;		
-	HashMap<String, String> m_map_of_short_to_long_galens = null;
+	private TreeMap<String, ArrayList<Article>> m_smn5plus_to_article_map = null;
+	private TreeMap<String, String> m_gtin_to_name_map = null;
+	private HashMap<String, String> m_map_of_short_to_long_galens = null;
 		
 	private class Article {
 		String name;
@@ -38,52 +38,17 @@ public class SwissMedSequences {
 		String unit;
 	}
 	
-	SwissMedSequences() {
-		
-	}
-	
-    private int getChecksum(String eanStr) {
-    	int val=0;   	
-    	for (int i=0; i<eanStr.length(); i++)
-    		val += (Integer.parseInt(eanStr.charAt(i)+""))*((i%2==0)?1:3);
+	SwissMedSequences() {}
 
-        int checksum_digit = 10 - (val % 10);
-        if (checksum_digit == 10) 
-        	checksum_digit = 0;	
-        
-        return checksum_digit;
-    }
-    
-	private String capitalizeFully(String s, int N) {
-		// Split string
-		String[] tokens = s.split("\\s");
-		// Capitalize only first word!
-		tokens[0] = tokens[0].toUpperCase();
-		// Reassemble string
-		String full_s = "";
-		if (tokens.length > 1) {
-			for (int i = 0; i < tokens.length - 1; i++) {
-				full_s += (tokens[i] + " ");
-			}
-			full_s += tokens[tokens.length - 1];
-		} else {
-			full_s = tokens[0];
-		}
-		return full_s;
-	}
-
-	private String[] strings_to_be_cleared = {"c solv", "mit solv", "supp", "o nadel", "rektal", "m nadel(n)", "nadel(n)", "(m|o) kons", 
+	private String[] strings_to_be_cleared = {"c solv", "mit solv", "supp", "o nadel", "rektal", "m nadel(n)", "nadel(n)", "(m|o) kons",
 			"(m|o) zucker", "emuls(ion)?", "ecobag", "o aroma", "o konserv", "zuckerfrei", "sans sucre"};
 	
 	// Some additional galenic forms go in here...
-	private String[] add_galen_forms = {"augensalbe", "nasensalbe", "salbe", 
-			"depottabl", "lacktabl", "tabl", "filmtabs",
-			"depotdrag", "depot", "drag", 
-			"infusionslösung", "injektionslösung", "injektionspräparat", "lös", 
-			"injektionssuspension", "susp", "kaps", 
-			"blist", "ampulle", "balsam", "bals", "emuls", "vial", "creme", "crème", "amp", "tropfen", "paste", "stift", "glob", "liq", "tee", "supp", 
-			"pulver", "lot", "spray", "nebul", "tb", "gaze", "klist", "tinkt", "sirup", "blätter", "pastillen", "pastilles", 
-			"zäpfchen", "gel", "pfl", "fertigspr", "bonbons", "gran", "kaugummi", "trockensub"};
+	private String[] add_galen_forms = {"augensalbe", "nasensalbe", "salbe", "depottabl", "lacktabl", "tabl", "filmtabs", "depotdrag",
+            "depot", "drag", "infusionslösung", "injektionslösung", "injektionspräparat", "lös", "injektionssuspension", "susp", "kaps",
+			"blist", "ampulle", "balsam", "bals", "emuls", "vial", "creme", "crème", "amp", "tropfen", "paste", "stift", "glob",
+            "liq", "tee", "supp", "pulver", "lot", "spray", "nebul", "tb", "gaze", "klist", "tinkt", "sirup", "blätter",
+            "pastillen", "pastilles", "zäpfchen", "gel", "pfl", "fertigspr", "bonbons", "gran", "kaugummi", "trockensub"};
 	
     private String cleanName(String name) {
     	name = name.toLowerCase();
@@ -109,7 +74,7 @@ public class SwissMedSequences {
     }
     
     private ArrayList<String> extractGalenFromName(String name) {
-    	ArrayList<String> list_of_galens = new ArrayList<String>();
+    	ArrayList<String> list_of_galens = new ArrayList<>();
     	int pos = 1000;		// Big number
     	for (Map.Entry<String, String> entry : m_map_of_short_to_long_galens.entrySet()) {
     		String galen = entry.getKey();
@@ -132,7 +97,7 @@ public class SwissMedSequences {
     }
 
     private ArrayList<String> extractAddGalenFromName(String name) {
-    	ArrayList<String> list_of_galens = new ArrayList<String>();
+    	ArrayList<String> list_of_galens = new ArrayList<>();
     	for (String galen : add_galen_forms) {
     		Pattern p = Pattern.compile("\\b" + galen + "\\b");
     		Matcher m = p.matcher(name);
@@ -158,7 +123,7 @@ public class SwissMedSequences {
     }
     
     private ArrayList<String> createDosageMatchers(String quantity, String unit) {
-    	ArrayList<String> list_of_matchers = new ArrayList<String>();
+    	ArrayList<String> list_of_matchers = new ArrayList<>();
     	// Clean up
     	quantity = quantity.toLowerCase().replaceAll(",", ".");   
     	unit = unit.toLowerCase().replaceAll("\\(.*?\\)", "").trim();
@@ -174,10 +139,10 @@ public class SwissMedSequences {
     	
     	// 0th matcher
     	list_of_matchers.add(quantity + " " + unit);
-    	list_of_matchers.add(quantity + unit);        	
-    	
+    	list_of_matchers.add(quantity + unit);
+
     	// 1st matcher for quantity, e.g. 1 x 50 or 1 x 50 ml
-    	Pattern p = Pattern.compile("(\\d+)\\s*x\\s*(\\d+)\\s*(ml|mg|g)?");    	
+    	Pattern p = Pattern.compile("(\\d+)\\s*x\\s*(\\d+)\\s*(ml|mg|g)?");
     	Matcher m = p.matcher(q);    	
     	if (m.find()) {
     		quantity = m.group(1);    
@@ -207,6 +172,10 @@ public class SwissMedSequences {
        		list_of_matchers.add(q);
     	return list_of_matchers;
     }
+
+    private String removeAddDosageFromName(String name) {
+        return name.replaceAll("(\\d+)(\\.\\d+)?\\s*(mg|g)","");
+    }
     
     private String addGalenToName(String name, String galen) {
     	if (name.contains(galen))
@@ -219,8 +188,11 @@ public class SwissMedSequences {
     	// Replace multiple spaces with single space
     	return name.replaceAll("\\s\\s+", " ");    
     }
-        
-	public void process() {
+
+    /**
+     * main function where data are processed
+     */
+    public void process() {
 		try {
 			// Read core info from files
 			parseSwissmedicPackagesFile();
@@ -236,29 +208,20 @@ public class SwissMedSequences {
 					boolean animal_med = false;
 					for (Article a : list_of_articles) {
 						String gtin = "7680" + a.smn8;
-						int cs = getChecksum(gtin);
+						int cs = Utilities.getChecksum(gtin);
 						gtin += cs;
+                        // Check refdata gtin to name map
 						if (m_gtin_to_name_map.containsKey(gtin)) {
 							String galens = "";
 							String name = m_gtin_to_name_map.get(gtin);
 							String clean_name = name.toLowerCase();
-							//							
+							// Exclude medicaments for animals
 							if (!isAnimalMed(clean_name)) {
-								
-								// Cleaning: 2nd pass
+								// Cleaning: 1st pass
 								ArrayList<String> list_of_matchers = createDosageMatchers(a.quantity, a.unit);
 								for (String m : list_of_matchers) {
-									if (clean_name.contains("pethidin")) {
-										System.out.println(m);
-										System.out.println(clean_name);
-									}
 									clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
-									if (clean_name.contains("pethidin")) {
-										System.out.println(clean_name);
-									}
 								}
-								//
-								
 								ArrayList<String> list_of_galens = extractGalenFromName(clean_name);
 								for (String g : list_of_galens) {
 									galens += g + ",";
@@ -272,13 +235,14 @@ public class SwissMedSequences {
 									}
 								}
 								galens = galens.split(",")[0].trim();	// Take only first one
-								// Cleaning: 1st pass
+								// Cleaning: 2nd pass
 								clean_name = cleanName(clean_name);
-								//
+                                clean_name = removeAddDosageFromName(clean_name);
 								clean_name = removeSpaces(clean_name);
-								clean_name = capitalizeFully(clean_name, 1);
+								clean_name = Utilities.capitalizeFully(clean_name, 1);
+                                // Add "galenische Form" to clean name
 								clean_name = addGalenToName(clean_name, galens);
-								//
+                                //
 								sub_csv_str += name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.unit + ";";
 							} else {
 								animal_med = true;
@@ -288,13 +252,11 @@ public class SwissMedSequences {
 							String clean_name = a.name.toLowerCase();
 							//
 							if (!isAnimalMed(clean_name)) {
-
 								// Cleaning: 2nd pass (compare with quantity and unit)
 								ArrayList<String> list_of_matchers = createDosageMatchers(a.quantity, a.unit);
 								for (String m : list_of_matchers)
 									clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
-								//
-								
+
 								ArrayList<String> list_of_galens = extractGalenFromName(clean_name);
 								for (String g : list_of_galens) {
 									galens += g + ",";
@@ -335,9 +297,8 @@ public class SwissMedSequences {
 								galens = galens.split(",")[0].trim().toLowerCase();	// Take only first one
 								// Cleaning: 1st pass
 								clean_name = cleanName(clean_name);
-
 								clean_name = removeSpaces(clean_name);							
-								clean_name = capitalizeFully(clean_name, 1);	
+								clean_name = Utilities.capitalizeFully(clean_name, 1);
 								clean_name = addGalenToName(clean_name, galens);
 								//
 								sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.unit + ";";
@@ -364,7 +325,7 @@ public class SwissMedSequences {
 		Map<String,Object> dosageFormsData = mapper.readValue(new File(Constants.FILE_DOSAGE_FORMS_JSON), typeRef);		
 		ArrayList<HashMap<String, String>> dosageList = (ArrayList<HashMap<String, String>>)dosageFormsData.get("dosage_forms");
 
-		m_map_of_short_to_long_galens = new HashMap<String, String>();
+		m_map_of_short_to_long_galens = new HashMap<>();
 		for (HashMap<String, String> dosage : dosageList) {
 			String galen_short = dosage.get("galenic_short");
 			String galen_long = dosage.get("galenic_full");
@@ -376,7 +337,7 @@ public class SwissMedSequences {
 		System.out.println("Number of dosage forms in database: " + m_map_of_short_to_long_galens.size());
 	}
 	
-	void parseSwissmedicPackagesFile() throws FileNotFoundException, IOException {
+	private void parseSwissmedicPackagesFile() throws FileNotFoundException, IOException {
 		m_smn5plus_to_article_map = new TreeMap<String, ArrayList<Article>>();
 		//
 		System.out.print("Processing packages xlsx... ");
@@ -426,7 +387,7 @@ public class SwissMedSequences {
 				String smn5_plus = swissmedic_no5 + dosage_id;
 				
 				if (!smn5_plus.isEmpty() && !swissmedic_no5.isEmpty()) {
-					ArrayList<Article> list_of_articles = new ArrayList<Article>();
+					ArrayList<Article> list_of_articles = new ArrayList<>();
 					if (m_smn5plus_to_article_map.containsKey(smn5_plus)) 
 						list_of_articles = m_smn5plus_to_article_map.get(smn5_plus);
 					Article a = new Article();
@@ -443,8 +404,8 @@ public class SwissMedSequences {
 		System.out.println("");
 	}
 	
-	void parseRefdataPharmaFile() throws FileNotFoundException, JAXBException {
-		m_gtin_to_name_map = new TreeMap<String, String>();
+	private void parseRefdataPharmaFile() throws FileNotFoundException, JAXBException {
+		m_gtin_to_name_map = new TreeMap<>();
 
 		System.out.print("Processing refdata pharma xml file...");
 		
@@ -463,7 +424,6 @@ public class SwissMedSequences {
 			if (ean_code.length() == 13) {
 				String name = pharma.getNameDE();
 				// Clean name, we need only dosage
-				
 				m_gtin_to_name_map.put(ean_code, name);
 				System.out.print("\rProcessing refdata pharma xml file... " + num_rows++);
 			} else if (ean_code.length() < 13) {

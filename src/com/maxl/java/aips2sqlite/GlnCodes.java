@@ -31,7 +31,7 @@ public class GlnCodes implements java.io.Serializable {
 	Map<String, User> m_ibsa_addresses = null;	// GLN+TYPE -> Information
 	Map<String, User> m_desitin_addresses = null;
 	//
-	Map<String, String> m_debitor_to_gln = new HashMap<String, String>();
+	Map<String, String> m_debitor_to_gln = new HashMap<>();
 	
 	public GlnCodes() {
 		// Load medreg files
@@ -45,9 +45,9 @@ public class GlnCodes implements java.io.Serializable {
 		// Desitin full info without conditions
 		m_gln_codes_desitin_full = readDesitinAddressCsvToMap(Constants.DIR_DESITIN + Constants.FILE_CUST_DESITIN);
 		// Complete list of gln_codes
-		m_medreg_addresses = new HashMap<String, User>();
-		m_ibsa_addresses = new HashMap<String, User>();
-		m_desitin_addresses = new HashMap<String, User>();
+		m_medreg_addresses = new HashMap<>();
+		m_ibsa_addresses = new HashMap<>();
+		m_desitin_addresses = new HashMap<>();
 	}
 	
 	public void generateCsvFile() {	

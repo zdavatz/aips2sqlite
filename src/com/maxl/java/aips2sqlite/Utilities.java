@@ -35,7 +35,37 @@ public class Utilities {
 		rosePreferences.put("mepha", 2);		// mepha schweiz ag	
 		rosePreferences.put("teva", 3);			// teva pharma ag
 	}
-	
+
+	static public int getChecksum(String eanStr) {
+		int val=0;
+		for (int i=0; i<eanStr.length(); i++)
+			val += (Integer.parseInt(eanStr.charAt(i)+""))*((i%2==0)?1:3);
+
+		int checksum_digit = 10 - (val % 10);
+		if (checksum_digit == 10)
+			checksum_digit = 0;
+
+		return checksum_digit;
+	}
+
+	static public String capitalizeFully(String s, int N) {
+		// Split string
+		String[] tokens = s.split("\\s");
+		// Capitalize only first word!
+		tokens[0] = tokens[0].toUpperCase();
+		// Reassemble string
+		String full_s = "";
+		if (tokens.length > 1) {
+			for (int i = 0; i < tokens.length - 1; i++) {
+				full_s += (tokens[i] + " ");
+			}
+			full_s += tokens[tokens.length - 1];
+		} else {
+			full_s = tokens[0];
+		}
+		return full_s;
+	}
+
 	static public String bytesToHex(byte[] bytes) {
 	    char[] hexChars = new char[bytes.length * 2];
 	    for (int j=0; j<bytes.length; j++) {
