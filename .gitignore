@@ -22,3 +22,6 @@ css/amiko_stylesheet_v2.css
 jars/output/fis/fi_de.xml
 jars/output/
 *.zip
+.idea/
+out/
+src/com/maxl/java/aips2sqlite/Crypto.java

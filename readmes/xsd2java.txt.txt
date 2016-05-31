@@ -1,0 +1,22 @@
+README 
+
+03/04/2013: 
+
+The file 'bag_preparations_xml.xml' was generated with the tool 'xsd.exe' located 
+in C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\
+
+> xsd c:\Users\Max\bag_preparations_xml.xml /outputdir:\Users\Max\
+
+Alternatively use trang:
+
+> 
+
+
+From the xsd file a set of classes can be generated using 'xjc.exe' located 
+in C:\Programme\Java\jdk1.7.10\bin
+
+> xjc -p [your namespace] [xsd_file].xsd
+> xjc -p com.maxl.xml.jabx.test e:\Projects\Android\workspace\XMLParser\xml\bag_preparations_xsd.xsd -d e:\Projects\Android
+
+BASH (git bash)
+$ xjc.exe -p com.maxl.java.xmlviz e:/Projects/Android/workspace/Aips2Xml/fis/big_files/fi_de.xsd -d e:/Projects/Android/tmp
