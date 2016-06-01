@@ -173,8 +173,23 @@ public class SwissMedSequences {
     	return list_of_matchers;
     }
 
-    private String removeAddDosageFromName(String name) {
-        return name.replaceAll("(\\d+)(\\.\\d+)?\\s*(mg|g)","");
+    private String extractDosageFromName(String name) {
+        String q = "";
+        Pattern p = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(mg|g)");
+        Matcher m = p.matcher(name);
+        if (m.find()) {
+            q = m.group(1);
+            String q2 = m.group(2);
+            if (q2!=null && !q2.isEmpty()) {
+                q += q2;
+            }
+            q += (" " + m.group(3));
+        }
+        return q;
+    }
+
+    private String removeDosageFromName(String name) {
+        return name.replaceAll("(\\d+)(\\.\\d+)?\\s*(mg|g)", "");
     }
     
     private String addGalenToName(String name, String galen) {
@@ -237,8 +252,11 @@ public class SwissMedSequences {
 								galens = galens.split(",")[0].trim();	// Take only first one
 								// Cleaning: 2nd pass
 								clean_name = cleanName(clean_name);
-                                clean_name = removeAddDosageFromName(clean_name);
-								clean_name = removeSpaces(clean_name);
+                                String dosage = extractDosageFromName(clean_name);
+                                if (a.unit.equals("Beutel") && !dosage.isEmpty())
+                                    a.unit += " à " + dosage;
+                                clean_name = removeDosageFromName(clean_name);
+                                clean_name = removeSpaces(clean_name);
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
                                 // Add "galenische Form" to clean name
 								clean_name = addGalenToName(clean_name, galens);
@@ -297,7 +315,11 @@ public class SwissMedSequences {
 								galens = galens.split(",")[0].trim().toLowerCase();	// Take only first one
 								// Cleaning: 1st pass
 								clean_name = cleanName(clean_name);
-								clean_name = removeSpaces(clean_name);							
+                                String dosage = extractDosageFromName(clean_name);
+                                if (a.unit.equals("Beutel") && !dosage.isEmpty())
+                                    a.unit += " à " + dosage;
+                                clean_name = removeDosageFromName(clean_name);
+                                clean_name = removeSpaces(clean_name);
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
 								clean_name = addGalenToName(clean_name, galens);
 								//
