@@ -49,7 +49,14 @@ public class SwissMedSequences {
 			"blist", "ampulle", "balsam", "bals", "emuls", "vial", "creme", "crème", "amp", "tropfen", "paste", "stift", "glob",
             "liq", "tee", "supp", "pulver", "lot", "spray", "nebul", "tb", "gaze", "klist", "tinkt", "sirup", "blätter",
             "pastillen", "pastilles", "zäpfchen", "gel", "pfl", "fertigspr", "bonbons", "gran", "kaugummi", "trockensub"};
-	
+
+	private String capitalizeFirstLetter(String str) {
+		if (!str.isEmpty()) {
+			return str.substring(0, 1).toUpperCase() + str.substring(1);
+		}
+		return str;
+	}
+
     private String cleanName(String name) {
     	name = name.toLowerCase();
     	// Replace stk, e.g. 6 Fertspr 0.5 ml
@@ -253,13 +260,14 @@ public class SwissMedSequences {
 								// Cleaning: 2nd pass
 								clean_name = cleanName(clean_name);
                                 String dosage = extractDosageFromName(clean_name);
-                                if (a.unit.equals("Beutel") && !dosage.isEmpty())
-                                    a.unit += " à " + dosage;
-                                clean_name = removeDosageFromName(clean_name);
+                                if (a.unit.equals("Beutel") && !dosage.isEmpty()) {
+									a.unit += " à " + dosage;
+									clean_name = removeDosageFromName(clean_name);
+								}
                                 clean_name = removeSpaces(clean_name);
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
                                 // Add "galenische Form" to clean name
-								clean_name = addGalenToName(clean_name, galens);
+								clean_name = addGalenToName(clean_name, capitalizeFirstLetter(galens));
                                 //
 								sub_csv_str += name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.unit + ";";
 							} else {
@@ -316,12 +324,13 @@ public class SwissMedSequences {
 								// Cleaning: 1st pass
 								clean_name = cleanName(clean_name);
                                 String dosage = extractDosageFromName(clean_name);
-                                if (a.unit.equals("Beutel") && !dosage.isEmpty())
-                                    a.unit += " à " + dosage;
-                                clean_name = removeDosageFromName(clean_name);
+                                if (a.unit.equals("Beutel") && !dosage.isEmpty()) {
+									a.unit += " à " + dosage;
+									clean_name = removeDosageFromName(clean_name);
+								}
                                 clean_name = removeSpaces(clean_name);
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
-								clean_name = addGalenToName(clean_name, galens);
+								clean_name = addGalenToName(clean_name, capitalizeFirstLetter(galens));
 								//
 								sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.unit + ";";
 							} else {
