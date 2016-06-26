@@ -23,18 +23,25 @@ public class ShoppingCartRose {
 		
 	public void encryptFiles() {
 		encryptSalesFiguresToFile(Constants.DIR_ZURROSE + "Abverkaufszahlen.csv", Constants.DIR_OUTPUT + "rose_sales_fig.ser");
-		encryptCustomerMapToFile(Constants.DIR_ZURROSE + "Kunden.csv", Constants.DIR_OUTPUT + "rose_conditions.ser");
+		encryptCustomerMapToFile(Constants.DIR_ZURROSE + "Kunden_alle.csv", Constants.DIR_OUTPUT + "rose_conditions.ser");
 		encryptAutoGenerikaToFile(Constants.DIR_ZURROSE + "Autogenerika.csv", Constants.DIR_OUTPUT + "rose_autogenerika.ser");
 	}
-	
+
 	private void encryptObjectToFile(Object object, String file_name) {
+		byte[] serializedBytes = FileOps.serialize(object);
+
+		// Write simply serialized file
+		if (serializedBytes!=null) {
+			FileOps.writeToFile(file_name + ".clear", serializedBytes);
+			System.out.println("Saved serialized file " + file_name);
+		}
+
 		Crypto crypto = new Crypto();
 		byte[] encrypted_msg = null;
-		byte[] serializedBytes = FileOps.serialize(object);
 		if (serializedBytes!=null) {
 			encrypted_msg = crypto.encrypt(serializedBytes);
 		}
-		// Write to file
+		// Write to encrypted file
 		if (encrypted_msg!=null) {
 			FileOps.writeToFile(file_name, encrypted_msg);
 			System.out.println("Saved encrypted file " + file_name);
@@ -67,7 +74,7 @@ public class ShoppingCartRose {
 					LinkedHashMap<String, Float> expenses_map = new LinkedHashMap<String, Float>();
 									
 					for (int i=0; i<5; ++i) {
-						String pharma_company = (new ArrayList<String>(Utilities.doctorPreferences.keySet())).get(i);
+						String pharma_company = (new ArrayList<>(Utilities.doctorPreferences.keySet())).get(i);
 						//
 						String rebate = token[4+i].replaceAll("[^\\d.]", "");
 						if (!rebate.isEmpty())
