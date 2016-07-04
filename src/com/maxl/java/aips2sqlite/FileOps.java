@@ -71,7 +71,7 @@ public class FileOps {
 			}
 			br.close();
 		} catch (Exception e) {
-			System.err.println(">> Error in reading file");
+			System.err.println(">> Error in reading file " + filename);
 		}
 
 		return file_str;

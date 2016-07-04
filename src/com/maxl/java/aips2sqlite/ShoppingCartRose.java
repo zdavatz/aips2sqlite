@@ -143,7 +143,8 @@ public class ShoppingCartRose {
 			}
 			br.close();
 		} catch (Exception e) {
-			System.err.println(">> Error in reading csv file " + in_csv_file);
+			System.err.println(">> Error in processing file " + in_csv_file);
+			e.printStackTrace();
 		}
 		
 		// Serialize into a byte array output stream, then encrypt
@@ -183,7 +184,8 @@ public class ShoppingCartRose {
 			}
 			br.close();
 		} catch (Exception e) {
-			System.err.println(">> Error in reading csv file " + in_csv_file);
+			System.err.println(">> Error in processing file " + in_csv_file);
+			e.printStackTrace();
 		}
 		
 		// Serialize into a byte array output stream, then encrypt
@@ -220,6 +222,7 @@ public class ShoppingCartRose {
 			br.close();
 		} catch (Exception e) {
 			System.err.println(">> Error in reading csv file " + in_csv_file);
+			e.printStackTrace();
 		}
 		
 		// Serialize into a byte array output stream, then encrypt

@@ -65,7 +65,7 @@ public class DispoParse {
 	private Set<String> unit_set = new HashSet<String>();
 	
 	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, " +
-			"replacepharma, offmarket, flags";
+			"replacepharma, offmarket, flags, npl, publicprice";
 	
 	public DispoParse() {
 		// Initialize the database
@@ -130,7 +130,7 @@ public class DispoParse {
 	        		"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
 	        		"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
 	        		"replaceean TEXT, replacepharma TEXT, offmarket INTEGER, " +
-	        		"flags TEXT);";
+	        		"flags TEXT, npl TEXT, publicprice TEXT);";
 	}
 	
 	private void createArticleDB()  {		       
@@ -139,7 +139,7 @@ public class DispoParse {
 	        stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
 	        stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
 	        // Insert statement	
-	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");	       			           
+	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
@@ -165,6 +165,8 @@ public class DispoParse {
 			m_prep_rosedb.setString(15, article.replace_pharma_code);
 			m_prep_rosedb.setBoolean(16, article.off_the_market);
 			m_prep_rosedb.setString(17, article.flags);
+			m_prep_rosedb.setBoolean(18, article.npl_article);
+			m_prep_rosedb.setString(19, article.public_price);
 			m_prep_rosedb.addBatch();        
 			conn.setAutoCommit(false);
 			m_prep_rosedb.executeBatch();
@@ -221,7 +223,7 @@ public class DispoParse {
 		// Read like_db (if it exists)
 		File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_LIKE_DB_ZR);
 		if (!file.exists())
-			m_ean_likes = new HashMap<String, Integer>();
+			m_ean_likes = new HashMap<>();
 		else
 			m_ean_likes = readLikeMap(file.getAbsolutePath());
 		// List csv files in DIR_ZURROSE		
@@ -229,34 +231,36 @@ public class DispoParse {
 		String like_db_str = "";
 		// Read all files and extract id, timestamp and eans
 		try {
-			for (File f : list_of_files) {
-				String file_name = f.getName();
-				if (file_name.endsWith("csv") && file_name.startsWith("rose")) {
-					// Get timestamp and id
-					String[] tokens = file_name.substring(0, file_name.indexOf(".")).split("_");
-					String user_id = "00000";
-					String time_stamp = "";
-					if (tokens.length==2)
-						time_stamp = tokens[1];
-					else if (tokens.length==3) {
-						time_stamp = tokens[1];
-						user_id = tokens[2];
-					}  						
-					FileInputStream fis = new FileInputStream(f);
-					BufferedReader br = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
-					String eancode;
-					while ((eancode=br.readLine()) != null) {
-						// Each line contains an eancode
-						like_db_str += time_stamp + ";" + eancode + ";" + user_id + "\n";
-						// Increment likes in like map
-						if (m_ean_likes.containsKey(eancode)) {
-							int num_likes = m_ean_likes.get(eancode);
-							m_ean_likes.put(eancode, ++num_likes);
+			if (list_of_files!=null) {
+				for (File f : list_of_files) {
+					String file_name = f.getName();
+					if (file_name.endsWith("csv") && file_name.startsWith("rose")) {
+						// Get timestamp and id
+						String[] tokens = file_name.substring(0, file_name.indexOf(".")).split("_");
+						String user_id = "00000";
+						String time_stamp = "";
+						if (tokens.length == 2)
+							time_stamp = tokens[1];
+						else if (tokens.length == 3) {
+							time_stamp = tokens[1];
+							user_id = tokens[2];
 						}
-					}										
-					fis.close();		
-					// Delete file
-					f.delete();
+						FileInputStream fis = new FileInputStream(f);
+						BufferedReader br = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
+						String eancode;
+						while ((eancode = br.readLine()) != null) {
+							// Each line contains an eancode
+							like_db_str += time_stamp + ";" + eancode + ";" + user_id + "\n";
+							// Increment likes in like map
+							if (m_ean_likes.containsKey(eancode)) {
+								int num_likes = m_ean_likes.get(eancode);
+								m_ean_likes.put(eancode, ++num_likes);
+							}
+						}
+						fis.close();
+						// Delete file
+						f.delete();
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -284,6 +288,8 @@ public class DispoParse {
 		 *  13: EAN
 		 *  14: Ersatzarztartikelnummer
 		 *  15: ausser Handel (a.H.)
+		 *  16: NPL-Artikel
+		 *  17: Publikumspreis
 		 */
 		try {
 			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_DISPO_ZR);
@@ -376,7 +382,15 @@ public class DispoParse {
 					// Ausser Handel
 					if (token[15]!=null)
 						article.off_the_market = token[15].toLowerCase().equals("ja");
-					
+					// NPL-Artikel
+					if (token[16]!=null)
+						article.npl_article = token[16].toLowerCase().equals("ja");
+					// Publikumspreis
+					if (token[17]!=null) {
+						if (token[17].matches("^[0-9]+(\\.[0-9]{1,2})?$"))
+							article.public_price = String.format("%.2f", Float.parseFloat(token[17]));
+					}
+
 					list_of_articles.add(article);
 					addArticleDB(article);
 					System.out.println(num_rows + " -> " + article.pack_title + " / likes = " + article.likes);
@@ -466,7 +480,7 @@ public class DispoParse {
 	}
 
 	private void getSLMap() {
-		m_flags_map = new HashMap<String, String>();
+		m_flags_map = new HashMap<>();
 		String tag_content = "";
 		
 		XMLInputFactory xml_factory = XMLInputFactory.newInstance();
