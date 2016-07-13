@@ -23,7 +23,7 @@ public class ShoppingCartRose {
 		
 	public void encryptFiles() {
 		encryptSalesFiguresToFile(Constants.DIR_ZURROSE + "Abverkaufszahlen.csv", Constants.DIR_OUTPUT + "rose_sales_fig.ser");
-		encryptCustomerMapToFile(Constants.DIR_ZURROSE + "Kunden_alle.csv", Constants.DIR_OUTPUT + "rose_conditions.ser");
+		encryptCustomerMapToFile(Constants.DIR_ZURROSE + "Kunden_alle.csv", Constants.DIR_OUTPUT + "rose_conditions.ser", Constants.DIR_OUTPUT + "rose_ids.ser");
 		encryptAutoGenerikaToFile(Constants.DIR_ZURROSE + "Autogenerika.csv", Constants.DIR_OUTPUT + "rose_autogenerika.ser");
 	}
 
@@ -48,8 +48,9 @@ public class ShoppingCartRose {
 		}
 	}
 	
-	public void encryptCustomerMapToFile(String in_csv_file, String out_ser_file) {
+	public void encryptCustomerMapToFile(String in_csv_file, String out_ser_file_1, String out_ser_file_2) {
 		HashMap<String, User> user_map = new HashMap<String, User>();
+		HashMap<String, String> roseid_to_gln_map = new HashMap<>();
 		try {
 			File file = new File(in_csv_file);
 			if (!file.exists()) {
@@ -138,6 +139,12 @@ public class ShoppingCartRose {
 					user.expenses_map = expenses_map;	
 					
 					user_map.put(user.gln_code, user);
+
+					// Rose id
+					String rose_id = "";
+					if (token[0]!=null && !token[0].isEmpty())
+						rose_id = token[0].replaceAll("[^\\d]", "");
+					roseid_to_gln_map.put(rose_id, user.gln_code);
 				}
 				counter++;
 			}
@@ -149,9 +156,16 @@ public class ShoppingCartRose {
 		
 		// Serialize into a byte array output stream, then encrypt
 		if (user_map!=null && user_map.size()>0) {
-			encryptObjectToFile(user_map, out_ser_file);
+			encryptObjectToFile(user_map, out_ser_file_1);
 		} else {
-			System.out.println("!! Error occurred when generating " + out_ser_file);
+			System.out.println("!! Error occurred when generating " + out_ser_file_1);
+			System.exit(1);
+		}
+		// Serialize second file
+		if (roseid_to_gln_map!=null && roseid_to_gln_map.size()>0) {
+			encryptObjectToFile(roseid_to_gln_map, out_ser_file_2);
+		} else {
+			System.out.println("!! Error occurred when generating " + out_ser_file_2);
 			System.exit(1);
 		}
 	}
