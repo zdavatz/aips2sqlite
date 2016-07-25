@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -302,6 +304,8 @@ public class DispoParse {
 			List<Article> list_of_articles = new ArrayList<Article>();
 			while ((line = br.readLine())!=null && num_rows<10000) {
 				String token[] = line.split(";", -1);
+				String parsed_size = "";
+				String parsed_unit = "";
 				if (num_rows>0 && token.length>15) {
 					Article article = new Article();					
 					// Pharmacode
@@ -364,7 +368,9 @@ public class DispoParse {
 					// Dosierung
 					if (token[11]!=null) {	// UNIT = Stärke or Dosierung
 						unitParse(token[11]);
-						article.pack_unit = token[11];				
+						article.pack_unit = token[11];
+                        if (article.pack_unit.isEmpty() || article.pack_unit.equals("0"))
+    						article.pack_unit = parsed_unit = parseUnitFromTitle(token[1]);
 					}
 					// Rose Basispreis
 					if (token[12]!=null) {
@@ -393,7 +399,10 @@ public class DispoParse {
 
 					list_of_articles.add(article);
 					addArticleDB(article);
-					System.out.println(num_rows + " -> " + article.pack_title + " / likes = " + article.likes);
+					System.out.println(num_rows + " -> " + article.pack_title
+							+ " / size = [" + article.pack_size + ", " + parsed_size + "]"
+							+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
+							+ " / likes = " + article.likes);
 				}
 				num_rows++;
 			}
@@ -477,6 +486,31 @@ public class DispoParse {
 		if (token.length>1) {
 			unit_set.add(token[1].trim());
 		}
+	}
+
+	private String parseSizeFromTitle(String pack_title) {
+
+		return "";
+	}
+
+	/**
+	 * Extracts dosage/unit/prescription strength from package title
+	 * @param pack_title
+	 * @return extracted dosage
+     */
+	private String parseUnitFromTitle(String pack_title) {
+		String dosage = "";
+		Pattern p = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(ml|mg|g)");
+		Matcher m = p.matcher(pack_title);
+		if (m.find()) {
+			dosage = m.group(1);
+			String q = m.group(2);
+			if (q!=null && !q.isEmpty()) {
+				dosage += q;
+			}
+			dosage += (" " + m.group(3));
+		}
+		return dosage;
 	}
 
 	private void getSLMap() {
