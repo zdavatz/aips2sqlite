@@ -131,7 +131,7 @@ public class DispoParse {
 	        		"title TEXT, size TEXT, galen TEXT, unit TEXT, " +
 	        		"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
 	        		"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
-	        		"replaceean TEXT, replacepharma TEXT, offmarket INTEGER, " +
+	        		"replaceean TEXT, replacepharma TEXT, offmarket TEXT, " +
 	        		"flags TEXT, npl TEXT, publicprice TEXT);";
 	}
 	
@@ -322,11 +322,16 @@ public class DispoParse {
 							article.regnr = ean.substring(4,9);
 							if (m_flags_map.containsKey(article.regnr)) {
 								String flags = m_flags_map.get(article.regnr);
-								if (flags.equals("Y"))
-									article.flags = "SL, SB 20%";
-								else if (flags.equals("N"))
-									article.flags = "SL, SB 10%";									
-							}
+                                if (flags.endsWith("Y"))
+                                    article.flags = "SL, SB 20%";
+                                else if (flags.endsWith("N"))
+                                    article.flags = "SL, SB 10%";
+                                if (flags.contains(";")) {
+                                    String org_gen_code = flags.split(";")[0];
+                                    if (!org_gen_code.isEmpty())
+                                        article.flags += ", " + org_gen_code;
+                                }
+                            }
 							if (m_ean_likes.containsKey(ean))
 								article.likes = m_ean_likes.get(ean);	// LIKES!!!
 							else 
@@ -527,7 +532,7 @@ public class DispoParse {
 
 			String swissmedicno5 = "";
 			String flagsb20 = "";
-			
+
 			int num_rows = 0;
 			// Keep moving the cursor forward
 			while (reader.hasNext()) {
@@ -555,10 +560,13 @@ public class DispoParse {
 					case "swissmedicno5":
 						swissmedicno5 = tag_content;
 						break;
+                    case "orggencode":
+                        flagsb20 = tag_content;
+                        break;
 					case "flagsb20":
-						flagsb20 = tag_content;
+						flagsb20 += "; " + tag_content;
 						break;
-					}
+                    }
 					break;
 				}
 			}
