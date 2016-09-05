@@ -539,18 +539,24 @@ public class HtmlUtils {
 			// SectionX==1, that's the "title"
 			Element title = mDoc.select("p[id=section1]").first();
 			String clean_title = "";
+
+			/*
 			// Some med titles have a 'Ò' which on Windows and Android systems is not translated into a '®' (reserved symbol)
 			if (title!=null)
-				clean_title = title.text().replace("Ò","®");
+				clean_title = title.text().replaceAll("Ò","®");
 			// Some German medications have wrong characters in the titles, this is a fix
-			if (language.equals("de"))
-				clean_title = clean_title.replace("â","®");
-			else if (language.equals("fr"))
+			if (language.equals("de")) {
+				clean_title = clean_title.replaceAll("â", "®");
+				clean_title = clean_title.replaceAll("&acirc;", "®");
+			} else if (language.equals("fr"))
 				clean_title = med_title;
+			*/
+			clean_title = med_title;
+
 			newDoc.html("<div class=\"MonTitle\" id=\"section"+sectionX+"\">"+clean_title+"</div>");
 			// Add med holder (author, owner)
 			newDoc.append("<div class=\"ownerCompany\"><div style=\"text-align: right;\">"+med_author+"</div></div>");
-			
+
 			/* Old solution too brittle --> could be improved
 			Element elem = null;
 			if (language.equals("de"))
