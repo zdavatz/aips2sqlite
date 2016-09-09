@@ -342,8 +342,12 @@ public class DispoParse {
 					if (token[3]!=null)
 						article.availability = token[3];
 					// Packungsihnalt
-					if (token[5]!=null)		// SIZE = Packungsgrösse or Packungsinhalt
-						article.pack_size = (int)(Float.parseFloat(token[5]));				
+					if (token[5]!=null) {    // SIZE = Packungsgrösse or Packungsinhalt
+						article.pack_size = (int) (Float.parseFloat(token[5]));
+						if (article.pack_size==0) {
+							article.pack_size = parseSizeFromTitle(token[1]);
+						}
+					}
 					// Therapeutischer Code			
 					if (token[6]!=null) {
 						if (!token[6].isEmpty())
@@ -493,11 +497,6 @@ public class DispoParse {
 		}
 	}
 
-	private String parseSizeFromTitle(String pack_title) {
-
-		return "";
-	}
-
 	/**
 	 * Extracts dosage/unit/prescription strength from package title
 	 * @param pack_title
@@ -516,6 +515,23 @@ public class DispoParse {
 			dosage += (" " + m.group(3));
 		}
 		return dosage;
+	}
+
+	/**
+	 * Extracts package size from title
+	 *
+	 */
+	private int parseSizeFromTitle(String pack_title) {
+		String size = "";
+		Pattern p = Pattern.compile("(\\d+)\\s*(Stk)");
+		Matcher m = p.matcher(pack_title);
+		if (m.find()) {
+			size = m.group(1);
+		}
+		if (!size.isEmpty())
+			return Integer.valueOf(size);
+		else
+			return 0;
 	}
 
 	private void getSLMap() {
