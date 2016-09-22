@@ -47,6 +47,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -62,12 +63,14 @@ public class DispoParse {
 	private Map<String, String> m_atc_map = null;
 	private Map<String, Integer> m_ean_likes = null;
 	private HashMap<String, String> m_flags_map = null;
-	private XSSFSheet m_dispo_articles_sheet = null;
+    private HashMap<String, String> m_bag_exfacto_price_map = null;
+    private HashMap<String, String> m_bag_public_price_map = null;
+    private XSSFSheet m_dispo_articles_sheet = null;
 	
 	private Set<String> unit_set = new HashSet<String>();
 	
 	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, " +
-			"replacepharma, offmarket, flags, npl, publicprice";
+			"replacepharma, offmarket, flags, npl, publicprice, exfprice";
 	
 	public DispoParse() {
 		// Initialize the database
@@ -132,7 +135,7 @@ public class DispoParse {
 	        		"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
 	        		"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
 	        		"replaceean TEXT, replacepharma TEXT, offmarket TEXT, " +
-	        		"flags TEXT, npl TEXT, publicprice TEXT);";
+	        		"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT);";
 	}
 	
 	private void createArticleDB()  {		       
@@ -141,7 +144,7 @@ public class DispoParse {
 	        stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
 	        stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
 	        // Insert statement	
-	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
@@ -169,6 +172,7 @@ public class DispoParse {
 			m_prep_rosedb.setString(17, article.flags);
 			m_prep_rosedb.setBoolean(18, article.npl_article);
 			m_prep_rosedb.setString(19, article.public_price);
+			m_prep_rosedb.setString(20, article.exfactory_price);
 			m_prep_rosedb.addBatch();        
 			conn.setAutoCommit(false);
 			m_prep_rosedb.executeBatch();
@@ -400,23 +404,34 @@ public class DispoParse {
 					// NPL-Artikel
 					if (token[16]!=null)
 						article.npl_article = token[16].toLowerCase().equals("ja");
-					// Publikumspreis
+					// Public price, see also m_bag_public_price map
+                    /*
 					if (token[17]!=null) {
 						if (token[17].matches("^[0-9]+(\\.[0-9]{1,2})?$"))
 							article.public_price = String.format("%.2f", Float.parseFloat(token[17]));
 					}
+					*/
+                    // Public and exfactory prices
+                    if (!article.ean_code.isEmpty()) {
+                        String ean = article.ean_code;
+                        article.public_price = m_bag_public_price_map.containsKey(ean) ? m_bag_public_price_map.get(ean) : "";
+                        article.exfactory_price = m_bag_exfacto_price_map.containsKey(ean) ? m_bag_exfacto_price_map.get(ean) : "";
+                    }
 
-					list_of_articles.add(article);
-					addArticleDB(article);
 					System.out.println(num_rows + " -> " + article.pack_title
 							+ " / size = [" + article.pack_size + ", " + parsed_size + "]"
 							+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
+							+ " / pp = " + article.public_price
+                            + " / efp = " + article.exfactory_price
 							+ " / likes = " + article.likes);
-				}
+
+                    list_of_articles.add(article);
+                    addArticleDB(article);
+                }
 				num_rows++;
 			}
 			complete();			
-			System.out.println("Number of articles = " + list_of_articles.size());
+			System.out.println("\nNumber of articles = " + list_of_articles.size());
 			// 
 			br.close();
 			
@@ -536,6 +551,9 @@ public class DispoParse {
 
 	private void getSLMap() {
 		m_flags_map = new HashMap<>();
+        m_bag_exfacto_price_map = new HashMap<>();
+        m_bag_public_price_map = new HashMap<>();
+
 		String tag_content = "";
 		
 		XMLInputFactory xml_factory = XMLInputFactory.newInstance();
@@ -548,45 +566,69 @@ public class DispoParse {
 
 			String swissmedicno5 = "";
 			String flagsb20 = "";
+            String gtin = "";
+            String state = "";
 
 			int num_rows = 0;
 			// Keep moving the cursor forward
-			while (reader.hasNext()) {
-				int event = reader.next();
-				// Check if the element that the cursor is currently pointing to is a start element
-				switch(event) {
-				case XMLStreamConstants.START_DOCUMENT:
-					break;
-				case XMLStreamConstants.START_ELEMENT:
-					switch(reader.getLocalName().toLowerCase()) {
-					case "preparations":
-						break;
-					}
-					break;
-				case XMLStreamConstants.CHARACTERS:
-					tag_content = reader.getText().trim();
-					break;
-				case XMLStreamConstants.END_ELEMENT:
-					switch (reader.getLocalName().toLowerCase()) {
-					case "preparation":
-						m_flags_map.put(swissmedicno5, flagsb20);	// These meds are all in the SL-list
-						num_rows++;
-						System.out.print("\rProcessing Refdata Partner file... " + num_rows);
-						break;
-					case "swissmedicno5":
-						swissmedicno5 = tag_content;
-						break;
-                    case "orggencode":
-                        flagsb20 = tag_content;
+            while (reader.hasNext()) {
+                int event = reader.next();
+                // Check if the element that the cursor is currently pointing to is a start element
+                switch (event) {
+                    case XMLStreamConstants.START_DOCUMENT:
                         break;
-					case "flagsb20":
-						flagsb20 += "; " + tag_content;
-						break;
-                    }
-					break;
-				}
-			}
-			// Test
+                    case XMLStreamConstants.START_ELEMENT:
+                        switch (reader.getLocalName().toLowerCase()) {
+                            case "preparations":
+                                break;
+                            case "exfactoryprice":
+                                state = "exfactory";
+                                break;
+                            case "publicprice":
+                                state = "public";
+                                break;
+                        }
+                        break;
+                    case XMLStreamConstants.CHARACTERS:
+                        tag_content = reader.getText().trim();
+                        break;
+                    case XMLStreamConstants.END_ELEMENT:
+                        switch (reader.getLocalName().toLowerCase()) {
+                            case "preparation":
+                                m_flags_map.put(swissmedicno5, flagsb20);    // These meds are all in the SL-list
+                                num_rows++;
+                                System.out.print("\rProcessing Refdata Partner file... " + num_rows);
+                                break;
+                            case "swissmedicno5":
+                                swissmedicno5 = tag_content;
+                                break;
+                            case "orggencode":
+                                flagsb20 = tag_content;
+                                break;
+                            case "flagsb20":
+                                flagsb20 += "; " + tag_content;
+                                break;
+                            case "gtin":
+                                gtin = tag_content;
+                                break;
+                            case "price":
+                                if (state.equals("exfactory")) {
+                                    String exf_price = tag_content;
+                                    if (gtin!=null && gtin.length() == 13) {
+                                        m_bag_exfacto_price_map.put(gtin, exf_price);
+                                    }
+                                } else if (state.equals("public")) {
+                                    String pub_price = tag_content;
+                                    if (gtin!=null && gtin.length() == 13) {
+                                        m_bag_public_price_map.put(gtin, pub_price);
+                                    }
+                                }
+                                break;
+                        }
+                        break;
+                }
+            }
+            // Test
 			/*
 			System.out.println("");
 			for (Map.Entry<String, String> s : m_flags_map.entrySet()) {

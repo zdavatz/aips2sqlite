@@ -15,6 +15,7 @@ public class Article {
 	public String availability = "";
 	public String rose_base_price = "";
 	public String public_price = "";
+	public String exfactory_price = "";
 	public String replace_ean_code = "";
 	public String replace_pharma_code = "";
 	public String flags = "";
