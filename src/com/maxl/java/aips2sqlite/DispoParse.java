@@ -82,7 +82,9 @@ public class DispoParse {
 		getAtcMap();
 		// Get SL map
 		getSLMap();
-		
+		// Enhance SL map with information on"Abgabekategorie"
+		enhanceFlags();
+
 		if (type.equals("csv")) {
 			// Process likes
 			processLikes();
@@ -323,20 +325,25 @@ public class DispoParse {
 						article.ean_code = token[2];
 						if (article.ean_code.length()==13) {
 							String ean = article.ean_code;
-							article.regnr = ean.substring(4,9);
+							article.regnr = ean.substring(4, 9);
+							// Flags
 							if (m_flags_map.containsKey(article.regnr)) {
 								String flags = m_flags_map.get(article.regnr);
-                                if (flags.endsWith("Y"))
-                                    article.flags = "SL, SB 20%";
-                                else if (flags.endsWith("N"))
-                                    article.flags = "SL, SB 10%";
-                                if (flags.contains(";")) {
-                                    String org_gen_code = flags.split(";")[0];
-                                    if (!org_gen_code.isEmpty())
-                                        article.flags += ", " + org_gen_code;
-                                }
-                            }
-							if (m_ean_likes.containsKey(ean))
+								String flag[] = flags.split(";", -1);
+								// 0: O,G | 1: SL, SB 10%/20% | 2:A, B, C, ...
+								if (flag.length==4) {
+									String swissmedic_cat = flag[2];
+									if (flag[1].contains("Y"))
+										article.flags = swissmedic_cat + ", SL, SB 20%";
+									else if (flag[1].contains("N"))
+										article.flags = swissmedic_cat + ", SL, SB 10%";
+
+									String org_gen_code = flag[0];
+									if (!org_gen_code.isEmpty())
+										article.flags += ", " + org_gen_code;
+								}
+							}
+ 							if (m_ean_likes.containsKey(ean))
 								article.likes = m_ean_likes.get(ean);	// LIKES!!!
 							else 
 								article.likes = 0;
@@ -423,7 +430,7 @@ public class DispoParse {
 							+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
 							+ " / pp = " + article.public_price
                             + " / efp = " + article.exfactory_price
-							+ " / likes = " + article.likes);
+							+ " / flags = " + article.flags);
 
                     list_of_articles.add(article);
                     addArticleDB(article);
@@ -606,7 +613,7 @@ public class DispoParse {
                                 flagsb20 = tag_content;
                                 break;
                             case "flagsb20":
-                                flagsb20 += "; " + tag_content;
+                                flagsb20 += ";" + tag_content;
                                 break;
                             case "gtin":
                                 gtin = tag_content;
@@ -641,7 +648,50 @@ public class DispoParse {
 		}
 	
 	}
-	
+
+	private void enhanceFlags() {
+		// m_flags_map.put(swissmedicno5, flagsb20);
+		try {
+			// Load Swissmedic xls file
+			FileInputStream packages_file = new FileInputStream(Constants.FILE_PACKAGES_XLSX);
+			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
+			XSSFWorkbook packages_workbook = new XSSFWorkbook(packages_file);
+			// Get first sheet from workbook
+			XSSFSheet packages_sheet = packages_workbook.getSheetAt(0);
+			// Iterate through all rows of first sheet
+			Iterator<Row> rowIterator = packages_sheet.iterator();
+			//
+			int num_rows = 0;
+			while (rowIterator.hasNext()) {
+				Row row = rowIterator.next();
+				if (num_rows > 5) {
+					String swissmedic_no5 = ""; 	// SwissmedicNo5 registration number (5 digits)
+					String swissmedic_cat = "";    	// Swissmedic category
+					// 0: Zulassungsnummer, 13: Abgabekategorie Packung, 22: Betäubungsmittelhaltigen Präparaten
+					if (row.getCell(0) != null)
+						swissmedic_no5 = String.format("%05d", (int) (row.getCell(0).getNumericCellValue()));    // Swissmedic registration number (5 digits)
+					if (row.getCell(13) != null)
+						swissmedic_cat = ExcelOps.getCellValue(row.getCell(13));    // Abgabekategorie Packung
+					if (row.getCell(22) != null) {
+						String narcotic = ExcelOps.getCellValue(row.getCell(22));
+						if (narcotic.equals("a") && swissmedic_cat.equals("A")) {
+							swissmedic_cat = "A+";
+						}
+					}
+					if (m_flags_map.containsKey(swissmedic_no5)) {
+						String flags = m_flags_map.get(swissmedic_no5);
+						if (!flags.endsWith(";"))
+							flags += ";" + swissmedic_cat + ";";
+						m_flags_map.put(swissmedic_no5, flags);
+					}
+				}
+				num_rows++;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void getAtcMap() {
 		m_atc_map = new TreeMap<String, String>();
 		

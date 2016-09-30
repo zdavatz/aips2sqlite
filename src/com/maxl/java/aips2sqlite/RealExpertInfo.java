@@ -1561,7 +1561,7 @@ public class RealExpertInfo {
 									}
 								} catch(IOException e) {
 									e.printStackTrace();
-								}							
+								}
 								m_list_of_packages.add(title_refdata + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" 
 										+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
 										+ pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
