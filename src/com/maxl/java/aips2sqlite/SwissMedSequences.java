@@ -348,28 +348,9 @@ public class SwissMedSequences {
 			e.printStackTrace();
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	private void parseDosageFormsJson() throws IOException {
-		ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally				
-		TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};				
-		Map<String,Object> dosageFormsData = mapper.readValue(new File(Constants.FILE_DOSAGE_FORMS_JSON), typeRef);		
-		ArrayList<HashMap<String, String>> dosageList = (ArrayList<HashMap<String, String>>)dosageFormsData.get("dosage_forms");
 
-		m_map_of_short_to_long_galens = new HashMap<>();
-		for (HashMap<String, String> dosage : dosageList) {
-			String galen_short = dosage.get("galenic_short");
-			String galen_long = dosage.get("galenic_full");
-			if (!galen_short.isEmpty()) {
-				m_map_of_short_to_long_galens.put(galen_short, galen_long);
-			}
-		}
-				
-		System.out.println("Number of dosage forms in database: " + m_map_of_short_to_long_galens.size());
-	}
-	
-	private void parseSwissmedicPackagesFile() throws FileNotFoundException, IOException {
-		m_smn5plus_to_article_map = new TreeMap<String, ArrayList<Article>>();
+	private void parseSwissmedicPackagesFile() throws IOException {
+		m_smn5plus_to_article_map = new TreeMap<>();
 		//
 		System.out.print("Processing packages xlsx... ");
 		// Load Swissmedic xls file			
@@ -466,5 +447,24 @@ public class SwissMedSequences {
 			}
 		}
 		System.out.println("");
+	}
+
+	@SuppressWarnings("unchecked")
+	private void parseDosageFormsJson() throws IOException {
+		ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
+		TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+		Map<String,Object> dosageFormsData = mapper.readValue(new File(Constants.FILE_DOSAGE_FORMS_JSON), typeRef);
+		ArrayList<HashMap<String, String>> dosageList = (ArrayList<HashMap<String, String>>)dosageFormsData.get("dosage_forms");
+
+		m_map_of_short_to_long_galens = new HashMap<>();
+		for (HashMap<String, String> dosage : dosageList) {
+			String galen_short = dosage.get("galenic_short");
+			String galen_long = dosage.get("galenic_full");
+			if (!galen_short.isEmpty()) {
+				m_map_of_short_to_long_galens.put(galen_short, galen_long);
+			}
+		}
+
+		System.out.println("Number of dosage forms in database: " + m_map_of_short_to_long_galens.size());
 	}
 }

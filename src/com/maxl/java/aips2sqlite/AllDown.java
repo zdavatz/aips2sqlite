@@ -742,8 +742,10 @@ public class AllDown {
 	            		String remote_file = f.getName();
 	            		if (remote_file.endsWith("csv")) {
 	            			String local_file = remote_file;
-	            			if (remote_file.startsWith("Artikelstamm"))
+	            			if (remote_file.equals("Artikelstamm.csv"))
 	            				local_file = Constants.CSV_FILE_DISPO_ZR;
+							if (remote_file.equals("Artikelstamm_Voigt.csv"))
+								local_file = Constants.CSV_FILE_VOIGT_ZR;
 	            			OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
 	                    	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
 	                    	boolean done = ftp_client.retrieveFile(remote_file, os);

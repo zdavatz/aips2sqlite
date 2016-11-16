@@ -604,7 +604,7 @@ public class DispoParse {
                             case "preparation":
                                 m_flags_map.put(swissmedicno5, flagsb20);    // These meds are all in the SL-list
                                 num_rows++;
-                                System.out.print("\rProcessing Refdata Partner file... " + num_rows);
+                                System.out.print("\rProcessing BAG preparations file... " + num_rows);
                                 break;
                             case "swissmedicno5":
                                 swissmedicno5 = tag_content;
