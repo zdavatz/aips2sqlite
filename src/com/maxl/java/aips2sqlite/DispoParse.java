@@ -733,24 +733,7 @@ public class DispoParse {
 		} else
 			return 0;
 	}
-	
-	private XSSFSheet getSheetsFromFile(String filename, int n) {
-		XSSFSheet sheet = null;		
-		try {
-			FileInputStream file = new FileInputStream(filename);
-			// Get workbook
-			XSSFWorkbook workbook = new XSSFWorkbook(file);
-			// Get sheet
-			sheet = workbook.getSheetAt(n);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		return sheet;
-	}
-	
+
 	private Map<String, Integer> readLikeMap(String filename) {
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		try {

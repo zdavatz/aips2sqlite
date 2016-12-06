@@ -48,6 +48,25 @@ public class Utilities {
 		return checksum_digit;
 	}
 
+	static public String removeSpaces(String name) {
+		// Replace multiple spaces with single space
+		return name.replaceAll("\\s\\s+", " ");
+	}
+
+	static public String addStringToString(String str1, String str2) {
+		if (str1.contains(str2))
+			str1 = str1.replace(str2, "");
+		str1 += " " + str2;
+		return str1;
+	}
+
+	static public String capitalizeFirstLetter(String str) {
+		if (!str.isEmpty()) {
+			return str.substring(0, 1).toUpperCase() + str.substring(1);
+		}
+		return str;
+	}
+
 	static public String capitalizeFully(String s, int N) {
 		// Split string
 		String[] tokens = s.split("\\s");

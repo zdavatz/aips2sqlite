@@ -150,6 +150,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("smsequence")) {
 				CmlOptions.SWISS_MEDIC_SEQUENCE = true;
 			}
+			if (cmd.hasOption("packageparse")) {
+				CmlOptions.PACKAGE_PARSE = true;
+			}
 			if (cmd.hasOption("nodown")) {
 				CmlOptions.DOWNLOAD_ALL = false;
 			}
@@ -194,6 +197,7 @@ public class Aips2Sqlite {
 		addOption(options, "takeda", "generate sap/gln matching file", true, false);
 		addOption(options, "dailydrugcosts", "calculates the daily drug costs", false, false);
 		addOption(options, "smsequence", "generates swissmedic sequence csv", false, false);
+		addOption(options, "packageparse", "extract dosage information from package name", false, false);
 		addOption(options, "zip", "generate zipped big files (sqlite or xml)", false, false);
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
@@ -249,6 +253,13 @@ public class Aips2Sqlite {
 		if (CmlOptions.SWISS_MEDIC_SEQUENCE) {
 			SwissMedSequences sms = new SwissMedSequences();
 			sms.process();
+			no_db = true;
+		}
+
+		// Extracts dosage information from package names
+		if (CmlOptions.PACKAGE_PARSE) {
+			PackageParse pp = new PackageParse();
+			pp.process();
 			no_db = true;
 		}
 		

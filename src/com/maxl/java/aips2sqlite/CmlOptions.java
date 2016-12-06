@@ -44,6 +44,7 @@ public class CmlOptions {
 	public static boolean TAKEDA_SAP = false;
 	public static boolean DAILY_DRUG_COSTS = false;
 	public static boolean SWISS_MEDIC_SEQUENCE = false;
+	public static boolean PACKAGE_PARSE = false;
 	public static String TAKEDA_RANGE = "";
 	public static String STATS = "";	
 	public static String OPT_MED_TITLE = "";

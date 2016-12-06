@@ -1,246 +1,175 @@
+/*
+Copyright (c) 2016 Max Lungarella
+
+This file is part of Aips2SQLite.
+
+Aips2SQLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package com.maxl.java.aips2sqlite;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+public class SwissMedSequences extends ArticleNameParse {
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+	SwissMedSequences() { super(); }
 
-public class SwissMedSequences {
-
-	private TreeMap<String, ArrayList<Article>> m_smn5plus_to_article_map = null;
-	private TreeMap<String, String> m_gtin_to_name_map = null;
-	private HashMap<String, String> m_map_of_short_to_long_galens = null;
-		
-	private class Article {
-		String name;
-		String smn8;
-		String quantity;
-		String unit;
+	private String two_digit_format(String val) {
+		return String.format("%.2f", Double.valueOf(val));
 	}
-	
-	SwissMedSequences() {}
 
-	private String[] strings_to_be_cleared = {"c solv", "mit solv", "supp", "o nadel", "rektal", "m nadel(n)", "nadel(n)", "(m|o) kons",
-			"(m|o) zucker", "emuls(ion)?", "ecobag", "o aroma", "o konserv", "zuckerfrei", "sans sucre"};
-	
-	// Some additional galenic forms go in here...
-	private String[] add_galen_forms = {"augensalbe", "nasensalbe", "salbe", "depottabl", "lacktabl", "tabl", "filmtabs", "depotdrag",
-            "depot", "drag", "infusionslösung", "injektionslösung", "injektionspräparat", "lös", "injektionssuspension", "susp", "kaps",
-			"blist", "ampulle", "balsam", "bals", "emuls", "vial", "creme", "crème", "amp", "tropfen", "paste", "stift", "glob",
-            "liq", "tee", "supp", "pulver", "lot", "spray", "nebul", "tb", "gaze", "klist", "tinkt", "sirup", "blätter",
-            "pastillen", "pastilles", "zäpfchen", "gel", "pfl", "fertigspr", "bonbons", "gran", "kaugummi", "trockensub"};
+	private boolean isNotNullNotEmpty(String s) {
+		return (s != null && !s.isEmpty());
+	}
 
-	private String capitalizeFirstLetter(String str) {
-		if (!str.isEmpty()) {
-			return str.substring(0, 1).toUpperCase() + str.substring(1);
+	private String extractDosageFromName(String name) {
+		String q = "";
+		Pattern p = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(mg|g)");
+		Matcher m = p.matcher(name);
+		if (m.find()) {
+			q = m.group(1);
+			String q2 = m.group(2);
+			if (q2!=null && !q2.isEmpty()) {
+				q += q2;
+			}
+			q += (" " + m.group(3));
 		}
+		return q;
+	}
+
+	private String multiplyPackSize(String str) {
+		str = str.toLowerCase();
+		// Remove plurals
+		str = str.toLowerCase().replaceAll("\\(n\\)|\\(s\\)", "");
+
+		Pattern regx = Pattern.compile("(\\d+)\\s*x\\s*(\\d+)\\s*(ml)\\s*(amp)\\b");
+		Matcher match = regx.matcher(str);
+		if (match.find()) {
+			String n = match.group(1);    // group(0) -> whole regular expression
+			String m = match.group(2);
+			String u = match.group(3);
+			if (isNotNullNotEmpty(n) && isNotNullNotEmpty(m) && isNotNullNotEmpty(u))
+				return String.valueOf(Integer.valueOf(n) + " amp " + Integer.valueOf(m)) + " " + u;
+		}
+
+		// First identify more complex patterns, e.g. 6x 10 Stk or 3x 60 Dosen
+		regx = Pattern.compile("(\\d+)*\\s*x\\s*(\\d+)\\s*(stk|dosen|ml|g)\\b");
+		match = regx.matcher(str);
+		if (match.find()) {
+			String n = match.group(1);    // group(0) -> whole regular expression
+			String m = match.group(2);
+			String u = match.group(3);
+			if (isNotNullNotEmpty(n) && isNotNullNotEmpty(m) && isNotNullNotEmpty(u))
+				return String.valueOf(Integer.valueOf(n) * Integer.valueOf(m)) + " " + u;
+		}
+
 		return str;
 	}
 
-    private String cleanName(String name) {
-    	name = name.toLowerCase();
-    	// Replace stk, e.g. 6 Fertspr 0.5 ml
-    	name = name.replace("2015/2016", "");
-    	name = name.replaceAll("(\\d+)*\\s+((S|s)tk|(D|d)os|(A|a)mp|(M|m)inibag|(D|d)urchstf|(F|f)ertspr|(E|e)inwegspr|(M|m)onodos|(F|f)ert(ig)?pen|(B|b)tl|(S|s)pritzamp|(T|t)rinkamp|(F|f)l|(V|v)ial)(\\s+\\d+(\\.\\d+)?\\s+(ml|mg))*", "");
-    	for (String s : strings_to_be_cleared)
-    		name = name.replaceAll("\\b" + s + "\\b", "");
-    	name = name.replaceAll("\\b(\\d+)*\\s+x\\b", "");
-    	name = name.replaceAll("\\(.*?\\)", "");
-    	name = name.replaceAll("i\\.m\\./i\\.v(\\.)?|i\\.v\\./i\\.m\\.|i\\.m\\.|i\\.v\\.|\\bus(\\.)?\\s*vet\\.|\\comp\\.?", "");
-    	name = name.replaceAll("\\+\\s*\\+", "");
-    	name = name.split(",")[0];
-    	return name.trim();
-    }
-    
-    private boolean isAnimalMed(String name) {
-    	Pattern p = Pattern.compile("\\bus(\\.)?\\s*vet(\\.)?");
-		Matcher m = p.matcher(name);    	
-    	if (m.find())
-    		return true;
-    	return false;
-    }
-    
-    private ArrayList<String> extractGalenFromName(String name) {
-    	ArrayList<String> list_of_galens = new ArrayList<>();
-    	int pos = 1000;		// Big number
-    	for (Map.Entry<String, String> entry : m_map_of_short_to_long_galens.entrySet()) {
-    		String galen = entry.getKey();
-    		String[] g = galen.split(",", -1);
-    		for (String s : g) {
-    			s = s.trim();
-    			Pattern p = Pattern.compile("\\b" + s.toLowerCase() + "\\b");
-    			Matcher m = p.matcher(name);
-	    		if (m.find()) {
-	    			list_of_galens.add(s.toLowerCase());
-	    			if (m.start()<pos) {
-	    				pos = m.start();
-	    				if (list_of_galens.size()>1)
-	    					Collections.swap(list_of_galens, list_of_galens.size()-1, 0);
-	    			}
-	    		}
-    		}
-    	}
-    	return list_of_galens;
-    }
+	private Set<String> diff(TreeMap<String, SimpleArticle> gtin_to_bag_map, TreeMap<String, SimpleArticle> gtin_to_swissmedic_map) {
+		Set<String> bag_key_set = gtin_to_bag_map.keySet();
+		Set<String> swissmedic_key_set = gtin_to_swissmedic_map.keySet();
 
-    private ArrayList<String> extractAddGalenFromName(String name) {
-    	ArrayList<String> list_of_galens = new ArrayList<>();
-    	for (String galen : add_galen_forms) {
-    		Pattern p = Pattern.compile("\\b" + galen + "\\b");
-    		Matcher m = p.matcher(name);
-    		if (m.find())
-    			list_of_galens.add(galen);
-    		else if (name.toLowerCase().contains(galen.toLowerCase()))
-       			list_of_galens.add(galen);  
-    	}
-    	return list_of_galens;
-    }
-    
-    private String findGalenShort(String galen) {
-    	for (Map.Entry<String, String> entry : m_map_of_short_to_long_galens.entrySet()) {
-    		String galen_short = entry.getKey();
-    		String galen_long = entry.getValue();
-    		if (galen_long!=null) {
-	    		if (galen_long.toLowerCase().startsWith(galen.toLowerCase()) 
-	    				|| galen.toLowerCase().startsWith(galen_long.toLowerCase()))
-	    			return galen_short;
-    		}
-    	}
-    	return "";
-    }
-    
-    private ArrayList<String> createDosageMatchers(String quantity, String unit) {
-    	ArrayList<String> list_of_matchers = new ArrayList<>();
-    	// Clean up
-    	quantity = quantity.toLowerCase().replaceAll(",", ".");   
-    	unit = unit.toLowerCase().replaceAll("\\(.*?\\)", "").trim();
-    	
-    	String q = quantity;
-    	String u = unit;
-    	    
-    	if (q.matches("\\d+") && u.matches("(A|a)mp.*?")) {
-        	// 0th matcher
-        	list_of_matchers.add(q + " amp");
-    		return list_of_matchers;
-    	}
-    	
-    	// 0th matcher
-    	list_of_matchers.add(quantity + " " + unit);
-    	list_of_matchers.add(quantity + unit);
+		bag_key_set.removeAll(swissmedic_key_set);
 
-    	// 1st matcher for quantity, e.g. 1 x 50 or 1 x 50 ml
-    	Pattern p = Pattern.compile("(\\d+)\\s*x\\s*(\\d+)\\s*(ml|mg|g)?");
-    	Matcher m = p.matcher(q);    	
-    	if (m.find()) {
-    		quantity = m.group(1);    
-    		if (m.group(3)!=null && !m.group(3).isEmpty()) {
-    			list_of_matchers.add(quantity);
-    		} else {
-    			quantity = m.group(2);
-    		}
-    	}
-       	// 3rd matcher: unit
-       	p = Pattern.compile(".*?\\s*(\\d*)\\s*(ml)\\s*.*?");
-       	m = p.matcher(u);
-       	if (m.find()) {
-       		String q2 = m.group(1);
-       		unit = m.group(2);
-       		if (q2!=null && !q2.isEmpty()) {
-	       		list_of_matchers.add(q2 + " " + unit);
-	       		list_of_matchers.add(q2 + unit);
-       		}
-       		list_of_matchers.add(q + " " + unit);
-       		list_of_matchers.add(q + unit);
-       		list_of_matchers.add(quantity + " " + unit);
-       		list_of_matchers.add(quantity + unit);
-       	}
-       	// 4th matcher
-       	if (q.matches("\\d+\\s*(ml|mg)"))
-       		list_of_matchers.add(q);
-    	return list_of_matchers;
-    }
-
-    private String extractDosageFromName(String name) {
-        String q = "";
-        Pattern p = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(mg|g)");
-        Matcher m = p.matcher(name);
-        if (m.find()) {
-            q = m.group(1);
-            String q2 = m.group(2);
-            if (q2!=null && !q2.isEmpty()) {
-                q += q2;
-            }
-            q += (" " + m.group(3));
-        }
-        return q;
-    }
-
-    private String removeDosageFromName(String name) {
-        return name.replaceAll("(\\d+)(\\.\\d+)?\\s*(mg|g)", "");
-    }
-    
-    private String addGalenToName(String name, String galen) {
-    	if (name.contains(galen))
-    		name = name.replace(galen, "");
-		name += " " + galen;
-		return name;
-    }
-    
-    private String removeSpaces(String name) {
-    	// Replace multiple spaces with single space
-    	return name.replaceAll("\\s\\s+", " ");    
-    }
+		return bag_key_set;
+	}
 
     /**
      * main function where data are processed
      */
     public void process() {
 		try {
+			BaseDataParser bdp = new BaseDataParser();
 			// Read core info from files
-			parseSwissmedicPackagesFile();
-			parseRefdataPharmaFile();
-			parseDosageFormsJson();
-			
+			TreeMap<String, SimpleArticle> gtin_to_bag_article_map = bdp.parseBAGXmlFile();
+			TreeMap<String, SimpleArticle> gtin_to_swissmedic_article_map = bdp.parseSwissmedicPackagesFile_Gtin();
+			TreeMap<String, ArrayList<SimpleArticle>> sequence_to_swissmedic_article_map = bdp.parseSwissmedicPackagesFile_Sequence();
+			TreeMap<String, String> gtin_to_refdata_name_map = bdp.parseRefdataPharmaFile();
+
+			// Generate set of differences between bag and swissmedic map (BAG file typically lags behind)
+			Set<String> bag_swissmedic_diff_key_set = diff(gtin_to_bag_article_map, gtin_to_swissmedic_article_map);
+			// These article are not in the swissmedic packages file...
+			TreeMap<String, ArrayList<SimpleArticle>> regnr_to_bag_articles_map = new TreeMap<>();
+			ArrayList<SimpleArticle> list_of_bag_packs_for_article = new ArrayList<>();
+			ArrayList<String> list_of_bag_articles_gtins = new ArrayList<>();
+
+			// For double-check purposes
+			ArrayList<String> list_of_all_gtins = new ArrayList<>();
+
+			for (String gtin : bag_swissmedic_diff_key_set) {
+				SimpleArticle a = gtin_to_bag_article_map.get(gtin);
+				// Generate map of articles using swissmedic no5 (regnr)
+				String regnr = a.smn5;
+				if (regnr != null) {
+					if (!regnr_to_bag_articles_map.containsKey(regnr))
+						list_of_bag_packs_for_article = new ArrayList<>();
+					else
+						list_of_bag_packs_for_article = regnr_to_bag_articles_map.get(regnr);
+					list_of_bag_packs_for_article.add(a);
+					regnr_to_bag_articles_map.put(regnr, list_of_bag_packs_for_article);
+				}
+			}
+
+			int counter = 0;
+
+			/// TEST -> PASSED!
+			/*
+			for (Map.Entry<String, ArrayList<SimpleArticle>> e : regnr_to_bag_articles_map.entrySet()) {
+				counter += e.getValue().size();
+				System.out.println(counter + " -> " + e.getKey());
+			}
+			*/
+
 			String csv_str = "";
-			for (Map.Entry<String, ArrayList<Article>> e : m_smn5plus_to_article_map.entrySet()) {
-				String smn5plus = e.getKey();
-				ArrayList<Article> list_of_articles = e.getValue();
+
+			int bag_full_match_counter = 0;
+			int bag_partial_match_counter = 0;
+			int bag_no_match_counter = 0;
+
+			PackageParse pack_parse = new PackageParse();
+			for (Map.Entry<String, ArrayList<SimpleArticle>> e : sequence_to_swissmedic_article_map.entrySet()) {
+				String sequence = e.getKey();	// SEQUENCE
+				ArrayList<SimpleArticle> list_of_articles = e.getValue();
 				if (list_of_articles!=null) {
 					String sub_csv_str = "";
 					boolean animal_med = false;
-					for (Article a : list_of_articles) {
+					// Loop through articles with IDENTICAL sequence number!
+					// NOTE: These article also have an identical smn5 number!
+					for (SimpleArticle a : list_of_articles) {
 						String gtin = "7680" + a.smn8;
 						int cs = Utilities.getChecksum(gtin);
 						gtin += cs;
+
+						if (list_of_all_gtins.contains(gtin))
+							System.out.println("ERROR: gtin exists already -> " + gtin + " | " + a.name);
+						list_of_all_gtins.add(gtin);
+
                         // Check refdata gtin to name map
-						if (m_gtin_to_name_map.containsKey(gtin)) {
+						if (gtin_to_refdata_name_map.containsKey(gtin)) {
 							String galens = "";
-							String name = m_gtin_to_name_map.get(gtin);
-							String clean_name = name.toLowerCase();
+							String refdata_name = gtin_to_refdata_name_map.get(gtin);
+							String clean_name = refdata_name.toLowerCase();
 							// Exclude medicaments for animals
 							if (!isAnimalMed(clean_name)) {
 								// Cleaning: 1st pass
-								ArrayList<String> list_of_matchers = createDosageMatchers(a.quantity, a.unit);
+								ArrayList<String> list_of_matchers = createDosageMatchers(a);
 								for (String m : list_of_matchers) {
 									clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
 								}
@@ -249,27 +178,21 @@ public class SwissMedSequences {
 									galens += g + ",";
 					    			clean_name = clean_name.replaceAll("\\b" + g + "\\b", " ");
 								}
-								if (list_of_galens.isEmpty()) {
-									list_of_galens = extractAddGalenFromName(clean_name);
-									for (String g : list_of_galens) {
-										galens += g + ",";
-						    			clean_name = clean_name.replaceAll("\\b" + g + "\\b", " ");
-									}
-								}
-								galens = galens.split(",")[0].trim();	// Take only first one
+								if (!galens.isEmpty())
+									galens = galens.split(",")[0].trim();	// Take only first one
 								// Cleaning: 2nd pass
 								clean_name = cleanName(clean_name);
                                 String dosage = extractDosageFromName(clean_name);
-                                if (a.unit.equals("Beutel") && !dosage.isEmpty()) {
-									a.unit += " à " + dosage;
+                                if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
+									a.pack_unit += " Ã  " + dosage;
 									clean_name = removeDosageFromName(clean_name);
 								}
-                                clean_name = removeSpaces(clean_name);
+                                clean_name = Utilities.removeSpaces(clean_name);
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
                                 // Add "galenische Form" to clean name
-								clean_name = addGalenToName(clean_name, capitalizeFirstLetter(galens));
+								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
                                 //
-								sub_csv_str += name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.unit + ";";
+								sub_csv_str += refdata_name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.pack_unit + ";;;";
 							} else {
 								animal_med = true;
 							}
@@ -279,7 +202,7 @@ public class SwissMedSequences {
 							//
 							if (!isAnimalMed(clean_name)) {
 								// Cleaning: 2nd pass (compare with quantity and unit)
-								ArrayList<String> list_of_matchers = createDosageMatchers(a.quantity, a.unit);
+								ArrayList<String> list_of_matchers = createDosageMatchers(a);
 								for (String m : list_of_matchers)
 									clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
 
@@ -288,17 +211,10 @@ public class SwissMedSequences {
 									galens += g + ",";
 					    			clean_name = clean_name.replace(g, " ");
 								}
-								if (list_of_galens.isEmpty()) {
-									list_of_galens = extractAddGalenFromName(clean_name);
-									for (String g : list_of_galens) {
-										galens += g + ",";
-						    			clean_name = clean_name.replaceAll("\\b" + g + "\\b", " ");
-									}						
-									// Find short form if not empty
-									if (!galens.isEmpty())
-										galens = findGalenShort(galens.split(",")[0].trim());
-								}
-								
+								// Find short form if not empty
+								if (!galens.isEmpty())
+									galens = findGalenShort(galens.split(",")[0].trim());
+
 								if (galens.isEmpty()) {
 									String g[] = a.name.split(",");								
 									if (g.length>1) {
@@ -324,147 +240,142 @@ public class SwissMedSequences {
 								// Cleaning: 1st pass
 								clean_name = cleanName(clean_name);
                                 String dosage = extractDosageFromName(clean_name);
-                                if (a.unit.equals("Beutel") && !dosage.isEmpty()) {
-									a.unit += " à " + dosage;
+                                if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
+									a.pack_unit += " Ã  " + dosage;
 									clean_name = removeDosageFromName(clean_name);
 								}
-                                clean_name = removeSpaces(clean_name);
+                                clean_name = Utilities.removeSpaces(clean_name);
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
-								clean_name = addGalenToName(clean_name, capitalizeFirstLetter(galens));
+								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
 								//
-								sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.unit + ";";
+								sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.pack_unit + ";;;";
 							} else {
 								animal_med = true;
 							}
 						}
+
+						/*	Check if smn5 is contained in regnr_to_bag_articles_map.
+							For each smn5 we have multiple packages!
+						*/
+						if (regnr_to_bag_articles_map.containsKey(a.smn5)) {
+
+							// Extract drug dosage
+							DrugDosage dd = pack_parse.extractDrugDosageFromName(a.name);
+							// Extract package size
+							PackSize ps = pack_parse.extractPackSizeFromName(a.name);
+							// Extract galenic forms (csv)
+							String clean_name = pack_parse.cleanName(a);
+							String galens = pack_parse.extractGalensFromName(pack_parse.cleanName(a));
+							// If pack size and/or units are missing in 'ps', then check info in file 'Constants.FILE_PACKAGES_XLSX'
+							if (ps.size.isEmpty() || ps.s_unit.isEmpty())
+								pack_parse.extractPackageSizeFromSwissmedicFile(a, ps, galens);
+							if (!galens.isEmpty())
+								galens = galens.split(",")[0].trim();
+							else
+								galens = ps.s_unit;
+							galens = galens.toLowerCase();
+							if (galens.equals("stk"))
+								galens = "tablette(n)";
+
+							/* 	List of all packages with the same registration number found in BAG xml
+								NOTE: We are looping through ArrayList with potentially identical a.smn5!!
+								NOTE: Which means that "list_of_bag_packs_for_article" is also identical!
+							*/
+							list_of_bag_packs_for_article = regnr_to_bag_articles_map.get(a.smn5);
+
+							// Loop through this list
+							for (SimpleArticle pack : list_of_bag_packs_for_article) {
+								String multPackSize = multiplyPackSize(ps.size + " " + ps.s_unit);
+								// Make sure that this article has not been matched already!
+								if (!list_of_bag_articles_gtins.contains(pack.gtin)) {
+									// Check if the Swissmedic/Refdata article matches the BAG article
+									String full_name = (pack.name + " " + pack.pack_size).toLowerCase();
+
+									if (full_name.contains(multPackSize)) { // multPackSize.equals(pack.pack_size.toLowerCase())) {
+										String d1 = dd.dose + " " + dd.unit;
+										String d2 = pack.quantity + " " + pack.pi_unit;
+
+										// Full match
+										if (d1.equals(d2)) {
+											list_of_bag_articles_gtins.add(pack.gtin);
+											bag_full_match_counter++;
+											sub_csv_str += pack.name + ";" + clean_name + ";" + galens + ";" + pack.gtin + ";" + a.quantity + ";" + a.pack_unit + ";"
+													+ two_digit_format(pack.exf_price_CHF) + ";" + two_digit_format(pack.pub_price_CHF) + ";";
+
+											/*
+											System.out.println(bag_full_match_counter + " | " + pack.gtin + " |" + a.smn5 + " | " + a.name
+													+ " | " + a.quantity + " " + a.pack_unit
+													+ " | " + multPackSize + " = " + pack.pack_size
+													+ " | " + d1 + " = " + d2
+													+ " | " + pack.exf_price_CHF + " | " + pack.pub_price_CHF);
+											*/
+										} else {
+											list_of_bag_articles_gtins.add(pack.gtin);
+											bag_partial_match_counter++;
+											sub_csv_str += pack.name + ";" + clean_name + ";" + galens + ";" + pack.gtin + ";" + a.quantity + ";" + a.pack_unit + ";"
+													+ two_digit_format(pack.exf_price_CHF) + ";" + two_digit_format(pack.pub_price_CHF) + ";";
+
+											/*
+											System.out.println(bag_partial_match_counter + " | " + pack.gtin + " | " + a.smn5 + " | " + a.name
+													+ " | " + a.quantity + " " + a.pack_unit
+													+ " | " + multPackSize + " = " + pack.pack_size
+													+ " | " + pack.exf_price_CHF + " | " + pack.pub_price_CHF);
+											*/
+										}
+									}
+								}
+							}
+						}
 					}
-					if (!animal_med)
-						csv_str += smn5plus + ";" + sub_csv_str + "\n";
-				}				
+					if (!animal_med) {
+						sub_csv_str = sub_csv_str.substring(0, sub_csv_str.length()-1);
+						csv_str += sequence + ";" + sub_csv_str + "\n";
+					}
+				}
 			}
-			if (!csv_str.isEmpty())
+
+			for (Map.Entry<String, ArrayList<SimpleArticle>> e : regnr_to_bag_articles_map.entrySet()) {
+				ArrayList<SimpleArticle> list_of_articles = e.getValue();
+				if (list_of_articles!=null) {
+					String old_smn5 = "";
+					int dosage_number = 1;
+					for (SimpleArticle a : list_of_articles) {
+
+						if (list_of_all_gtins.contains(a.gtin))
+							System.out.println("ERROR: gtin exists already -> " + a.gtin + " | " + a.name);
+						list_of_all_gtins.add(a.gtin);
+
+						if (!list_of_bag_articles_gtins.contains(a.gtin)) {
+							bag_no_match_counter++;
+							String full_name = a.name + " " + a.pack_size;
+							if (a.smn5.equals(old_smn5))
+								dosage_number++;
+							else
+								dosage_number = 1;
+							old_smn5 = a.smn5;
+							String sequence = a.smn5 + String.format("%02d", dosage_number);
+							csv_str += sequence + ";" + full_name + ";" + a.name + ";" + a.pack_size + ";" + a.gtin + ";" + a.quantity + ";" + a.pi_unit + ";"
+									+ two_digit_format(a.exf_price_CHF) + ";" + two_digit_format(a.pub_price_CHF) + "\n";
+						}
+					}
+				}
+			}
+
+			if (!csv_str.isEmpty()) {
+				System.out.println("Number of mapped gtins: " + list_of_all_gtins.size());
+
+				System.out.println("BAG/Swissmedic/Refdata full match count = " + bag_full_match_counter
+						+ " / partial match count = " + bag_partial_match_counter
+						+ " / no match count = " + bag_no_match_counter);
+
+				int num_lost_gtins = gtin_to_swissmedic_article_map.size()
+					 + (bag_full_match_counter + bag_partial_match_counter + bag_no_match_counter) - list_of_all_gtins.size();
+				System.out.println("Number of gtins which were lost on the way: " + num_lost_gtins);
+
 				FileOps.writeToFile(csv_str, Constants.DIR_OUTPUT, "swiss_medic_sequences.csv");
+			}
 		} catch(IOException | JAXBException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private void parseSwissmedicPackagesFile() throws IOException {
-		m_smn5plus_to_article_map = new TreeMap<>();
-		//
-		System.out.print("Processing packages xlsx... ");
-		// Load Swissmedic xls file			
-		FileInputStream packages_file = new FileInputStream(Constants.FILE_PACKAGES_XLSX);
-		// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
-		XSSFWorkbook packages_workbook = new XSSFWorkbook(packages_file);
-		// Get first sheet from workbook
-		XSSFSheet packages_sheet = packages_workbook.getSheetAt(0);
-		// Iterate through all rows of first sheet
-		Iterator<Row> rowIterator = packages_sheet.iterator();
-		int num_rows = 0;
-		while (rowIterator.hasNext()) {
-			Row row = rowIterator.next();
-			if (num_rows > 5) {
-				String swissmedic_no5 = ""; // SwissmedicNo5 registration number (5 digits)
-				String dosage_id = "";
-				String package_id = "";
-				String name = "";
-				String swissmedic_no8 = ""; // SwissmedicNo8 = SwissmedicNo5 + Package id (8 digits)
-				String quantity = "";
-				String unit = "";
-					
-				// 0: Zulassungsnummer, 1: Dosisstärkenummer, 2: Präparatebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
-				// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Packungscode, 11: Packungsgrösse
-				// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisstärke, 15: Abgabekategorie Präparat, 
-				// 16: Wirkstoff, 17: Zusammensetzung, 18: Anwendungsgebiet Präparat, 19: Anwendungsgebiet Dosisstärke, 20: Gentechnisch hergestellte Wirkstoffe
-				// 21: Kategorie bei Insulinen, 22: Betäubungsmittelhaltigen Präparaten
-					
-				if (row.getCell(0)!=null)
-					swissmedic_no5 = String.format("%05d", (int)(row.getCell(0).getNumericCellValue()));// Swissmedic registration number (5 digits)
-				if (row.getCell(1)!=null)
-					dosage_id = String.format("%02d", (int)(row.getCell(1).getNumericCellValue())); 	// Sequence name
-				if (row.getCell(2)!=null)
-					name = row.getCell(2).getStringCellValue();
-				if (row.getCell(10)!=null) {							
-					package_id = String.format("%03d", (int)(row.getCell(10).getNumericCellValue()));	// Verpackungs ID
-					swissmedic_no8 = swissmedic_no5 + package_id;					
-				}
-				if (row.getCell(11)!=null) {
-					quantity = row.getCell(11).getStringCellValue();
-				}
-				if (row.getCell(12)!=null) {
-					unit = row.getCell(12).getStringCellValue();
-				}					
-				
-				String smn5_plus = swissmedic_no5 + dosage_id;
-				
-				if (!smn5_plus.isEmpty() && !swissmedic_no5.isEmpty()) {
-					ArrayList<Article> list_of_articles = new ArrayList<>();
-					if (m_smn5plus_to_article_map.containsKey(smn5_plus)) 
-						list_of_articles = m_smn5plus_to_article_map.get(smn5_plus);
-					Article a = new Article();
-					a.name = name;
-					a.smn8 = swissmedic_no8;
-					a.quantity = quantity;
-					a.unit = unit;
-					list_of_articles.add(a);
-					m_smn5plus_to_article_map.put(smn5_plus, list_of_articles);
-				}
-			}
-			System.out.print("\rProcessing packages xlsx... " + num_rows++);
-		}
-		System.out.println("");
-	}
-	
-	private void parseRefdataPharmaFile() throws FileNotFoundException, JAXBException {
-		m_gtin_to_name_map = new TreeMap<>();
-
-		System.out.print("Processing refdata pharma xml file...");
-		
-		// Load Refdata xml file
-		File refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_XML);
-		FileInputStream refdata_fis = new FileInputStream(refdata_xml_file);
-
-		JAXBContext context = JAXBContext.newInstance(Refdata.class);
-		Unmarshaller um = context.createUnmarshaller();
-		Refdata refdataPharma = (Refdata) um.unmarshal(refdata_fis);
-		List<Refdata.ITEM> pharma_list = refdataPharma.getItem();
-
-		int num_rows = 0;
-		for (Refdata.ITEM pharma : pharma_list) {
-			String ean_code = pharma.getGtin();
-			if (ean_code.length() == 13) {
-				String name = pharma.getNameDE();
-				// Clean name, we need only dosage
-				m_gtin_to_name_map.put(ean_code, name);
-				System.out.print("\rProcessing refdata pharma xml file... " + num_rows++);
-			} else if (ean_code.length() < 13) {
-				if (CmlOptions.SHOW_ERRORS)
-					System.err.println(">> EAN code too short: " + ean_code + ": " + pharma.getNameDE());
-			} else if (ean_code.length() > 13) {
-				if (CmlOptions.SHOW_ERRORS)
-					System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getNameDE());
-			}
-		}
-		System.out.println("");
-	}
-
-	@SuppressWarnings("unchecked")
-	private void parseDosageFormsJson() throws IOException {
-		ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
-		TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
-		Map<String,Object> dosageFormsData = mapper.readValue(new File(Constants.FILE_DOSAGE_FORMS_JSON), typeRef);
-		ArrayList<HashMap<String, String>> dosageList = (ArrayList<HashMap<String, String>>)dosageFormsData.get("dosage_forms");
-
-		m_map_of_short_to_long_galens = new HashMap<>();
-		for (HashMap<String, String> dosage : dosageList) {
-			String galen_short = dosage.get("galenic_short");
-			String galen_long = dosage.get("galenic_full");
-			if (!galen_short.isEmpty()) {
-				m_map_of_short_to_long_galens.put(galen_short, galen_long);
-			}
-		}
-
-		System.out.println("Number of dosage forms in database: " + m_map_of_short_to_long_galens.size());
 	}
 }
