@@ -137,11 +137,11 @@ public class RealPatientInfo {
 					String add_info_str = ""; 	// Contains additional information separated by ;
 					String ean_code_str = "";
 
-					// 0: Zulassungsnummer, 1: Dosisstärkenummer, 2: Präparatebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
-					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Packungscode, 11: Packungsgrösse
-					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisstärke, 15: Abgabekategorie Präparat, 
-					// 16: Wirkstoff, 17: Zusammensetzung, 18: Anwendungsgebiet Präparat, 19: Anwendungsgebiet Dosisstärke, 20: Gentechnisch hergestellte Wirkstoffe
-					// 21: Kategorie bei Insulinen, 22: Betäubungsmittelhaltigen Präparaten
+					// 0: Zulassungsnummer, 1: Dosisstï¿½rkenummer, 2: Prï¿½paratebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
+					// 7: Erstzulassung Prï¿½parat, 8: Zulassungsdatum Sequenz, 9: Gï¿½ltigkeitsdatum, 10: Packungscode, 11: Packungsgrï¿½sse
+					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisstï¿½rke, 15: Abgabekategorie Prï¿½parat, 
+					// 16: Wirkstoff, 17: Zusammensetzung, 18: Anwendungsgebiet Prï¿½parat, 19: Anwendungsgebiet Dosisstï¿½rke, 20: Gentechnisch hergestellte Wirkstoffe
+					// 21: Kategorie bei Insulinen, 22: Betï¿½ubungsmittelhaltigen Prï¿½paraten
 						
 					// @cybermax: 15.10.2013 - work around for Excel cells of type "Special" (cell0 and cell10)
 					if (row.getCell(0) != null)
@@ -150,8 +150,11 @@ public class RealPatientInfo {
 						sequence_name = row.getCell(2).getStringCellValue(); 	// Sequence name
 					if (row.getCell(4) != null)
 						heilmittel_code = row.getCell(4).getStringCellValue();	// Heilmittelcode					
-					if (row.getCell(11) != null)						
-						package_size = row.getCell(11).getStringCellValue();	// Packungsgrösse
+					if (row.getCell(11) != null) {
+						package_size = ExcelOps.getCellValue(row.getCell(11));    // Packungsgrï¿½sse
+						// Numeric and floating, remove trailing zeros (.00)
+						package_size = package_size.replaceAll("\\.00", "");
+					}
 					if (row.getCell(12) != null)
 						package_unit = row.getCell(12).getStringCellValue();	// Einheit
 					if (row.getCell(13) != null)
@@ -302,7 +305,7 @@ public class RealPatientInfo {
 					ArrayList<String> pi_row = m_package_info.get(smno8);
 					// Replace sequence_name
 					if (pi_row != null) {
-						// Präparatname + galenische Form
+						// Prï¿½paratname + galenische Form
 						if (CmlOptions.DB_LANGUAGE.equals("de"))
 							pi_row.set(1, pharma.getNameDE());
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
@@ -731,9 +734,9 @@ public class RealPatientInfo {
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);
 			Elements elems = null;
 			if (CmlOptions.DB_LANGUAGE.equals("de"))
-				elems = doc.select("div[id^=section]").select("div:matchesOwn(Welche Packungen sind erhältlich?)");
+				elems = doc.select("div[id^=section]").select("div:matchesOwn(Welche Packungen sind erhï¿½ltlich?)");
 			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quels sont les emballages à disposition)");
+				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quels sont les emballages ï¿½ disposition)");
 			else if (CmlOptions.DB_LANGUAGE.equals("it"))
 				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quali confezioni sono disponibili?)");			
 			if (elems!=null) {

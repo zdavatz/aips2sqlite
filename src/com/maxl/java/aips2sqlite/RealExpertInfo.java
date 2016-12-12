@@ -233,8 +233,11 @@ public class RealExpertInfo {
 						owner_str = ExcelOps.getCellValue(row.getCell(3));				// Owner
 					if (row.getCell(4) != null)
 						heilmittel_code = ExcelOps.getCellValue(row.getCell(4));	// Heilmittelcode					
-					if (row.getCell(11) != null)						
-						package_size = ExcelOps.getCellValue(row.getCell(11));		// Packungsgrösse
+					if (row.getCell(11) != null) {
+						package_size = ExcelOps.getCellValue(row.getCell(11));    // Packungsgr?sse
+						// Numeric and floating, remove trailing zeros (.00)
+						package_size = package_size.replaceAll("\\.00", "");
+					}
 					if (row.getCell(12) != null)
 						package_unit = ExcelOps.getCellValue(row.getCell(12));		// Einheit
 					if (row.getCell(13) != null)
