@@ -218,11 +218,11 @@ public class RealExpertInfo {
 					String pharma_code_str = "";
 					String owner_str = "";
 					
-					// 0: Zulassungsnummer, 1: Dosisstärkenummer, 2: Präparatebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
-					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Packungscode, 11: Packungsgrösse
-					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisstärke, 15: Abgabekategorie Präparat, 
-					// 16: Wirkstoff, 17: Zusammensetzung, 18: Anwendungsgebiet Präparat, 19: Anwendungsgebiet Dosisstärke, 20: Gentechnisch hergestellte Wirkstoffe
-					// 21: Kategorie bei Insulinen, 22: Betäubungsmittelhaltigen Präparaten
+					// 0: Zulassungsnummer, 1: DosisstÃ¤rkenummer, 2: PrÃ¤paratebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
+					// 7: Erstzulassung PrÃ¤parat, 8: Zulassungsdatum Sequenz, 9: GÃ¼ltigkeitsdatum, 10: Packungscode, 11: PackungsgrÃ¶sse
+					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie DosisstÃ¤rke, 15: Abgabekategorie PrÃ¤parat, 
+					// 16: Wirkstoff, 17: Zusammensetzung, 18: Anwendungsgebiet PrÃ¤parat, 19: Anwendungsgebiet DosisstÃ¤rke, 20: Gentechnisch hergestellte Wirkstoffe
+					// 21: Kategorie bei Insulinen, 22: BetÃ¤ubungsmittelhaltigen PrÃ¤paraten
 					
 					// @cybermax: 15.10.2013 - work around for Excel cells of type "Special" (cell0 and cell10)
 					if (row.getCell(0) != null)
@@ -243,7 +243,7 @@ public class RealExpertInfo {
 					if (row.getCell(13) != null)
 						swissmedic_cat = ExcelOps.getCellValue(row.getCell(13));	// Abgabekategorie Packung	
 					if (row.getCell(18) != null)
-						application_area = ExcelOps.getCellValue(row.getCell(18));	// Anwendungsgebiet Präparat				
+						application_area = ExcelOps.getCellValue(row.getCell(18));	// Anwendungsgebiet PrÃ¤parat				
 					if (row.getCell(10) != null) {							
 						package_id = String.format("%03d", (int)(row.getCell(10).getNumericCellValue()));	// Verpackungs ID
 						swissmedic_no8 = swissmedic_no5 + package_id;
@@ -413,7 +413,7 @@ public class RealExpertInfo {
 					ArrayList<String> pi_row = m_package_info.get(smno8);					
 					// Replace sequence_name
 					if (pi_row != null) {
-						// Präparatname + galenische Form
+						// PrÃ¤paratname + galenische Form
 						if (CmlOptions.DB_LANGUAGE.equals("de"))
 							pi_row.set(1, pharma.getNameDE());
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
@@ -785,7 +785,7 @@ public class RealExpertInfo {
 				if (CmlOptions.DB_LANGUAGE.equals("de"))
 					parse_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", Constants.FI_DB_VERSION);
 				else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-					parse_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
+					parse_errors.addHtmlHeader("Compendium des MÃ©dicaments Suisse", Constants.FI_DB_VERSION);
 			}
 			
 			// Create indications report file
@@ -926,7 +926,7 @@ public class RealExpertInfo {
 									atc_code_str = atc_code_str.replaceAll("&ndash;", "(");
 									atc_code_str = atc_code_str.replaceAll("Code", "").replaceAll("ATC", "")
 											.replaceAll("&nbsp", "").replaceAll("\\(.*", "").replaceAll("/", ",")
-											.replaceAll("[^A-Za-z0-9äöü,]", "");
+											.replaceAll("[^A-Za-z0-9Ã¤Ã¶Ã¼,]", "");
 									if (atc_code_str.charAt(1) == 'O') {
 										// E.g. Ascosal Brausetabletten
 										atc_code_str = atc_code_str.substring(0, 1) + '0' + atc_code_str.substring(2);
@@ -1089,7 +1089,7 @@ public class RealExpertInfo {
 							// Extract section indications
 							String section_indications = "";
 							if (CmlOptions.DB_LANGUAGE.equals("de")) {
-								String sstr1 = "Indikationen/Anwendungsmöglichkeiten";
+								String sstr1 = "Indikationen/AnwendungsmÃ¶glichkeiten";
 								String sstr2 = "Dosierung/Anwendung";
 								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
 									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
@@ -1101,13 +1101,13 @@ public class RealExpertInfo {
 									}
 								}
 							} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-								String sstr1 = "Indications/Possibilités d’emploi";
-								String sstr2 = "Posologie/Mode d’emploi";
+								String sstr1 = "Indications/PossibilitÃ©s dÂ’emploi";
+								String sstr2 = "Posologie/Mode dÂ’emploi";
 
-								html_sanitized = html_sanitized.replaceAll("Indications/Possibilités d&apos;emploi", sstr1);
+								html_sanitized = html_sanitized.replaceAll("Indications/PossibilitÃ©s d&apos;emploi", sstr1);
 								html_sanitized = html_sanitized.replaceAll("Posologie/Mode d&apos;emploi", sstr2);
-								html_sanitized = html_sanitized.replaceAll("Indications/possibilités d’emploi", sstr1);
-								html_sanitized = html_sanitized.replaceAll("Posologie/mode d’emploi", sstr2);
+								html_sanitized = html_sanitized.replaceAll("Indications/possibilitÃ©s dÂ’emploi", sstr1);
+								html_sanitized = html_sanitized.replaceAll("Posologie/mode dÂ’emploi", sstr2);
 
 								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
 									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
@@ -1132,7 +1132,7 @@ public class RealExpertInfo {
 							if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 								// Remove apostrophes
 								section_indications = section_indications.replaceAll("l&apos;", "").replaceAll("d&apos;", "");
-								section_indications = section_indications.replaceAll("l’", "").replaceAll("d’", "");
+								section_indications = section_indications.replaceAll("lÂ’", "").replaceAll("dÂ’", "");
 							}
 							// Remove all URLs
 							section_indications = section_indications.replaceAll("\\b(http|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "");
@@ -1349,7 +1349,7 @@ public class RealExpertInfo {
 				if (CmlOptions.DB_LANGUAGE.equals("de"))
 					owner_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", Constants.FI_DB_VERSION);
 				else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-					owner_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
+					owner_errors.addHtmlHeader("Compendium des MÃ©dicaments Suisse", Constants.FI_DB_VERSION);
 				owner_errors.append(owner_errors.treemapToHtmlTable(tm_owner_error));
 				owner_errors.writeHtmlToFile();
 				owner_errors.getBWriter().close();	
@@ -1446,7 +1446,7 @@ public class RealExpertInfo {
 			}
 			// Now generate many swissmedicno8 = swissmedicno5 + ***, check if they're keys and retrieve package info
 			String swissmedicno8_key = "";
-			String title_aips = title.replaceAll("®|™", "");	// Minimally clean up title found in aips.xml
+			String title_aips = title.replaceAll("Â®|Â™", "");	// Minimally clean up title found in aips.xml
 
 			for (int n=0; n<1000; ++n) {
 				swissmedicno8_key = getSwissmedicNo8(smno5, n);
@@ -1498,8 +1498,8 @@ public class RealExpertInfo {
 						if (doit)
 						{
 							// This string is used for "shopping carts" and contatins:
-							// Präparatname | Package size | Package unit | Public price
-							// | Exfactory price | Spezialitätenliste, Swissmedic Kategorie, Limitations
+							// PrÃ¤paratname | Package size | Package unit | Public price
+							// | Exfactory price | SpezialitÃ¤tenliste, Swissmedic Kategorie, Limitations
 							// | EAN code | Pharma code
 							String barcode_html = "";		
 							String efp = pi_row.get(8);	// exfactory price		
@@ -1681,7 +1681,7 @@ public class RealExpertInfo {
 			String packages_title = "Packungen";
 			String swiss_drg_title = "Swiss DRG";			
 			if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-				packages_title = "Présentation";
+				packages_title = "PrÃ©sentation";
 				swiss_drg_title = "Swiss DRG";
 			}
 			
@@ -1711,19 +1711,19 @@ public class RealExpertInfo {
 					
 					section_html += "<p class=\"noSpacing\"></p>";					
 					if (CmlOptions.DB_LANGUAGE.equals("de")) {
-						section_html += "<p class=\"spacing1\"><sup>1</sup> Alle Spitäler müssen im Rahmen der jährlichen Datenerhebung (Detaillieferung) die SwissDRG AG zwingend über die Höhe der in Rechnung gestellten Zusatzentgelte informieren.</p>";
-						section_html += "<p class=\"spacing1\"><sup>2</sup> Eine zusätzliche Abrechnung ist im Zusammenhang mit einer Fallpauschale der Basis-DRGs L60 oder L71 nicht möglich.</p>";
-						section_html += "<p class=\"spacing1\"><sup>3</sup> Eine Abrechnung des Zusatzentgeltes ist nur über die in der Anlage zum Fallpauschalenkatalog aufgeführten Dosisklassen möglich.</p>";
-						section_html += "<p class=\"spacing1\"><sup>4</sup> Dieses Zusatzentgelt ist nur abrechenbar für Patienten mit einem Alter < 15 Jahre.</p>";
-						section_html += "<p class=\"spacing1\"><sup>5</sup> Dieses Zusatzentgelt darf nicht zusätzlich zur DRG A91Z abgerechnet werden, da in dieser DRG Apheresen die Hauptleistung darstellen. " +
-								"Die Verfahrenskosten der  Apheresen sind in dieser DRG bereits vollumfänglich enthalten.</p>";
+						section_html += "<p class=\"spacing1\"><sup>1</sup> Alle SpitÃ¤ler mÃ¼ssen im Rahmen der jÃ¤hrlichen Datenerhebung (Detaillieferung) die SwissDRG AG zwingend Ã¼ber die HÃ¶he der in Rechnung gestellten Zusatzentgelte informieren.</p>";
+						section_html += "<p class=\"spacing1\"><sup>2</sup> Eine zusÃ¤tzliche Abrechnung ist im Zusammenhang mit einer Fallpauschale der Basis-DRGs L60 oder L71 nicht mÃ¶glich.</p>";
+						section_html += "<p class=\"spacing1\"><sup>3</sup> Eine Abrechnung des Zusatzentgeltes ist nur Ã¼ber die in der Anlage zum Fallpauschalenkatalog aufgefÃ¼hrten Dosisklassen mÃ¶glich.</p>";
+						section_html += "<p class=\"spacing1\"><sup>4</sup> Dieses Zusatzentgelt ist nur abrechenbar fÃ¼r Patienten mit einem Alter < 15 Jahre.</p>";
+						section_html += "<p class=\"spacing1\"><sup>5</sup> Dieses Zusatzentgelt darf nicht zusÃ¤tzlich zur DRG A91Z abgerechnet werden, da in dieser DRG Apheresen die Hauptleistung darstellen. " +
+								"Die Verfahrenskosten der  Apheresen sind in dieser DRG bereits vollumfÃ¤nglich enthalten.</p>";
 					} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-						section_html += "<p class=\"spacing1\"><sup>1</sup> Tous les hôpitaux doivent impérativement informer SwissDRG SA lors du relevé (relevé détaillé) sur le montant des rémunérations supplémentaires facturées.</p>";
-						section_html += "<p class=\"spacing1\"><sup>2</sup> Une facturation supplémentaire aux forfaits par cas des DRG de base L60 ou L71 n’est pas possible.</p>";
-						section_html += "<p class=\"spacing1\"><sup>3</sup> Une facturation des rémunération supplémentaires n'est possible que pour les classes de dosage définies dans cette annexe.</p>";
-						section_html += "<p class=\"spacing1\"><sup>4</sup> Cette rémunération supplémentaire n'est facturable que pour les patients âgés de moins de 15 ans.</p>";
-						section_html += "<p class=\"spacing1\"><sup>5</sup> Cette rémunération supplémentaire ne peut pas être facturée en plus du DRG A91Z, la prestation principale de ce DRG étant l'aphérèse. " +
-								"Les coûts du traitement par aphérèse sont déjà intégralement compris dans le DRG.</p>";
+						section_html += "<p class=\"spacing1\"><sup>1</sup> Tous les hÃ´pitaux doivent impÃ©rativement informer SwissDRG SA lors du relevÃ© (relevÃ© dÃ©taillÃ©) sur le montant des rÃ©munÃ©rations supplÃ©mentaires facturÃ©es.</p>";
+						section_html += "<p class=\"spacing1\"><sup>2</sup> Une facturation supplÃ©mentaire aux forfaits par cas des DRG de base L60 ou L71 nÂ’est pas possible.</p>";
+						section_html += "<p class=\"spacing1\"><sup>3</sup> Une facturation des rÃ©munÃ©ration supplÃ©mentaires n'est possible que pour les classes de dosage dÃ©finies dans cette annexe.</p>";
+						section_html += "<p class=\"spacing1\"><sup>4</sup> Cette rÃ©munÃ©ration supplÃ©mentaire n'est facturable que pour les patients Ã¢gÃ©s de moins de 15 ans.</p>";
+						section_html += "<p class=\"spacing1\"><sup>5</sup> Cette rÃ©munÃ©ration supplÃ©mentaire ne peut pas Ãªtre facturÃ©e en plus du DRG A91Z, la prestation principale de ce DRG Ã©tant l'aphÃ©rÃ¨se. " +
+								"Les coÃ»ts du traitement par aphÃ©rÃ¨se sont dÃ©jÃ  intÃ©gralement compris dans le DRG.</p>";
 					}
 				}
 			}

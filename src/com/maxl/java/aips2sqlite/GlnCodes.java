@@ -139,7 +139,7 @@ public class GlnCodes implements java.io.Serializable {
 				if (row.getCell(9)!=null) 
 					cust.bet_mittel = row.getCell(9).getStringCellValue().equals("Ja");
 		
-				if (cust.category.matches(".*[AÄaä]rzt.*"))
+				if (cust.category.matches(".*[AÃ„aÃ¤]rzt.*"))
 					cust.category = "Arzt";		
 		
 				cust.addr_type = "S";	// S: shipping = default by medreg addresses
@@ -186,8 +186,8 @@ public class GlnCodes implements java.io.Serializable {
 					cust.category = "Spital";
 				else if (cust.category.matches(".*[Ww]issenschaft.*"))
 					cust.category = "Wissenschaft";
-				else if (cust.category.matches(".*[Bb]ehörde.*"))
-					cust.category = "Behörde";
+				else if (cust.category.matches(".*[Bb]ehÃ¶rde.*"))
+					cust.category = "BehÃ¶rde";
 				
 				cust.addr_type = "S";
 				cust.is_human = false;
@@ -233,7 +233,7 @@ public class GlnCodes implements java.io.Serializable {
 				User cust = new User();
 				String type = "";
 				if (t.length>1) {
-					if (t[1].matches(".*[AÄaä]rzt.*"))
+					if (t[1].matches(".*[AÃ„aÃ¤]rzt.*"))
 						type = "Arzt";	
 					else if (t[1].matches(".*[Pp]hysiotherap.*"))
 						type = "Physio";

@@ -191,7 +191,7 @@ public class FileOps {
 							gln[1]: category (Kundenkategorie) - A oder B
 							gln[2]: type (Apotheke, Drogerie, Spital, ...)
 							gln[3]: email
-							gln[4]: name Gruppierung (gilt nur für Apotheken)
+							gln[4]: name Gruppierung (gilt nur fÃ¼r Apotheken)
 							gln[5]: ??
 						*/ 
 						if (cols==2)
@@ -238,7 +238,7 @@ public class FileOps {
 							  	gln[1]: category (Kundenkategorie) - A oder B
 							  	gln[2]: type (Arzt, Apotheke, etc...)
 							  	gln[3]: email
-							  	gln[4]: name Gruppierung (gilt nur für Apotheken)
+							  	gln[4]: name Gruppierung (gilt nur fÃ¼r Apotheken)
 								gln[5]: ??
 							 */
 							if (cols==2)

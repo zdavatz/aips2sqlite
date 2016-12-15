@@ -72,7 +72,7 @@ public class Interactions {
 				if (atc1_key!=null) {
 					ArrayList<String> interaction = m_drug_interactions_map.get(atc1_key);
 					if (interaction==null)
-						interaction = new ArrayList<String>();				
+						interaction = new ArrayList<>();
 					interaction.add(entry);
 					
 					m_drug_interactions_map.put(atc1_key, interaction);					
@@ -124,9 +124,9 @@ public class Interactions {
 			    /*
 			     Risikoklassen
 			     -------------
-				     A: Keine Massnahmen notwendig (grün)
+				     A: Keine Massnahmen notwendig (grÃ¼n)
 				     B: Vorsichtsmassnahmen empfohlen (gelb)
-				     C: Regelmässige Überwachung (orange)
+				     C: RegelmÃ¤ssige Ãœberwachung (orange)
 				     D: Kombination vermeiden (pinky)
 				     X: Kontraindiziert (hellrot)
 				     0: Keine Angaben (grau)
@@ -139,7 +139,7 @@ public class Interactions {
 			    	else if (inter[7].equals("B"))
 			    		risk_class = "Vorsichtsmassnahmen empfohlen";
 			    	else if (inter[7].equals("C"))
-			    		risk_class = "Regelmässige Überwachung";
+			    		risk_class = "RegelmÃ¤ssige Ãœberwachung";
 			    	else if (inter[7].equals("D"))
 			    		risk_class = "Kombination vermeiden";
 			    	else if (inter[7].equals("X"))
@@ -152,7 +152,7 @@ public class Interactions {
 			    			+ "<div class=\"" + para_class + "\" id=\"" + key + "-" + inter[1] + "\">"
 			    			+ "<div class=\"absTitle\">" + key + " [" + inter[0] + "] &rarr; " + inter[1] + " [" + inter[2] + "]</div></div>"
 			    			+ "<p class=\"spacing2\">" + "<i>Risikoklasse:</i> " + risk_class + " (" + inter[7] + ")</p>"
-			    			+ "<p class=\"spacing2\">" + "<i>Möglicher Effekt:</i> " + inter[3] + "</p>"
+			    			+ "<p class=\"spacing2\">" + "<i>MÃ¶glicher Effekt:</i> " + inter[3] + "</p>"
 							+ "<p class=\"spacing2\">" + "<i>Mechanismus:</i> " + inter[4] + "</p>"
 							+ "<p class=\"spacing2\">" + "<i>Empfohlene Massnahmen:</i> " + inter[6] + "</p></div>";			    	
 			    	// Add to sqlite database
@@ -164,7 +164,7 @@ public class Interactions {
 					if (atc1_atc2_key!=null) {
 				    	ArrayList<String> interaction_html = m_atc1_atc2_html_map.get(atc1_atc2_key);
 				    	if (interaction_html==null)
-				    		interaction_html = new ArrayList<String>();
+				    		interaction_html = new ArrayList<>();
 				    	interaction_html.add(html_content);
 				    	m_atc1_atc2_html_map.put(atc1_atc2_key, interaction_html);	
 					}
@@ -198,7 +198,7 @@ public class Interactions {
     			if (CmlOptions.DB_LANGUAGE.equals("de"))
     				interactions_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", Constants.FI_DB_VERSION);
     			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-    				interactions_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
+    				interactions_errors.addHtmlHeader("Compendium des MÃ©dicaments Suisse", Constants.FI_DB_VERSION);
     			interactions_errors.append(interactions_errors.treemapToHtmlTable(m_atc1_atc2_html_map));
     			interactions_errors.writeHtmlToFile();
     			interactions_errors.getBWriter().close();

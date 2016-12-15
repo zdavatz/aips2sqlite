@@ -318,7 +318,7 @@ public class CalcStats {
 	}
 	
 	private String getCustomerGroup(String group) {
-		if (group.equals("A.Ärzte") || group.equals("A.Praxis") || group.equals("A.Prx+Sp") || group.equals("Zahn"))
+		if (group.equals("A.Ã„rzte") || group.equals("A.Praxis") || group.equals("A.Prx+Sp") || group.equals("Zahn"))
 			return "arzt";
 		else if (group.equals("Apotheke") || group.equals("Psy/Apo"))
 			return "apotheke";

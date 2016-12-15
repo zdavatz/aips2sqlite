@@ -204,9 +204,9 @@ public class DispoParse {
 					+ "REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "title,"
-					+ "'È','e'),'‡','a'),'Ë','e'),'Í','e'),'…','E'),"
-					+ "'Ó','i'),'Á','c'),'‰','a'),'ˆ','o'),'ƒ','A'),"
-					+ "'¸','u'),'(','{('),'[','{['),'0','{0'),'1','{1'),'2','{2'),"
+					+ "'√©','e'),'√†','a'),'√®','e'),'√™','e'),'√â','E'),"
+					+ "'√Æ','i'),'√ß','c'),'√§','a'),'√∂','o'),'√Ñ','A'),"
+					+ "'√º','u'),'(','{('),'[','{['),'0','{0'),'1','{1'),'2','{2'),"
 					+ "'3','{3'),'4','{4'),'5','{5'),'6','{6'),"
 					+ "'7','{7'),'8','{8'),'9','{9')"
 					+ " COLLATE NOCASE;");
@@ -353,7 +353,7 @@ public class DispoParse {
 					if (token[3]!=null)
 						article.availability = token[3];
 					// Packungsihnalt
-					if (token[5]!=null) {    // SIZE = Packungsgrˆsse or Packungsinhalt
+					if (token[5]!=null) {    // SIZE = Packungsgr√∂sse or Packungsinhalt
 						article.pack_size = (int) (Float.parseFloat(token[5]));
 						if (article.pack_size==0) {
 							article.pack_size = parseSizeFromTitle(token[1]);
@@ -386,7 +386,7 @@ public class DispoParse {
 					if (token[10]!=null)	// GALEN = Galenische Form					
 						article.galen_form = token[10];
 					// Dosierung
-					if (token[11]!=null) {	// UNIT = St‰rke or Dosierung
+					if (token[11]!=null) {	// UNIT = St√§rke or Dosierung
 						unitParse(token[11]);
 						article.pack_unit = token[11];
                         if (article.pack_unit.isEmpty() || article.pack_unit.equals("0"))
@@ -667,7 +667,7 @@ public class DispoParse {
 				if (num_rows > 5) {
 					String swissmedic_no5 = ""; 	// SwissmedicNo5 registration number (5 digits)
 					String swissmedic_cat = "";    	// Swissmedic category
-					// 0: Zulassungsnummer, 13: Abgabekategorie Packung, 22: Bet‰ubungsmittelhaltigen Pr‰paraten
+					// 0: Zulassungsnummer, 13: Abgabekategorie Packung, 22: Bet√§ubungsmittelhaltigen Pr√§paraten
 					if (row.getCell(0) != null)
 						swissmedic_no5 = String.format("%05d", (int) (row.getCell(0).getNumericCellValue()));    // Swissmedic registration number (5 digits)
 					if (row.getCell(13) != null)
