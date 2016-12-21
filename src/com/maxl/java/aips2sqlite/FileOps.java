@@ -41,6 +41,11 @@ import java.util.zip.ZipOutputStream;
 
 public class FileOps {
 
+	static public boolean fileExists(String path) {
+		File _path = new File(path);
+		return _path.exists();
+	}
+
 	static public String readCSSfromFile(String filename) {
 		String css_str = "";		
         try {

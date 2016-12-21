@@ -71,7 +71,8 @@ public class Constants {
 	public static final String FILE_ARTICLES_DESITIN = "artikel_desitin.csv";
 	// Files Takeda
 	public static final String DIR_TAKEDA = "./input/takeda/";
-	public static final String FILE_SAP_TAKEDA = "Auszug_SAP_Kunden_CH_2015_09_02.xlsx";
+	public static final String FILE_SAP_TAKEDA_2015 = "Auszug_SAP_Kunden_CH_2015_09_02.xlsx";
+	public static final String FILE_SAP_TAKEDA_2016 = "Auszug_SAP_Kunden_CH_2016_11_01.xlsx";
 	// Files Ywesee
 	public static final String DIR_YWESEE = "./input/ywesee/";
 	public static final String FILE_YAML_YWESEE = "medreg_doctors.yaml";

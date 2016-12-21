@@ -239,7 +239,18 @@ public class Aips2Sqlite {
 		// Generate Takeda SAP/GLN matching file
 		if (CmlOptions.TAKEDA_SAP) {
 			TakedaParse tp = new TakedaParse();
-			tp.process();
+
+            String takeda_2015 = "takeda_clean_2015.csv";
+            if (!FileOps.fileExists(Constants.DIR_OUTPUT + takeda_2015))
+    			tp.process("2015", Constants.FILE_SAP_TAKEDA_2015, takeda_2015);
+
+            String takeda_2016 = "takeda_clean_2016.csv";
+            if (!FileOps.fileExists(Constants.DIR_OUTPUT + takeda_2016))
+    			tp.process("2016", Constants.FILE_SAP_TAKEDA_2016, takeda_2016);
+
+            // Assumption: takeda_2015 and takeda_2016 files EXIST!
+            // tp.diff(Constants.DIR_OUTPUT + takeda_2015, Constants.DIR_OUTPUT + takeda_2016);
+			tp.medreg_sd_diff(Constants.DIR_OUTPUT + takeda_2016);
 		}
 		
 		// Calculates the daily drug costs (Tagestherapiekosten)
