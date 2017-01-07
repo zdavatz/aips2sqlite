@@ -73,12 +73,13 @@ public class DispoParse {
 			"replacepharma, offmarket, flags, npl, publicprice, exfprice";
 	
 	public DispoParse() {
-		// Initialize the database
-		initSqliteDB();
+        // Do nothing...
 	}
 	
 	public void process(String type) {		
 		if (type.equals("fulldb")) {
+            // Initialize the database
+            initSqliteDB();
             // Process atc map
             getAtcMap();
             // Get SL map
