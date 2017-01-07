@@ -723,7 +723,9 @@ public class AllDown {
 
 			System.out.println("- Connected to server " + fs + "...");
 
-			String[] working_dir = {"ywesee out", "../ywesee in"};
+			// String[] working_dir = {"ywesee out", "../ywesee in"};
+			// NOTE: Following working dir is used for TESTING only!!
+			String[] working_dir = {"ywesee outTest", "ywesee intTest"};
 			
 			for (int i=0; i<working_dir.length; ++i) {
 				// Set working directory
@@ -744,6 +746,8 @@ public class AllDown {
 	            			String local_file = remote_file;
 	            			if (remote_file.equals("Artikelstamm.csv"))
 	            				local_file = Constants.CSV_FILE_DISPO_ZR;
+							if (remote_file.equals("Artikelstamm_Vollstamm.csv"))
+								local_file = Constants.CSV_FILE_FULL_DISPO_ZR;
 							if (remote_file.equals("Artikelstamm_Voigt.csv"))
 								local_file = Constants.CSV_FILE_VOIGT_ZR;
 	            			OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
