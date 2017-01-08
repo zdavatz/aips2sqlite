@@ -19,10 +19,10 @@ public class Utilities {
 	static public final Map<String, Integer> doctorPreferences;
 	static {
 		// LinkedHashMap preserves insertion order
-		doctorPreferences = new LinkedHashMap<String, Integer>();
+		doctorPreferences = new LinkedHashMap<>();
 		doctorPreferences.put("actavis", 1);	// actavis switzerland ag, 7601001376618
-		doctorPreferences.put("helvepharm", 2);	// helvepharm ag, 7601001003736	
-		doctorPreferences.put("mepha", 3);		// mepha schweiz ag, 7601001396685	
+		doctorPreferences.put("helvepharm", 2);	// helvepharm ag, 7601001003736
+		doctorPreferences.put("mepha", 3);		// mepha schweiz ag, 7601001396685
 		doctorPreferences.put("sandoz", 4);		// sandoz pharmaceuticals ag, 7601001029439
 		doctorPreferences.put("spirig", 5);		// spirig healthcare ag, 7601001394834
 	}
@@ -30,7 +30,7 @@ public class Utilities {
 	static public final Map<String, Integer> rosePreferences;
 	static {
 		// LinkedHashMap preserves insertion order
-		rosePreferences = new LinkedHashMap<String, Integer>();
+		rosePreferences = new LinkedHashMap<>();
 		rosePreferences.put("sandoz", 1);		// sandoz pharmaceuticals ag
 		rosePreferences.put("mepha", 2);		// mepha schweiz ag	
 		rosePreferences.put("teva", 3);			// teva pharma ag

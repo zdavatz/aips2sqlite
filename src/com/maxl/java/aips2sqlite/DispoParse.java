@@ -718,7 +718,7 @@ public class DispoParse {
 	}
 
 	private void getAtcMap() {
-		m_atc_map = new TreeMap<String, String>();
+		m_atc_map = new TreeMap<>();
 		
 		try {
 			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(Constants.FILE_EPHA_ATC_CODES_CSV), "UTF-8"));

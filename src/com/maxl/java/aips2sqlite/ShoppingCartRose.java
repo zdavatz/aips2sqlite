@@ -63,7 +63,7 @@ public class ShoppingCartRose {
 			String line;
 			while ((line = br.readLine()) != null) {
 				String token[] = line.split(";", -1);
-				if (counter>0 && token.length>23) {
+				if (counter>0 && token.length>31) {
 					User user = new User();
 					user.gln_code = token[3];
 					user.name1 = token[16];
@@ -71,23 +71,27 @@ public class ShoppingCartRose {
 					user.zip = token[21];
 					user.city = token[22];
 					user.email = token[23];
-					LinkedHashMap<String, Float> rebate_map = new LinkedHashMap<String, Float>();
-					LinkedHashMap<String, Float> expenses_map = new LinkedHashMap<String, Float>();
+                    user.top_customer = token[31].toLowerCase().trim().equals("true");
+
+					LinkedHashMap<String, Float> rebate_map = new LinkedHashMap<>();
+					LinkedHashMap<String, Float> expenses_map = new LinkedHashMap<>();
 									
-					for (int i=0; i<5; ++i) {
+					for (int i=0; i<Utilities.doctorPreferences.size(); ++i) {
 						String pharma_company = (new ArrayList<>(Utilities.doctorPreferences.keySet())).get(i);
-						//
-						String rebate = token[4+i].replaceAll("[^\\d.]", "");
-						if (!rebate.isEmpty())
-							rebate_map.put(pharma_company, Float.valueOf(rebate));
-						else
-							rebate_map.put(pharma_company, 0.0f);
-						String expenses = token[9+i].replaceAll("[^\\d.]", "");
-						//							
-						if (!expenses.isEmpty())
-							expenses_map.put(pharma_company, Float.valueOf(expenses));						
-						else
-							expenses_map.put(pharma_company, 0.0f);
+						// @cybermax 07.01.2017 -> Actavis is OUT!!
+						if (!pharma_company.equals("actavis")) {
+							String rebate = token[4 + i].replaceAll("[^\\d.]", "");
+							if (!rebate.isEmpty())
+								rebate_map.put(pharma_company, Float.valueOf(rebate));
+							else
+								rebate_map.put(pharma_company, 0.0f);
+							String expenses = token[9 + i].replaceAll("[^\\d.]", "");
+							//
+							if (!expenses.isEmpty())
+								expenses_map.put(pharma_company, Float.valueOf(expenses));
+							else
+								expenses_map.put(pharma_company, 0.0f);
+						}
 					}					
 							
 					// Is the user already in the user_map?
@@ -111,7 +115,7 @@ public class ShoppingCartRose {
 					} 
 
 					// Sort rebate map according to largest rebate (descending order)
-					List<Entry<String, Float>> list_of_entries_1 = new ArrayList<Entry<String, Float>>(rebate_map.entrySet());
+					List<Entry<String, Float>> list_of_entries_1 = new ArrayList<>(rebate_map.entrySet());
 					Collections.sort(list_of_entries_1, new Comparator<Entry<String, Float>>() {
 						@Override
 						public int compare(Entry<String, Float> e1, Entry<String, Float> e2) {
@@ -123,7 +127,7 @@ public class ShoppingCartRose {
 						rebate_map.put(e.getKey(), e.getValue());
 					}
 					// Sort expenses map according to largest expense (descending order)
-					List<Entry<String, Float>> list_of_entries_2 = new ArrayList<Entry<String, Float>>(expenses_map.entrySet());
+					List<Entry<String, Float>> list_of_entries_2 = new ArrayList<>(expenses_map.entrySet());
 					Collections.sort(list_of_entries_2, new Comparator<Entry<String, Float>>() {
 						@Override
 						public int compare(Entry<String, Float> e1, Entry<String, Float> e2) {
