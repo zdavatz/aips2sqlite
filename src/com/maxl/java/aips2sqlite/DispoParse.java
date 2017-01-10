@@ -102,7 +102,7 @@ public class DispoParse {
 			Class.forName("org.sqlite.JDBC");
 			
 			// Touch db file if it does not exist
-			String db_url = System.getProperty("user.dir") + Constants.DIR_OUTPUT + "rose_db_new_full.db";
+			String db_url = System.getProperty("user.dir") + "/output/rose_db_new_full.db";
 			m_db_file = FileOps.touchFile(db_url);				
 			if (m_db_file==null)
 				throw new IOException();
@@ -539,7 +539,7 @@ public class DispoParse {
             int[] s = entry.getValue();
             stock_str += entry.getKey() + ";" + s[0] + ";" + s[1] + "\n";
         }
-        String out_dir = System.getProperty("user.dir") + Constants.DIR_OUTPUT;
+        String out_dir = /*System.getProperty("user.dir") +*/ Constants.DIR_OUTPUT;
         FileOps.writeToFile(stock_str, out_dir, Constants.CSV_STOCK_INFO_ZR);
     }
 
