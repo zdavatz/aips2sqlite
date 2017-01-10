@@ -690,7 +690,7 @@ public class AllDown {
 		}
 	}
 	
-	public void downZurRose() {
+	public void downZurRose(String download_option) {
 		String fl = "";
 		String fp = "";
 		String fs = "";
@@ -750,16 +750,20 @@ public class AllDown {
 								local_file = Constants.CSV_FILE_FULL_DISPO_ZR;
 							if (remote_file.equals("Artikelstamm_Voigt.csv"))
 								local_file = Constants.CSV_FILE_VOIGT_ZR;
-	            			OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
-	                    	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
-	                    	boolean done = ftp_client.retrieveFile(remote_file, os);
-	                    	if (done)
-	                    		System.out.println("success.");
-	                    	else
-	                    		System.out.println("error.");
-	                    	os.close();
-	            		}
-	            	}
+
+                            if (download_option.equals("quick") && local_file.equals(Constants.CSV_FILE_FULL_DISPO_ZR))
+                                continue;
+
+                            OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
+                            System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+                            boolean done = ftp_client.retrieveFile(remote_file, os);
+                            if (done)
+                                System.out.println("success.");
+                            else
+                                System.out.println("error.");
+                            os.close();
+                        }
+                    }
 	            }
 			}            
 		} catch (IOException ex) {

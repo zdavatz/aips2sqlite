@@ -379,7 +379,7 @@ public class Aips2Sqlite {
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
 			a.downEphaATCCodesCsv(Constants.FILE_EPHA_ATC_CODES_CSV);
-			a.downZurRose();
+			a.downZurRose(CmlOptions.ZUR_ROSE_DB);
 		} else {
 			if (CmlOptions.SHOPPING_CART || CmlOptions.ONLY_SHOPPING_CART)
 				a.downIBSA();
