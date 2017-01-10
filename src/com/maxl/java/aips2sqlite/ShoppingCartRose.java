@@ -49,7 +49,7 @@ public class ShoppingCartRose {
 	}
 	
 	public void encryptCustomerMapToFile(String in_csv_file, String out_ser_file_1, String out_ser_file_2) {
-		HashMap<String, User> user_map = new HashMap<String, User>();
+		HashMap<String, User> user_map = new HashMap<>();
 		HashMap<String, String> roseid_to_gln_map = new HashMap<>();
 		try {
 			File file = new File(in_csv_file);
@@ -61,39 +61,50 @@ public class ShoppingCartRose {
 			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "cp1252"));
 			int counter = 0;
 			String line;
+            // Parsing Kunden_alle.csv
 			while ((line = br.readLine()) != null) {
 				String token[] = line.split(";", -1);
-				if (counter>0 && token.length>31) {
+				if (counter>0 && token.length>29) {
 					User user = new User();
 					user.gln_code = token[3];
-					user.name1 = token[16];
-					user.street = token[19];
-					user.zip = token[21];
-					user.city = token[22];
-					user.email = token[23];
-                    user.top_customer = token[31].toLowerCase().trim().equals("true");
+					user.name1 = token[14];
+					user.street = token[17];
+					user.zip = token[19];
+					user.city = token[20];
+					user.email = token[21];
+                    user.top_customer = token[29].toLowerCase().trim().equals("true");
+                    if (!token[28].isEmpty())
+                        user.special_rebate = Float.valueOf(token[28].replaceAll("[^\\d.]", ""));
 
 					LinkedHashMap<String, Float> rebate_map = new LinkedHashMap<>();
 					LinkedHashMap<String, Float> expenses_map = new LinkedHashMap<>();
+                    LinkedHashMap<String, Float> dlk_map = new LinkedHashMap<>();
 									
 					for (int i=0; i<Utilities.doctorPreferences.size(); ++i) {
 						String pharma_company = (new ArrayList<>(Utilities.doctorPreferences.keySet())).get(i);
 						// @cybermax 07.01.2017 -> Actavis is OUT!!
 						if (!pharma_company.equals("actavis")) {
-							String rebate = token[4 + i].replaceAll("[^\\d.]", "");
+							// indices 4-7
+                            String rebate = token[4 + i].replaceAll("[^\\d.]", "");
 							if (!rebate.isEmpty())
 								rebate_map.put(pharma_company, Float.valueOf(rebate));
 							else
 								rebate_map.put(pharma_company, 0.0f);
-							String expenses = token[9 + i].replaceAll("[^\\d.]", "");
-							//
+                            // indices 8-11
+							String expenses = token[8 + i].replaceAll("[^\\d.]", "");
 							if (!expenses.isEmpty())
 								expenses_map.put(pharma_company, Float.valueOf(expenses));
-							else
-								expenses_map.put(pharma_company, 0.0f);
-						}
+                            else
+                                expenses_map.put(pharma_company, 0.0f);
+                            // indices 24-27
+                            String dlk_costs = token[24 + i].replaceAll("[^\\d.]", "");
+                            if (!dlk_costs.isEmpty())
+                                dlk_map.put(pharma_company, Float.valueOf(dlk_costs));
+                            else
+                                dlk_map.put(pharma_company, 0.0f);
+                        }
 					}					
-							
+
 					// Is the user already in the user_map?
 					if (user_map.containsKey(user.gln_code)) {
 						user = user_map.get(user.gln_code);
@@ -112,6 +123,13 @@ public class ShoppingCartRose {
 									expenses_map.put(name, user.expenses_map.get(name));
 							}							
 						}
+                        for (Map.Entry<String, Float> e : user.dlk_map.entrySet()) {
+                            String name = e.getKey();
+                            if (expenses_map.containsKey(name)) {
+                                if (expenses_map.get(name)<user.dlk_map.get(name))
+                                    expenses_map.put(name, user.dlk_map.get(name));
+                            }
+                        }
 					} 
 
 					// Sort rebate map according to largest rebate (descending order)
@@ -126,6 +144,7 @@ public class ShoppingCartRose {
 					for (Entry<String, Float> e : list_of_entries_1) {
 						rebate_map.put(e.getKey(), e.getValue());
 					}
+
 					// Sort expenses map according to largest expense (descending order)
 					List<Entry<String, Float>> list_of_entries_2 = new ArrayList<>(expenses_map.entrySet());
 					Collections.sort(list_of_entries_2, new Comparator<Entry<String, Float>>() {
@@ -140,7 +159,8 @@ public class ShoppingCartRose {
 					}
 					
 					user.rebate_map = rebate_map;
-					user.expenses_map = expenses_map;	
+					user.expenses_map = expenses_map;
+                    user.dlk_map = dlk_map;
 					
 					user_map.put(user.gln_code, user);
 
@@ -159,14 +179,14 @@ public class ShoppingCartRose {
 		}
 		
 		// Serialize into a byte array output stream, then encrypt
-		if (user_map!=null && user_map.size()>0) {
+		if (user_map.size()>0) {
 			encryptObjectToFile(user_map, out_ser_file_1);
 		} else {
 			System.out.println("!! Error occurred when generating " + out_ser_file_1);
 			System.exit(1);
 		}
 		// Serialize second file
-		if (roseid_to_gln_map!=null && roseid_to_gln_map.size()>0) {
+		if (roseid_to_gln_map.size()>0) {
 			encryptObjectToFile(roseid_to_gln_map, out_ser_file_2);
 		} else {
 			System.out.println("!! Error occurred when generating " + out_ser_file_2);
@@ -175,7 +195,7 @@ public class ShoppingCartRose {
 	}
 	
 	public void encryptSalesFiguresToFile(String in_csv_file, String out_ser_file) {
-		HashMap<String, Float> sales_figures_map = new HashMap<String, Float>();
+		HashMap<String, Float> sales_figures_map = new HashMap<>();
 
 		try {
 			File file = new File(in_csv_file);
@@ -207,48 +227,48 @@ public class ShoppingCartRose {
 		}
 		
 		// Serialize into a byte array output stream, then encrypt
-		if (sales_figures_map!=null && sales_figures_map.size()>0) {
+		if (sales_figures_map.size()>0) {
 			encryptObjectToFile(sales_figures_map, out_ser_file);
 		} else {
 			System.out.println("!! Error occurred when generating " + out_ser_file);
 			System.exit(1);
 		}
 	}
-	
-	public void encryptAutoGenerikaToFile(String in_csv_file, String out_ser_file) {
-		ArrayList<String> auto_generika_list = new ArrayList<String>();
 
-		try {
-			File file = new File(in_csv_file);
-			if (!file.exists()) {
-				System.out.println(in_csv_file + " does not exist! Returning...");
-				return;
-			}
-			FileInputStream fis = new FileInputStream(in_csv_file);
-			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "cp1252"));
-			int counter = 0;
-			String line;
-			while ((line = br.readLine()) != null) {
-				String token[] = line.split(";", -1);
-				if (counter>0 && token.length>10) {
-					String ean_code = token[10];
-					if (ean_code!=null)
-					auto_generika_list.add(ean_code);
-				}
-				counter++;
-			}
-			br.close();
-		} catch (Exception e) {
-			System.err.println(">> Error in reading csv file " + in_csv_file);
-			e.printStackTrace();
-		}
-		
-		// Serialize into a byte array output stream, then encrypt
-		if (auto_generika_list!=null && auto_generika_list.size()>0) {
-			encryptObjectToFile(auto_generika_list, out_ser_file);
-		} else {
-			System.out.println("!! Error occurred when generating " + out_ser_file);
-			System.exit(1);
-		}		
-	}
+    public void encryptAutoGenerikaToFile(String in_csv_file, String out_ser_file) {
+        ArrayList<String> auto_generika_list = new ArrayList<>();
+
+        try {
+            File file = new File(in_csv_file);
+            if (!file.exists()) {
+                System.out.println(in_csv_file + " does not exist! Returning...");
+                return;
+            }
+            FileInputStream fis = new FileInputStream(in_csv_file);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis, "cp1252"));
+            int counter = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                String token[] = line.split(";", -1);
+                if (counter>0 && token.length>10) {
+                    String ean_code = token[10];
+                    if (ean_code != null)
+                        auto_generika_list.add(ean_code);
+                }
+                counter++;
+            }
+            br.close();
+        } catch (Exception e) {
+            System.err.println(">> Error in reading csv file " + in_csv_file);
+            e.printStackTrace();
+        }
+
+        // Serialize into a byte array output stream, then encrypt
+        if (auto_generika_list.size()>0) {
+            encryptObjectToFile(auto_generika_list, out_ser_file);
+        } else {
+            System.out.println("!! Error occurred when generating " + out_ser_file);
+            System.exit(1);
+        }
+    }
 }

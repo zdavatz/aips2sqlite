@@ -70,7 +70,7 @@ public class DispoParse {
 	private Set<String> unit_set = new HashSet<String>();
 	
 	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, " +
-			"replacepharma, offmarket, flags, npl, publicprice, exfprice";
+			"replacepharma, offmarket, flags, npl, publicprice, exfprice, dlkflag";
 	
 	public DispoParse() {
         // Do nothing...
@@ -140,7 +140,7 @@ public class DispoParse {
 	        		"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
 	        		"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
 	        		"replaceean TEXT, replacepharma TEXT, offmarket TEXT, " +
-	        		"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT);";
+	        		"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT, dlkflag TEXT);";
 	}
 	
 	private void createArticleDB()  {		       
@@ -149,7 +149,7 @@ public class DispoParse {
 	        stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
 	        stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
 	        // Insert statement	
-	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
@@ -178,6 +178,7 @@ public class DispoParse {
 			m_prep_rosedb.setBoolean(18, article.npl_article);
 			m_prep_rosedb.setString(19, article.public_price);
 			m_prep_rosedb.setString(20, article.exfactory_price);
+            m_prep_rosedb.setBoolean(21, article.dlk_flag);
 			m_prep_rosedb.addBatch();        
 			conn.setAutoCommit(false);
 			m_prep_rosedb.executeBatch();
@@ -302,7 +303,7 @@ public class DispoParse {
 		 *  16: NPL-Artikel
 		 *  17: Publikumspreis
 		 *  18: Disponieren
-		 *  19: Gruppe für sonstige Zuschläge
+		 *  19: Gruppe für sonstige Zuschläge -> DLK-flag
 		 */
         // Start timer
         long startTime = System.currentTimeMillis();
@@ -435,13 +436,18 @@ public class DispoParse {
                         article.public_price = m_bag_public_price_map.containsKey(ean) ? m_bag_public_price_map.get(ean) : "";
                         article.exfactory_price = m_bag_exfacto_price_map.containsKey(ean) ? m_bag_exfacto_price_map.get(ean) : "";
                     }
+                    // Extract DLK-flag
+                    if (token[19]!=null)
+                        article.dlk_flag = token[19].toLowerCase().contains("100%");    // -> true
 
 					System.out.println(num_rows + " -> " + article.pack_title
 							+ " / size = [" + article.pack_size + ", " + parsed_size + "]"
 							+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
 							+ " / pp = " + article.public_price
                             + " / efp = " + article.exfactory_price
-							+ " / flags = " + article.flags);
+							+ " / flags = " + article.flags
+                            + " / dlk = " + article.dlk_flag);
+
                     list_of_articles.add(article);
                     addArticleDB(article);
                 }
