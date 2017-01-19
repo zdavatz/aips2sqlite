@@ -158,7 +158,8 @@ public class SwissMedSequences extends ArticleNameParse {
 						gtin += cs;
 
 						if (list_of_all_gtins.contains(gtin))
-							System.out.println("ERROR: gtin exists already -> " + gtin + " | " + a.name);
+							System.out.println("ERROR: gtin exists already -> " + gtin + " | " + a.name + " | " + a.pack_size + " | " + a.pack_unit);
+
 						list_of_all_gtins.add(gtin);
 
                         // Check refdata gtin to name map
@@ -203,8 +204,10 @@ public class SwissMedSequences extends ArticleNameParse {
 							if (!isAnimalMed(clean_name)) {
 								// Cleaning: 2nd pass (compare with quantity and unit)
 								ArrayList<String> list_of_matchers = createDosageMatchers(a);
-								for (String m : list_of_matchers)
-									clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
+								for (String m : list_of_matchers) {
+                                    m = m.replaceAll("\\)", "").replaceAll("\\(", "");
+                                    clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
+                                }
 
 								ArrayList<String> list_of_galens = extractGalenFromName(clean_name);
 								for (String g : list_of_galens) {
@@ -338,11 +341,11 @@ public class SwissMedSequences extends ArticleNameParse {
 				ArrayList<SimpleArticle> list_of_articles = e.getValue();
 				if (list_of_articles!=null) {
 					String old_smn5 = "";
-					int dosage_number = 1;
+					int dosage_number = 0;
 					for (SimpleArticle a : list_of_articles) {
 
 						if (list_of_all_gtins.contains(a.gtin))
-							System.out.println("ERROR: gtin exists already -> " + a.gtin + " | " + a.name);
+							System.out.println("ERROR: gtin exists already -> " + a.gtin + " | " + a.name + " | " + dosage_number + " | " + a.pack_size);
 						list_of_all_gtins.add(a.gtin);
 
 						if (!list_of_bag_articles_gtins.contains(a.gtin)) {
@@ -351,9 +354,13 @@ public class SwissMedSequences extends ArticleNameParse {
 							if (a.smn5.equals(old_smn5))
 								dosage_number++;
 							else
-								dosage_number = 1;
+								dosage_number = 0;
 							old_smn5 = a.smn5;
-							String sequence = a.smn5 + String.format("%02d", dosage_number);
+
+                            String digit_str = String.format("%02d", dosage_number);
+                            String alpha_str = digit2alphaConverter(digit_str);
+
+							String sequence = a.smn5 + alpha_str;
 							csv_str += sequence + ";" + full_name + ";" + a.name + ";" + a.pack_size + ";" + a.gtin + ";" + a.quantity + ";" + a.pi_unit + ";"
 									+ two_digit_format(a.exf_price_CHF) + ";" + two_digit_format(a.pub_price_CHF) + "\n";
 						}
@@ -378,4 +385,17 @@ public class SwissMedSequences extends ArticleNameParse {
 			e.printStackTrace();
 		}
 	}
+
+    private String digit2alphaConverter(String digit_str) {
+        char[] digit_chars = digit_str.toCharArray();
+        char[] alpha_chars = new char[digit_chars.length];
+        for (int i=0; i<digit_chars.length; ++i) {
+            alpha_chars[i] = (char)(Character.getNumericValue(digit_chars[i]) + 'A');
+        }
+
+        System.out.println(String.valueOf(alpha_chars));
+
+        return String.valueOf(alpha_chars);
+    }
+
 }

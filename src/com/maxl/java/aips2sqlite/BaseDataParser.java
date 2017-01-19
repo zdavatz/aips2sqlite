@@ -93,10 +93,11 @@ public class BaseDataParser {
 
                 String smn5_plus = swissmedic_no5 + dosage_id;  // SEQUENZ
 
-                if (!smn5_plus.isEmpty() && !swissmedic_no5.isEmpty()) {
+                if (!smn5_plus.isEmpty() && !swissmedic_no5.isEmpty() && !swissmedic_no5.equals("00000")) {
                     ArrayList<SimpleArticle> list_of_articles = new ArrayList<>();
                     if (smn5plus_to_article_map.containsKey(smn5_plus))
                         list_of_articles = smn5plus_to_article_map.get(smn5_plus);
+
                     SimpleArticle a = new SimpleArticle();
                     a.name = name;
                     a.smn5 = swissmedic_no5;
@@ -104,6 +105,7 @@ public class BaseDataParser {
                     a.quantity = quantity;
                     a.pack_unit = unit;
                     list_of_articles.add(a);
+
                     smn5plus_to_article_map.put(smn5_plus, list_of_articles);
                 }
             }
