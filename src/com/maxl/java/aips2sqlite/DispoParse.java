@@ -103,7 +103,7 @@ public class DispoParse {
 			
 			// Touch db file if it does not exist
 			String db_url = System.getProperty("user.dir") + "/output/rose_db_new_full.db";
-			m_db_file = FileOps.touchFile(db_url);				
+			m_db_file = FileOps.touchFile(db_url);
 			if (m_db_file==null)
 				throw new IOException();
 		

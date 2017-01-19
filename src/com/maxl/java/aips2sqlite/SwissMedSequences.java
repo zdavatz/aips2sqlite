@@ -159,6 +159,7 @@ public class SwissMedSequences extends ArticleNameParse {
 
 						if (list_of_all_gtins.contains(gtin))
 							System.out.println("ERROR: gtin exists already -> " + gtin + " | " + a.name);
+
 						list_of_all_gtins.add(gtin);
 
                         // Check refdata gtin to name map
@@ -199,60 +200,62 @@ public class SwissMedSequences extends ArticleNameParse {
 						} else {
 							String galens = "";
 							String clean_name = a.name.toLowerCase();
-							//
-							if (!isAnimalMed(clean_name)) {
-								// Cleaning: 2nd pass (compare with quantity and unit)
-								ArrayList<String> list_of_matchers = createDosageMatchers(a);
-								for (String m : list_of_matchers)
-									clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
+                            //
+                            if (!isAnimalMed(clean_name)) {
+                                // Cleaning: 2nd pass (compare with quantity and unit)
+                                ArrayList<String> list_of_matchers = createDosageMatchers(a);
+                                for (String m : list_of_matchers) {
+                                    m.replaceFirst("\\)", "");
+                                    clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
+                                }
 
-								ArrayList<String> list_of_galens = extractGalenFromName(clean_name);
-								for (String g : list_of_galens) {
-									galens += g + ",";
-					    			clean_name = clean_name.replace(g, " ");
-								}
-								// Find short form if not empty
-								if (!galens.isEmpty())
-									galens = findGalenShort(galens.split(",")[0].trim());
+                                ArrayList<String> list_of_galens = extractGalenFromName(clean_name);
+                                for (String g : list_of_galens) {
+                                    galens += g + ",";
+                                    clean_name = clean_name.replace(g, " ");
+                                }
+                                // Find short form if not empty
+                                if (!galens.isEmpty())
+                                    galens = findGalenShort(galens.split(",")[0].trim());
 
-								if (galens.isEmpty()) {
-									String g[] = a.name.split(",");								
-									if (g.length>1) {
-										int last_idx = g.length-1;		
-										if (g[last_idx].matches("\\D+")) {
-											list_of_galens = extractAddGalenFromName(g[last_idx].toLowerCase());
-											for (String gg : list_of_galens) {
-												String g_short = findGalenShort(gg);
-												if (!g_short.isEmpty())
-													galens += g_short + ",";
-												else
-													galens += gg + ",";
-											}
-											// Fallback in case no short form can be found
-											if (galens.isEmpty()) {
-												galens = g[last_idx].trim();
-											}
-										}
-									}
-								}
-								
-								galens = galens.split(",")[0].trim().toLowerCase();	// Take only first one
-								// Cleaning: 1st pass
-								clean_name = cleanName(clean_name);
+                                if (galens.isEmpty()) {
+                                    String g[] = a.name.split(",");
+                                    if (g.length > 1) {
+                                        int last_idx = g.length - 1;
+                                        if (g[last_idx].matches("\\D+")) {
+                                            list_of_galens = extractAddGalenFromName(g[last_idx].toLowerCase());
+                                            for (String gg : list_of_galens) {
+                                                String g_short = findGalenShort(gg);
+                                                if (!g_short.isEmpty())
+                                                    galens += g_short + ",";
+                                                else
+                                                    galens += gg + ",";
+                                            }
+                                            // Fallback in case no short form can be found
+                                            if (galens.isEmpty()) {
+                                                galens = g[last_idx].trim();
+                                            }
+                                        }
+                                    }
+                                }
+
+                                galens = galens.split(",")[0].trim().toLowerCase();    // Take only first one
+                                // Cleaning: 1st pass
+                                clean_name = cleanName(clean_name);
                                 String dosage = extractDosageFromName(clean_name);
                                 if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
-									a.pack_unit += " à " + dosage;
-									clean_name = removeDosageFromName(clean_name);
-								}
+                                    a.pack_unit += " à " + dosage;
+                                    clean_name = removeDosageFromName(clean_name);
+                                }
                                 clean_name = Utilities.removeSpaces(clean_name);
-								clean_name = Utilities.capitalizeFully(clean_name, 1);
-								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
-								//
-								sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.pack_unit + ";;;";
-							} else {
-								animal_med = true;
-							}
-						}
+                                clean_name = Utilities.capitalizeFully(clean_name, 1);
+                                clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
+                                //
+                                sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.pack_unit + ";;;";
+                            } else {
+                                animal_med = true;
+                            }
+                        }
 
 						/*	Check if smn5 is contained in regnr_to_bag_articles_map.
 							For each smn5 we have multiple packages!
@@ -353,7 +356,13 @@ public class SwissMedSequences extends ArticleNameParse {
 							else
 								dosage_number = 1;
 							old_smn5 = a.smn5;
-							String sequence = a.smn5 + String.format("%02d", dosage_number);
+
+							String digit_str = String.format("%02d", dosage_number);
+							String alpha_str = digit2alphaConverter(digit_str);
+
+							System.out.println(alpha_str + " -> " + full_name);
+
+							String sequence = a.smn5 + digit_str;
 							csv_str += sequence + ";" + full_name + ";" + a.name + ";" + a.pack_size + ";" + a.gtin + ";" + a.quantity + ";" + a.pi_unit + ";"
 									+ two_digit_format(a.exf_price_CHF) + ";" + two_digit_format(a.pub_price_CHF) + "\n";
 						}
@@ -377,5 +386,14 @@ public class SwissMedSequences extends ArticleNameParse {
 		} catch(IOException | JAXBException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private String digit2alphaConverter(String digit_str) {
+		char[] digit_chars = digit_str.toCharArray();
+		char[] alpha_chars = new char[digit_chars.length];
+		for (int i=0; i<digit_chars.length; ++i) {
+			alpha_chars[i] = (char)(digit_chars[i] + 'A');
+		}
+		return alpha_chars.toString();
 	}
 }
