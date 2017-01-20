@@ -350,9 +350,13 @@ public class BaseDataParser {
     @SuppressWarnings("unchecked")
     public HashMap<String, String> parseDosageFormsJson() throws IOException {
         ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
-        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-        };
-        Map<String, Object> dosageFormsData = mapper.readValue(new File(Constants.FILE_DOSAGE_FORMS_JSON), typeRef);
+        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {};
+
+        File json_file = new File(Constants.FILE_DOSAGE_FORMS_JSON);
+        if (!json_file.exists())
+            System.out.println("ERROR: Could not read file " + json_file);
+
+        Map<String, Object> dosageFormsData = mapper.readValue(json_file, typeRef);
         ArrayList<HashMap<String, String>> dosageList = (ArrayList<HashMap<String, String>>) dosageFormsData.get("dosage_forms");
 
         HashMap<String, String> map_of_short_to_long_galens = new HashMap<>();
@@ -372,9 +376,13 @@ public class BaseDataParser {
     @SuppressWarnings("unchecked")
     public HashMap<String, String> parsePackUnitsJson() throws IOException {
         ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
-        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-        };
-        Map<String, Object> dosageFormsData = mapper.readValue(new File(Constants.FILE_DOSAGE_FORMS_JSON), typeRef);
+        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {};
+
+        File json_file = new File(Constants.FILE_DOSAGE_FORMS_JSON);
+        if (!json_file.exists())
+            System.out.println("ERROR: Could not read file " + json_file);
+
+        Map<String, Object> dosageFormsData = mapper.readValue(json_file, typeRef);
         ArrayList<HashMap<String, String>> dosageList = (ArrayList<HashMap<String, String>>) dosageFormsData.get("dosage_forms");
 
         HashMap<String, String> map_of_short_to_pack_units = new HashMap<>();
