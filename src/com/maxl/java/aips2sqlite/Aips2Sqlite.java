@@ -191,7 +191,7 @@ public class Aips2Sqlite {
 		addOption(options, "gln", "generate csv file with Swiss gln codes", false, false);
 		addOption(options, "shop", "generate encrypted files for shopping cart", false, false);
 		addOption(options, "onlyshop", "skip generation of sqlite database", false, false);
-		addOption(options, "zurrose", "generate zur Rose full article database or stock/like files (fulldb/quick)", true, false);
+		addOption(options, "zurrose", "generate zur Rose full article database or stock/like files (fulldb/atcdb/quick)", true, false);
 		addOption(options, "desitin", "generate encrypted files for Desitin", false, false);
 		addOption(options, "onlydesitin", "skip generation of sqlite database", false, false);
 		addOption(options, "takeda", "generate sap/gln matching file", true, false);

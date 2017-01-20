@@ -357,12 +357,7 @@ public class SwissMedSequences extends ArticleNameParse {
 								dosage_number = 1;
 							old_smn5 = a.smn5;
 
-							String digit_str = String.format("%02d", dosage_number);
-							String alpha_str = digit2alphaConverter(digit_str);
-
-							System.out.println(alpha_str + " -> " + full_name);
-
-							String sequence = a.smn5 + digit_str;
+							String sequence = a.smn5 + String.format("%02d", dosage_number);
 							csv_str += sequence + ";" + full_name + ";" + a.name + ";" + a.pack_size + ";" + a.gtin + ";" + a.quantity + ";" + a.pi_unit + ";"
 									+ two_digit_format(a.exf_price_CHF) + ";" + two_digit_format(a.pub_price_CHF) + "\n";
 						}
@@ -386,14 +381,5 @@ public class SwissMedSequences extends ArticleNameParse {
 		} catch(IOException | JAXBException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private String digit2alphaConverter(String digit_str) {
-		char[] digit_chars = digit_str.toCharArray();
-		char[] alpha_chars = new char[digit_chars.length];
-		for (int i=0; i<digit_chars.length; ++i) {
-			alpha_chars[i] = (char)(digit_chars[i] + 'A');
-		}
-		return alpha_chars.toString();
 	}
 }

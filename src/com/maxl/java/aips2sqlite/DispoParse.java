@@ -77,9 +77,14 @@ public class DispoParse {
 	}
 	
 	public void process(String type) {		
-		if (type.equals("fulldb")) {
+		if (type.equals("fulldb") || type.equals("atcdb")) {
             // Initialize the database
-            initSqliteDB();
+            if (type.equals("fulldb"))
+                initSqliteDB("rose_db_new_full.db");
+            else if (type.equals("atcdb"))
+                initSqliteDB("rose_db_new_atc_only.db");
+            else
+                return;
             // Process atc map
             getAtcMap();
             // Get SL map
@@ -89,20 +94,20 @@ public class DispoParse {
             // Process likes
             processLikes();
             // Process CSV file and generate Sqlite DB
-			generateFullSQLiteDB();
+			generateFullSQLiteDB(type);
 		} else if (type.equals("quick")) {
             // Generate gln to stock map (csv file)
             generateGlnToStockCsv();
         }
 	}
 	
-	private void initSqliteDB() {
+	private void initSqliteDB(String db_name) {
 		try {
 			// Initializes org.sqlite.JDBC driver
 			Class.forName("org.sqlite.JDBC");
 			
 			// Touch db file if it does not exist
-			String db_url = System.getProperty("user.dir") + "/output/rose_db_new_full.db";
+			String db_url = System.getProperty("user.dir") + "/output/" + db_name;
 			m_db_file = FileOps.touchFile(db_url);
 			if (m_db_file==null)
 				throw new IOException();
@@ -282,7 +287,7 @@ public class DispoParse {
 		FileOps.writeToFile(like_db_str, Constants.DIR_ZURROSE, Constants.CSV_LIKE_DB_ZR);
 	}
 
-	private void generateFullSQLiteDB() {
+	private void generateFullSQLiteDB(String db_type) {
 		/*  File format
 		 *   0: Pharmacode
 		 *   1: Artikelname
@@ -440,16 +445,25 @@ public class DispoParse {
                     if (token[19]!=null)
                         article.dlk_flag = token[19].toLowerCase().contains("100%");    // -> true
 
-					System.out.println(num_rows + " -> " + article.pack_title
-							+ " / size = [" + article.pack_size + ", " + parsed_size + "]"
-							+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
-							+ " / pp = " + article.public_price
-                            + " / efp = " + article.exfactory_price
-							+ " / flags = " + article.flags
-                            + " / dlk = " + article.dlk_flag);
+                    if (num_rows % 100 == 0) {
+                        System.out.println(num_rows + " [" + db_type + "] -> " + article.pack_title
+                                + " / size = [" + article.pack_size + ", " + parsed_size + "]"
+                                + " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
+                                + " / pp = " + article.public_price
+                                + " / efp = " + article.exfactory_price
+                                + " / flags = " + article.flags
+                                + " / dlk = " + article.dlk_flag);
+                    }
 
                     list_of_articles.add(article);
-                    addArticleDB(article);
+
+                    if (db_type.equals("fulldb")) {
+                        addArticleDB(article);
+                    } else if (db_type.equals("atcdb")) {
+                        // Add only products which have an ATC code
+                        if (!article.atc_code.isEmpty() && !article.atc_code.equals("k.A."))
+                            addArticleDB(article);
+                    }
                 }
 				num_rows++;
 			}
