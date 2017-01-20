@@ -152,6 +152,7 @@ public class SwissMedSequences extends ArticleNameParse {
 					boolean animal_med = false;
 					// Loop through articles with IDENTICAL sequence number!
 					// NOTE: These article also have an identical smn5 number!
+                    int index = 0;
 					for (SimpleArticle a : list_of_articles) {
 						String gtin = "7680" + a.smn8;
 						int cs = Utilities.getChecksum(gtin);
@@ -193,7 +194,12 @@ public class SwissMedSequences extends ArticleNameParse {
                                 // Add "galenische Form" to clean name
 								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
                                 //
-								sub_csv_str += refdata_name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.pack_unit + ";;;";
+                                String pack_unit = a.pack_unit.replace(";", ",");
+                                if (index==0)
+    								sub_csv_str += refdata_name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + pack_unit + ";;;";
+                                else
+                                    sub_csv_str += refdata_name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + pack_unit + ";";
+                                index++;
 							} else {
 								animal_med = true;
 							}
@@ -251,7 +257,12 @@ public class SwissMedSequences extends ArticleNameParse {
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
 								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
 								//
-								sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.pack_unit + ";;;";
+                                String pack_unit = a.pack_unit.replace(";", ",");
+                                if (index==0)
+                                    sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + pack_unit + ";;;";
+                                else
+                                    sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + pack_unit + ";";
+                                index++;
 							} else {
 								animal_med = true;
 							}
@@ -302,8 +313,12 @@ public class SwissMedSequences extends ArticleNameParse {
 										if (d1.equals(d2)) {
 											list_of_bag_articles_gtins.add(pack.gtin);
 											bag_full_match_counter++;
-											sub_csv_str += pack.name + ";" + clean_name + ";" + galens + ";" + pack.gtin + ";" + a.quantity + ";" + a.pack_unit + ";"
-													+ two_digit_format(pack.exf_price_CHF) + ";" + two_digit_format(pack.pub_price_CHF) + ";";
+                                            String prices = "";
+                                            /*
+                                            if (!pack.exf_price_CHF.isEmpty() && !pack.pub_price_CHF.isEmpty())
+                                                prices = two_digit_format(pack.exf_price_CHF) + ";" + two_digit_format(pack.pub_price_CHF) + ";";
+											*/
+											sub_csv_str += pack.name + ";" + clean_name + ";" + galens + ";" + pack.gtin + ";" + a.quantity + ";" + a.pack_unit + ";" + prices;
 
 											/*
 											System.out.println(bag_full_match_counter + " | " + pack.gtin + " |" + a.smn5 + " | " + a.name
@@ -315,8 +330,12 @@ public class SwissMedSequences extends ArticleNameParse {
 										} else {
 											list_of_bag_articles_gtins.add(pack.gtin);
 											bag_partial_match_counter++;
-											sub_csv_str += pack.name + ";" + clean_name + ";" + galens + ";" + pack.gtin + ";" + a.quantity + ";" + a.pack_unit + ";"
-													+ two_digit_format(pack.exf_price_CHF) + ";" + two_digit_format(pack.pub_price_CHF) + ";";
+                                            String prices = "";
+                                            /*
+                                            if (!pack.exf_price_CHF.isEmpty() && !pack.pub_price_CHF.isEmpty())
+                                                prices = two_digit_format(pack.exf_price_CHF) + ";" + two_digit_format(pack.pub_price_CHF) + ";";
+                                            */
+                                            sub_csv_str += pack.name + ";" + clean_name + ";" + galens + ";" + pack.gtin + ";" + a.quantity + ";" + a.pack_unit + ";" + prices;
 
 											/*
 											System.out.println(bag_partial_match_counter + " | " + pack.gtin + " | " + a.smn5 + " | " + a.name
