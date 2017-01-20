@@ -22,6 +22,8 @@ package com.maxl.java.aips2sqlite;
 public class Constants {
 	// Download directory
 	public static final String DIR_DOWNLOAD = "./downloads/";
+	// Input directory
+	public static final String DIR_INPUT = "input";
 	// Output directory
 	public static final String DIR_OUTPUT = "./output/";
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
@@ -82,7 +84,7 @@ public class Constants {
 	public static final String FILE_WHO_ATC_CLASSES_XLS = "./input/who_atc_index_2013_xls.xls";				// 2013
 	public static final String FILE_ATC_MULTI_LINGUAL_TXT = "./input/atc_codes_multi_lingual.txt";
 	public static final String FILE_ATC_WITH_DDDS_XML = "./input/2016_ATC_with_DDDs.xml"; // "./input/2015_ATC_with_DDDs.xml";
-	public static final String FILE_DOSAGE_FORMS_JSON = "./input/dosage_forms.json";
+	public static final String FILE_DOSAGE_FORMS_JSON = "dosage_forms.json";
 	// CSS style sheets
 	public static final String FILE_STYLE_CSS_BASE = "./css/amiko_stylesheet_";
 	public static final String FILE_REPORT_CSS_BASE = "./css/report_stylesheet";

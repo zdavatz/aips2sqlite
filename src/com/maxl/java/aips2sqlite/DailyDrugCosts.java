@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -515,11 +516,16 @@ public class DailyDrugCosts {
 	@SuppressWarnings("unchecked")
 	private void parseDosageFormsJson() throws IOException {
 		ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally				
-		TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};				
-		Map<String,Object> dosageFormsData = mapper.readValue(new File(Constants.FILE_DOSAGE_FORMS_JSON), typeRef);		
+		TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+
+		File json_file = Paths.get(System.getProperty("user.dir"), Constants.DIR_INPUT, Constants.FILE_DOSAGE_FORMS_JSON).toFile();
+		if (!json_file.exists())
+			System.out.println("ERROR: Could not read file " + json_file);
+
+		Map<String,Object> dosageFormsData = mapper.readValue(json_file, typeRef);
 		ArrayList<HashMap<String, String>> dosageList = (ArrayList<HashMap<String, String>>)dosageFormsData.get("dosage_forms");
 
-		m_dosages_map = new TreeMap<String, Dosage>();
+		m_dosages_map = new TreeMap<>();
 		for (HashMap<String, String> dosage : dosageList) {
 			Dosage dose = new Dosage();
 			dose.name_full = dosage.get("galenic_full");

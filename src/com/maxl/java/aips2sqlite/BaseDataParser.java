@@ -354,8 +354,7 @@ public class BaseDataParser {
         ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {};
 
-        Path json_path = Paths.get(System.getProperty("user.dir"), Constants.FILE_DOSAGE_FORMS_JSON);
-        File json_file = new File(json_path.toString());
+        File json_file = Paths.get(System.getProperty("user.dir"), Constants.DIR_INPUT, Constants.FILE_DOSAGE_FORMS_JSON).toFile();
         if (!json_file.exists())
             System.out.println("ERROR: Could not read file " + json_file);
 
@@ -381,8 +380,7 @@ public class BaseDataParser {
         ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {};
 
-        Path json_path = Paths.get(System.getProperty("user.dir"), Constants.FILE_DOSAGE_FORMS_JSON);
-        File json_file = new File(json_path.toString());
+        File json_file = Paths.get(System.getProperty("user.dir"), Constants.DIR_INPUT, Constants.FILE_DOSAGE_FORMS_JSON).toFile();
         if (!json_file.exists())
             System.out.println("ERROR: Could not read file " + json_file);
 
