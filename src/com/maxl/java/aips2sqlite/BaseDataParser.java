@@ -33,6 +33,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -352,7 +354,8 @@ public class BaseDataParser {
         ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {};
 
-        File json_file = new File(Constants.FILE_DOSAGE_FORMS_JSON);
+        Path json_path = Paths.get(System.getProperty("user.dir"), Constants.FILE_DOSAGE_FORMS_JSON);
+        File json_file = new File(json_path.toString());
         if (!json_file.exists())
             System.out.println("ERROR: Could not read file " + json_file);
 
@@ -378,7 +381,8 @@ public class BaseDataParser {
         ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {};
 
-        File json_file = new File(Constants.FILE_DOSAGE_FORMS_JSON);
+        Path json_path = Paths.get(System.getProperty("user.dir"), Constants.FILE_DOSAGE_FORMS_JSON);
+        File json_file = new File(json_path.toString());
         if (!json_file.exists())
             System.out.println("ERROR: Could not read file " + json_file);
 
