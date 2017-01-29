@@ -4,6 +4,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -53,11 +55,38 @@ public class Utilities {
 		return name.replaceAll("\\s\\s+", " ");
 	}
 
-	static public String addStringToString(String str1, String str2) {
-		if (str1.contains(str2))
-			str1 = str1.replace(str2, "");
-		str1 += " " + str2;
-		return str1;
+	static public String removeMultipleCommas(String str) {
+        return str.replaceAll(",{2,}|,\\s,|\\s,", ",");
+	}
+
+    static public String removeTrailingComma(String str) {
+        if (str.endsWith(","))
+            return str.substring(0, str.length()-1);
+        return str;
+    }
+
+    static public String convertDecimalFormat(String str) {
+        Pattern regx = Pattern.compile("(\\d+),(\\d+)");
+        Matcher match = regx.matcher(str);
+        return match.replaceAll("$1.$2");
+    }
+
+	static public String addStringToString(String str1, String str2, String separator) {
+        /*
+        str1 = str1.toLowerCase() + " ";
+        str2 = str2.toLowerCase() + " ";
+        if (str1.contains(str2))
+            str1 = str1.replaceAll(str2, "");
+        return str1;
+        */
+        str1 = str1.toLowerCase();
+        str2 = str2.toLowerCase();
+        if (str1.contains(str2))
+            return str1;
+        else {
+            str1 += separator + str2;
+            return str1;
+        }
 	}
 
 	static public String capitalizeFirstLetter(String str) {

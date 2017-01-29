@@ -218,7 +218,7 @@
 			"pack_units": ""						
 		},						
 		{
-			"galenic_full": "infusionslösung, lösung zur infusion, soluzione per infusione, soluzione per perfusione, patrone, patronen, freefl, freeflex, kabipac",
+			"galenic_full": "infusionslösung, lösung zur infusion, suspension pour injection, soluzione per infusione, soluzione per perfusione, patrone, patronen, freefl, freeflex, kabipac",
 			"galenic_short": "inf lös",
 			"route_adm_short": "P",
 			"route_adm_full": "parenteral",
@@ -313,6 +313,14 @@
 			"pi_units": "mcg, mg, g",
 			"pack_units": ""						
 		},			
+		{
+			"galenic_full": "magentablette, magentabletten",
+			"galenic_short": "magentabl",
+			"route_adm_short": "O",
+			"route_adm_full": "oral",
+			"pi_units": "mcg, mg, g",
+			"pack_units": "stk"						
+		},
 		{
 			"galenic_full": "markierungsbesteck",
 			"galenic_short": "besteck",

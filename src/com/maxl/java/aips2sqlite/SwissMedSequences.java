@@ -28,6 +28,16 @@ import javax.xml.bind.JAXBException;
 
 public class SwissMedSequences extends ArticleNameParse {
 
+    class Pair<T, U>{
+        public final T first;
+        public final U second;
+
+        public Pair(T first, U second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
 	SwissMedSequences() { super(); }
 
 	private String two_digit_format(String val) {
@@ -91,12 +101,74 @@ public class SwissMedSequences extends ArticleNameParse {
 		return bag_key_set;
 	}
 
+    private Pair<String, String> extractNameAndGalen(PackageParse pp, SimpleArticle a, String name) {
+        String clean_name = name;
+        String galens = "";
+
+		// Change numbers with this format: 0,15 -> 0.15
+        clean_name = Utilities.convertDecimalFormat(clean_name);
+
+        // Extract Dosage from name
+        DrugDosage dd = pp.extractDrugDosageFromName(clean_name);
+        String dosage = dd.dose + " " + dd.unit;
+
+		// Take care of "Beutel"
+        if (isNotNullNotEmpty(a.pack_unit)) {
+            if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
+                a.pack_unit += " à " + dosage;
+                clean_name = removeDosageFromName(clean_name);
+            }
+        }
+
+		// Cleaning: 1st official pass
+        ArrayList<String> list_of_matchers = createDosageMatchers(a);
+        for (String m : list_of_matchers) {
+            clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
+        }
+
+		// Extract galen forms from name
+        GalenForms galen_forms = extractGalenFromName(clean_name);
+        ArrayList<String> list_of_galens = galen_forms.list_of_galens;
+        for (String g : list_of_galens) {
+            galens += g + ",";
+            //	clean_name = clean_name.replaceAll("\\b" + g + "\\b", " ");
+        }
+        if (!galens.isEmpty())
+            galens = galens.split(",")[0].trim();	// Take only first one
+
+        // Remove galen forms from name
+        clean_name = clean_name.replaceAll(galen_forms.match, "");
+
+        // Cleaning: 2nd official pass
+        clean_name = cleanName(clean_name, false);
+
+        // Cleaning: 3rd official pass
+        clean_name = clean_name.replaceAll(dosage, " ");
+        clean_name = Utilities.removeSpaces(clean_name);
+        clean_name = Utilities.capitalizeFully(clean_name, 1);
+        clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens), ", ");
+
+		// Add dosage (e.g. 320mg) only if not already contained in name
+        dosage = dosage.trim();
+        if (!clean_name.contains(dd.match))
+            clean_name += ", " + dosage;
+
+		// Remove all multiple commas
+        clean_name = Utilities.removeMultipleCommas(clean_name);
+
+        return new Pair<>(clean_name, galens);
+    }
+
+
     /**
      * main function where data are processed
      */
     public void process() {
 		try {
 			BaseDataParser bdp = new BaseDataParser();
+
+            PackageParse pack_parse = new PackageParse();
+
 			// Read core info from files
 			TreeMap<String, SimpleArticle> gtin_to_bag_article_map = bdp.parseBAGXmlFile();
 			TreeMap<String, SimpleArticle> gtin_to_swissmedic_article_map = bdp.parseSwissmedicPackagesFile_Gtin();
@@ -143,7 +215,6 @@ public class SwissMedSequences extends ArticleNameParse {
 			int bag_partial_match_counter = 0;
 			int bag_no_match_counter = 0;
 
-			PackageParse pack_parse = new PackageParse();
 			for (Map.Entry<String, ArrayList<SimpleArticle>> e : sequence_to_swissmedic_article_map.entrySet()) {
 				String sequence = e.getKey();	// SEQUENCE
 				ArrayList<SimpleArticle> list_of_articles = e.getValue();
@@ -164,34 +235,15 @@ public class SwissMedSequences extends ArticleNameParse {
 
                         // Check refdata gtin to name map
 						if (gtin_to_refdata_name_map.containsKey(gtin)) {
-							String galens = "";
 							String refdata_name = gtin_to_refdata_name_map.get(gtin);
 							String clean_name = refdata_name.toLowerCase();
+                            String galens = "";
 							// Exclude medicaments for animals
 							if (!isAnimalMed(clean_name)) {
-								// Cleaning: 1st pass
-								ArrayList<String> list_of_matchers = createDosageMatchers(a);
-								for (String m : list_of_matchers) {
-									clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
-								}
-								ArrayList<String> list_of_galens = extractGalenFromName(clean_name);
-								for (String g : list_of_galens) {
-									galens += g + ",";
-					    			clean_name = clean_name.replaceAll("\\b" + g + "\\b", " ");
-								}
-								if (!galens.isEmpty())
-									galens = galens.split(",")[0].trim();	// Take only first one
-								// Cleaning: 2nd pass
-								clean_name = cleanName(clean_name);
-                                String dosage = extractDosageFromName(clean_name);
-                                if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
-									a.pack_unit += " à " + dosage;
-									clean_name = removeDosageFromName(clean_name);
-								}
-                                clean_name = Utilities.removeSpaces(clean_name);
-								clean_name = Utilities.capitalizeFully(clean_name, 1);
-                                // Add "galenische Form" to clean name
-								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
+								a.gtin = gtin;
+                                Pair<String, String> ret_pair = extractNameAndGalen(pack_parse, a, clean_name);
+                                clean_name = ret_pair.first;
+                                galens = ret_pair.second;
                                 //
                                 String pack_unit = a.pack_unit.replace(";", ",");
                                 if (isNotNullNotEmpty(gtin))
@@ -204,6 +256,14 @@ public class SwissMedSequences extends ArticleNameParse {
 							String clean_name = a.name.toLowerCase();
 							//
 							if (!isAnimalMed(clean_name)) {
+
+								// Change numbers with this format: 0,15 -> 0.15
+                                clean_name = Utilities.convertDecimalFormat(clean_name);
+
+								// Extract Dosage from name
+								DrugDosage dd = pack_parse.extractDrugDosageFromName(clean_name);
+								String dosage = dd.dose + " " + dd.unit;
+
 								// Cleaning: 2nd pass (compare with quantity and unit)
 								ArrayList<String> list_of_matchers = createDosageMatchers(a);
 								for (String m : list_of_matchers) {
@@ -211,11 +271,13 @@ public class SwissMedSequences extends ArticleNameParse {
                                     clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
                                 }
 
-								ArrayList<String> list_of_galens = extractGalenFromName(clean_name);
+                                GalenForms galen_forms = extractGalenFromName(clean_name);
+                                ArrayList<String> list_of_galens = galen_forms.list_of_galens;
 								for (String g : list_of_galens) {
 									galens += g + ",";
-					    			clean_name = clean_name.replace(g, " ");
+					    			clean_name = clean_name.replaceAll("\\b" + g + "\\b", "");
 								}
+
 								// Find short form if not empty
 								if (!galens.isEmpty())
 									galens = findGalenShort(galens.split(",")[0].trim());
@@ -225,7 +287,8 @@ public class SwissMedSequences extends ArticleNameParse {
 									if (g.length>1) {
 										int last_idx = g.length-1;		
 										if (g[last_idx].matches("\\D+")) {
-											list_of_galens = extractAddGalenFromName(g[last_idx].toLowerCase());
+                                            galen_forms = extractGalenFromName(g[last_idx].toLowerCase());
+											list_of_galens = galen_forms.list_of_galens;
 											for (String gg : list_of_galens) {
 												String g_short = findGalenShort(gg);
 												if (!g_short.isEmpty())
@@ -240,20 +303,33 @@ public class SwissMedSequences extends ArticleNameParse {
 										}
 									}
 								}
-								
-								galens = galens.split(",")[0].trim().toLowerCase();	// Take only first one
-								// Cleaning: 1st pass
-								clean_name = cleanName(clean_name);
-                                String dosage = extractDosageFromName(clean_name);
+
+                                galens = galens.split(",")[0].trim().toLowerCase();	// Take only first one
+
+                                // Remove galen forms
+                                clean_name = clean_name.replaceAll("\\b" + galen_forms.match + "\\b", "");
+
+                                // Cleaning: 1st pass
+								clean_name = cleanName(clean_name, false);
+
+                                // String dosage = extractDosageFromName(clean_name);
                                 if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
 									a.pack_unit += " à " + dosage;
 									clean_name = removeDosageFromName(clean_name);
 								}
+
                                 clean_name = Utilities.removeSpaces(clean_name);
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
-								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
-								//
-                                String pack_unit = a.pack_unit.replace(";", ",");
+								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens), ", ");
+
+								dosage = dosage.trim();
+                                if (!clean_name.contains(dd.match))
+									clean_name += ", " + dosage;
+
+								clean_name = Utilities.removeMultipleCommas(clean_name);
+
+								String pack_unit = a.pack_unit.replace(";", ",");
+
                                 if (isNotNullNotEmpty(gtin))
                                     sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + pack_unit + ";;;";
 							} else {
@@ -339,24 +415,37 @@ public class SwissMedSequences extends ArticleNameParse {
 					if (!animal_med) {
 						sub_csv_str = sub_csv_str.substring(0, sub_csv_str.length()-1);
 						csv_str += sequence + ";" + sub_csv_str + "\n";
+
+                        if ((++counter)%100==0) {
+                            System.out.println("[" + counter + "] "  + sequence);
+                        }
 					}
 				}
 			}
 
+            // gtin_to_refdata_name_map
 			for (Map.Entry<String, ArrayList<SimpleArticle>> e : regnr_to_bag_articles_map.entrySet()) {
 				ArrayList<SimpleArticle> list_of_articles = e.getValue();
 				if (list_of_articles!=null) {
 					String old_smn5 = "";
 					int dosage_number = 0;
 					for (SimpleArticle a : list_of_articles) {
-
 						if (list_of_all_gtins.contains(a.gtin))
 							System.out.println("ERROR: gtin exists already -> " + a.gtin + " | " + a.name + " | " + dosage_number + " | " + a.pack_size);
 						list_of_all_gtins.add(a.gtin);
 
 						if (!list_of_bag_articles_gtins.contains(a.gtin)) {
+                            String refdata_name = "";
+                            String clean_name = "";
+                            String galens = "";
+                            if (gtin_to_refdata_name_map.containsKey(a.gtin)) {
+                                refdata_name = gtin_to_refdata_name_map.get(a.gtin);
+                                Pair<String, String> ret_pair = extractNameAndGalen(pack_parse, a, refdata_name.toLowerCase());
+                                clean_name = ret_pair.first;
+                                galens = ret_pair.second;
+                            }
+
 							bag_no_match_counter++;
-							String full_name = a.name + " " + a.pack_size;
 							if (a.smn5.equals(old_smn5))
 								dosage_number++;
 							else
@@ -367,14 +456,34 @@ public class SwissMedSequences extends ArticleNameParse {
                             String alpha_str = digit2alphaConverter(digit_str);
 
 							String sequence = a.smn5 + alpha_str;
-                            if (isNotNullNotEmpty(a.gtin)) {
-                                csv_str += sequence + ";" + full_name + ";" + a.name + ";" + a.pack_size + ";" + a.gtin + ";" + a.quantity + ";" + a.pi_unit + ";"
+                            if (isNotNullNotEmpty(a.gtin) && !refdata_name.isEmpty()) {
+                                // Name (Spalte B) and "sequence name" (Spalte C) are identical
+                                csv_str += sequence + ";" + refdata_name + " (alt);" + refdata_name + " (alt);" + galens + ";" + a.gtin + ";" + a.quantity + ";" + a.pi_unit + ";"
                                         + two_digit_format(a.exf_price_CHF) + ";" + two_digit_format(a.pub_price_CHF) + "\n";
                             }
-						}
+                            if ((++counter)%5==0) {
+                                System.out.println("[" + counter + "] "  + sequence);
+                            }
+                        }
 					}
 				}
 			}
+
+            // Test all (sequence) names in column C that appear twice or more -> the sequence name is UNIQUE
+            HashSet<String> set_of_sequence_names = new HashSet<>();
+            String[] all_rows = csv_str.split("\n", -1);
+            int line = 0;
+            for (String row : all_rows) {
+                line++;
+                String[] r = row.split(";", -1);
+                if (r.length>3) {
+                    String sequence_name = r[2];
+                    if (set_of_sequence_names.contains(sequence_name))
+                        System.out.println(">> Line " + line + ": " + sequence_name);
+                    set_of_sequence_names.add(sequence_name);
+                }
+            }
+
 
 			if (!csv_str.isEmpty()) {
 				System.out.println("Number of mapped gtins: " + list_of_all_gtins.size());
@@ -400,8 +509,6 @@ public class SwissMedSequences extends ArticleNameParse {
         for (int i=0; i<digit_chars.length; ++i) {
             alpha_chars[i] = (char)(Character.getNumericValue(digit_chars[i]) + 'A');
         }
-
-        System.out.println(String.valueOf(alpha_chars));
 
         return String.valueOf(alpha_chars);
     }

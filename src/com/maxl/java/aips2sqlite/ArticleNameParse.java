@@ -14,13 +14,25 @@ import java.util.regex.Pattern;
 public class ArticleNameParse {
 
     public class DrugDosage {
-        public DrugDosage(String quantity, String unit) {
+        public DrugDosage(String quantity, String unit, String match) {
             this.dose = quantity;
             this.unit = unit;
+            this.match = match; // Matched string
         }
 
         String dose;
         String unit;
+        String match;
+    }
+
+    public class GalenForms {
+        public GalenForms(ArrayList<String> list_of_galens, String match) {
+            this.list_of_galens = list_of_galens;
+            this.match = match;     // Matched string
+        }
+
+        ArrayList<String> list_of_galens;
+        String match;
     }
 
     public class PackSize {
@@ -41,15 +53,18 @@ public class ArticleNameParse {
     public HashMap<String, String> m_map_of_short_to_pack_units = null;
 
     private String[] strings_to_be_cleared = {"c solv", "mit solv", "supp", "o nadel", "rektal", "m nadel(n)", "nadel(n)", "(m|o) kons",
-            "(m|o) zucker", "emuls(ion)?", "ecobag", "o aroma", "o konserv", "zuckerfrei", "sans sucre"};
+            "(m|o) zucker", "emuls(ion)?", "ecobag", "o aroma", "o konserv", "zuckerfrei", "sans sucre", "dragées", "dragée"};
 
     // Some additional galenic forms go in here...
     private String[] add_galen_forms = {"augensalbe", "nasensalbe", "salbe", "depottabl", "lacktabl", "tabl", "filmtabs", "depotdrag",
-            "depot", "drag", "infusionslösung", "injektionslösung", "injektionspräparat", "lös", "injektionssuspension", "susp", "kaps",
-            "blist", "ampulle", "balsam", "bals", "emuls", "vial", "creme", "crème", "amp", "tropfen", "paste", "stift", "glob",
+            "depot", "drag", "poudre", "infusionslösung", "injektionslösung", "injektionspräparat", "lös", "injektionssuspension",
+            "suspension pour injection", "suspension", "susp", "kaps",
+            "blist", "ampulle", "balsam", "bals", "emuls", "vial", "creme", "crème", "amp", "tropfen", "paste", "stift", "glob", "ecofl",
             "liq", "tee", "tisane", "supp", "pulver", "lot", "spray", "nebul", "tb", "gaze", "klist", "tinkt", "sirup", "blätter",
-            "zäpfchen", "gel", "fertigspr", "gran", "kaugummi", "trockensub", "wasser", "urethrastab", "implant", "generator", "zahnpfasta",
-            "elixier", "elixir", "medizinalgas", "inhalationsgas", "badesalz", "brausesalz", "schaum", "gum", "essenz", "sachets", "lehm", "gas"};
+            "zäpfchen", "gel", "fertigspr", "gran", "kaugummi", "trockensub", "trockensubstanz", "wasser", "urethrastab", "implant", "generator",
+            "zahnpfasta",
+            "elixier", "elixir", "medizinalgas", "inhalationsgas", "badesalz", "brausesalz", "schaum", "gum", "essenz", "sachets", "lehm", "gas",
+            "soluzione iniettabile", "preparazione iniettabile"};
 
     ArticleNameParse() {
         loadBaseDataFiles();
@@ -73,22 +88,24 @@ public class ArticleNameParse {
         return false;
     }
 
-    public String cleanName(String name) {
+    public String cleanName(String name, boolean removeParenthesesEnabled) {
         name = name.toLowerCase();
         // Replace stk, e.g. 6 Fertspr 0.5 ml
-        name = name.replaceAll("(\\d+)*\\s+((S|s)tk|(D|d)os|(A|a)mp|(M|m)inibag|(D|d)urchstf|(F|f)ertspr|(E|e)inwegspr|(M|m)onodos|(F|f)ert(ig)?pen|(B|b)tl|(S|s)achets|(S|s)pritzamp|(T|t)rinkamp|(F|f)l|(V|v)ial)(\\s+\\d+(\\.\\d+)?\\s+(ml|mg))*", "");
+        name = name.replaceAll("(\\d+)*\\s+((S|s)tk|(D|d)os|(A|a)mp|(M|m)inibag|(D|d)urchstf|(F|f)ertspr|(E|e)inwegspr|(M|m)onodos|(F|f)ert(ig)?pen|(B|b)tl|(S|s)achets|(S|s)pritzamp|(T|t)rinkamp|(F|f)l|(V|v)ial)(\\s+\\d+(\\.\\d+)?\\s+(ml|mg|g))*", "");
         for (String s : strings_to_be_cleared)
             name = name.replaceAll("\\b" + s + "\\b", "");
         name = name.replaceAll("\\b(\\d+)*\\s+x\\b", "");
-        name = name.replaceAll("\\(.*?\\)", "");
+        if (removeParenthesesEnabled)
+            name = name.replaceAll("\\(.*?\\)", "");
         name = name.replaceAll("i\\.m\\./i\\.v(\\.)?|i\\.v\\./i\\.m\\.|i\\.m\\.|i\\.v\\.|\\bus(\\.)?\\s*vet\\.|\\comp\\.?", "");
         name = name.replaceAll("\\+\\s*\\+", "");
-        name = name.split(",")[0];
+        // name = name.split(",")[0];
         return name.trim();
     }
 
-    public ArrayList<String> extractGalenFromName(String name) {
+    public GalenForms extractGalenFromName(String name) {
         ArrayList<String> list_of_galens = new ArrayList<>();
+        String match = "";
         int pos = 1000;		// Big number
         for (Map.Entry<String, String> entry : m_map_of_short_to_long_galens.entrySet()) {
             String short_galen = entry.getKey();
@@ -101,6 +118,7 @@ public class ArticleNameParse {
                 Pattern p = Pattern.compile("\\b" + s + "\\b");
                 Matcher m = p.matcher(name);
                 if (m.find()) {
+                    match = m.group(0);
                     list_of_galens.add(s);
                     if (m.start()<pos) {
                         pos = m.start();
@@ -115,6 +133,7 @@ public class ArticleNameParse {
                         p = Pattern.compile("\\b" + l + "\\b");
                         m = p.matcher(name);
                         if (m.find()) {
+                            match = m.group(0);
                             // Add short galenische form
                             list_of_galens.add(s);
                             if (m.start() < pos) {
@@ -129,22 +148,26 @@ public class ArticleNameParse {
         }
 
         if (list_of_galens.isEmpty()) {
-            list_of_galens = extractAddGalenFromName(name);
+            return extractAddGalenFromName(name);
         }
-        return list_of_galens;
+        return new GalenForms(list_of_galens, match);
     }
 
-    public ArrayList<String> extractAddGalenFromName(String name) {
+    public GalenForms extractAddGalenFromName(String name) {
         ArrayList<String> list_of_galens = new ArrayList<>();
+        String match = "";
         for (String galen : add_galen_forms) {
             Pattern p = Pattern.compile("\\b" + galen + "\\b");
             Matcher m = p.matcher(name);
-            if (m.find())
+            if (m.find()) {
+                match = m.group(0);
                 list_of_galens.add(galen);
-            else if (name.toLowerCase().contains(galen.toLowerCase()))
+            } else if (name.toLowerCase().contains(galen.toLowerCase())) {
+                match = galen;
                 list_of_galens.add(galen);
+            }
         }
-        return list_of_galens;
+        return new GalenForms(list_of_galens, match);
     }
 
     public String findGalenShort(String galen) {
@@ -165,6 +188,11 @@ public class ArticleNameParse {
     public ArrayList<String> createDosageMatchers(SimpleArticle a) {
         String quantity = a.quantity;
         String unit = a.pack_unit;
+
+        if (quantity==null)
+            quantity = "";
+        if (unit==null)
+            unit = "";
 
         ArrayList<String> list_of_matchers = new ArrayList<>();
         // Clean up
@@ -211,7 +239,7 @@ public class ArticleNameParse {
             list_of_matchers.add(quantity + unit);
         }
         // 4th matcher
-        if (q.matches("\\d+\\s*(ml|mg)"))
+        if (q.matches("\\d+\\s*(ml|mg|g)"))
             list_of_matchers.add(q);
         return list_of_matchers;
     }

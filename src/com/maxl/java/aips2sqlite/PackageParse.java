@@ -42,7 +42,7 @@ public class PackageParse extends ArticleNameParse {
      * Dosisstärke, Angabe von Wirkstoffmenge und Einheit
      */
     public DrugDosage extractDrugDosageFromName(String name) {
-        DrugDosage dd = new DrugDosage("", "");
+        DrugDosage dd = new DrugDosage("", "", "");
 
         name = name.replaceAll("2015/2016|2016/2017", "");
 
@@ -50,6 +50,7 @@ public class PackageParse extends ArticleNameParse {
         Pattern regx = Pattern.compile("(\\d+)([\\.,]\\d+)?\\s*(ug|mcg|mg|g|kg|ie|e|ml|mmol|mg/ml)(\\s+|\\b)");
         Matcher match = regx.matcher(name);
         if (match.find()) {
+            dd.match = match.group(0).trim();
             String n = match.group(1);  // 1
             String m = match.group(2);  // .35
             if (isNotNullNotEmpty(n)) {
@@ -68,6 +69,7 @@ public class PackageParse extends ArticleNameParse {
         regx = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(mg)?\\s*/\\s*(\\d+)(\\.\\d+)?\\s*(mg)?(\\s+|\\b)");
         match = regx.matcher(name);
         if (match.find()) {
+            dd.match = match.group(0).trim();
             String a1 = match.group(1);
             String a2 = match.group(2);
             String b1 = match.group(4);
@@ -89,6 +91,7 @@ public class PackageParse extends ArticleNameParse {
         regx = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(mg)?\\s*/\\s*(\\d+)(\\.\\d+)?\\s*(mg)?\\s*/\\s*(\\d+)(\\.\\d+)?\\s*(mg)(\\s+|\\b)");
         match = regx.matcher(name);
         if (match.find()) {
+            dd.match = match.group(0).trim();
             String a1 = match.group(1);
             String a2 = match.group(2);
             String b1 = match.group(4);
@@ -112,6 +115,7 @@ public class PackageParse extends ArticleNameParse {
         regx = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(ug|mcg|mg|g|kg|ie|e)\\s*/\\s*(\\d+)?(\\.\\d+)?\\s*(ml|g|h)(\\s+|\\b)");
         match = regx.matcher(name);
         if (match.find()) {
+            dd.match = match.group(0).trim();
             String n1 = match.group(1);
             String n2 = match.group(2);
             String d1 = match.group(4);
@@ -196,7 +200,8 @@ public class PackageParse extends ArticleNameParse {
 
     public String extractGalensFromName(String name) {
         String galens = "";
-        ArrayList<String> list_of_galens = extractGalenFromName(name);
+        GalenForms galen_forms = extractGalenFromName(name);
+        ArrayList<String> list_of_galens = galen_forms.list_of_galens;
         for (String g : list_of_galens) {
             name = name.replaceAll("\\b" + g + "\\b", " ");
             // If possible find short form
@@ -311,11 +316,11 @@ public class PackageParse extends ArticleNameParse {
                         }
 
                         // Cleaning: 2nd pass
-                        clean_name = cleanName(clean_name);
+                        clean_name = cleanName(clean_name, true);
                         clean_name = Utilities.removeSpaces(clean_name);
                         clean_name = Utilities.capitalizeFully(clean_name, 1);
                         // Add "galenische Form" to clean name
-                        clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
+                        clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens), " ");
 
                         if (dd.dose.toLowerCase().equals(ps.size.toLowerCase()) && dd.unit.toLowerCase().equals(ps.s_unit.toLowerCase())) {
                             dd.dose = "";
