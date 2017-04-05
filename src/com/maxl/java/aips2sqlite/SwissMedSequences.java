@@ -130,16 +130,23 @@ public class SwissMedSequences extends ArticleNameParse {
 
         // Extract galen forms from name
         GalenForms galen_forms = extractGalenFromName(clean_name);
+
         ArrayList<String> list_of_galens = galen_forms.list_of_galens;
         for (String g : list_of_galens) {
             galens += g + ",";
             //	clean_name = clean_name.replaceAll("\\b" + g + "\\b", " ");
         }
+
         if (!galens.isEmpty())
             galens = galens.split(",")[0].trim();    // Take only first one
 
+        /*
+        if (!galen_forms.match.isEmpty())
+            galens = galen_forms.match;
+        */
+
         // Remove galen forms from name
-        clean_name = clean_name.replaceAll(galen_forms.match, "");
+        clean_name = clean_name.replaceAll("\\b" + galen_forms.match + "\\b", "");
 
         // Cleaning: 2nd official pass
         clean_name = cleanName(clean_name, false);
@@ -248,8 +255,9 @@ public class SwissMedSequences extends ArticleNameParse {
                                 galens = ret_pair.second;
                                 //
                                 String pack_unit = a.pack_unit.replace(";", ",");
-                                if (isNotNullNotEmpty(gtin))
+                                if (isNotNullNotEmpty(gtin)) {
                                     sub_csv_str += refdata_name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + pack_unit + ";;;";
+                                }
                             } else {
                                 animal_med = true;
                             }
@@ -308,6 +316,10 @@ public class SwissMedSequences extends ArticleNameParse {
 
                                 galens = galens.split(",")[0].trim().toLowerCase();    // Take only first one
 
+                                /*
+                                if (!galen_forms.match.isEmpty())
+                                    galens = galen_forms.match;
+                                */
                                 // Remove galen forms
                                 clean_name = clean_name.replaceAll("\\b" + galen_forms.match + "\\b", "");
 

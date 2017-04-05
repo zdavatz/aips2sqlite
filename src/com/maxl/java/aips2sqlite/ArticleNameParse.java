@@ -59,10 +59,10 @@ public class ArticleNameParse {
     private String[] add_galen_forms = {"augensalbe", "nasensalbe", "salbe", "depottabl", "lacktabl", "tabl", "filmtabs", "depotdrag",
             "depot", "drag", "poudre", "infusionslösung", "injektionslösung", "injektionspräparat", "lös", "injektionssuspension",
             "suspension pour injection", "suspension", "susp", "kaps",
-            "blist", "ampulle", "balsam", "bals", "emuls", "vial", "creme", "crème", "amp", "tropfen", "paste", "stift", "glob", "ecofl",
+            "blist", "ampulle", "balsam", "bals", "emuls", "vial", "creme", "crème", "amp", "tropfen", "paste", "crèmepaste", "stift", "glob", "ecofl",
             "liq", "tee", "tisane", "supp", "pulver", "lot", "spray", "nebul", "tb", "gaze", "klist", "tinkt", "sirup", "blätter",
             "zäpfchen", "gel", "fertigspr", "gran", "kaugummi", "trockensub", "trockensubstanz", "wasser", "urethrastab", "implant", "generator",
-            "zahnpfasta",
+            "zahnpasta",
             "elixier", "elixir", "medizinalgas", "inhalationsgas", "badesalz", "brausesalz", "schaum", "gum", "essenz", "sachets", "lehm", "gas",
             "soluzione iniettabile", "preparazione iniettabile"};
 

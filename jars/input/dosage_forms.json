@@ -58,6 +58,22 @@
 			"pack_units": "stk"			
 		},
 		{
+			"galenic_full": "creme, crème",
+			"galenic_short": "creme",
+			"route_adm_short": "TD",
+			"route_adm_full": "transdermal",
+			"pi_units": "mcg, mg, g",
+			"pack_units": ""			
+		},		
+		{
+			"galenic_full": "cremepaste, crèmepaste",
+			"galenic_short": "cremepaste",
+			"route_adm_short": "TD",
+			"route_adm_full": "transdermal",
+			"pi_units": "mcg, mg, g",
+			"pack_units": ""			
+		},		
+		{
 			"galenic_full": "depocaps",
 			"galenic_short": "depocaps",
 			"route_adm_short": "O",
