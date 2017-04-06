@@ -75,6 +75,8 @@ public class ShoppingCartRose {
                     user.top_customer = token[29].toLowerCase().trim().equals("true");
                     if (!token[28].isEmpty())
                         user.special_rebate = Float.valueOf(token[28].replaceAll("[^\\d.]", ""));
+					if (!token[30].isEmpty())
+						user.revenue = Float.valueOf(token[30].replaceAll("[^\\d.]", ""));
 
 					LinkedHashMap<String, Float> rebate_map = new LinkedHashMap<>();
 					LinkedHashMap<String, Float> expenses_map = new LinkedHashMap<>();

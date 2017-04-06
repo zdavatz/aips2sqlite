@@ -725,7 +725,7 @@ public class AllDown {
 
 			// String[] working_dir = {"ywesee out", "../ywesee in"};
 			// NOTE: Following working dir is used for TESTING only!!
-			String[] working_dir = {"ywesee outTest", "ywesee intTest"};
+			String[] working_dir = {"ywesee outTest", "ywesee inTest"};
 			
 			for (int i=0; i<working_dir.length; ++i) {
 				// Set working directory

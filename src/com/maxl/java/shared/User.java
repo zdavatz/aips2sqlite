@@ -30,14 +30,16 @@ public class User implements java.io.Serializable {
 	public boolean bet_mittel = false;
 	public boolean is_human = true;
 	public boolean top_customer = false;    // Topkunde FLAG (zur Rose)
-	
+
 	public String sap_id = "";
 	public String specialities = "";
 	public String capabilities = "";
 	public String bm_type = "";
 	public String status = "A";		// Default: Aktiv
 
-    // Spezialrabatt
+	// Revenue / Umsatz
+	public float revenue = 0.0f;
+	// Spezialrabatt
     public float special_rebate = 0.0f;
 	// Map of GLN to list of company-specific rebate
 	public LinkedHashMap<String, Float> rebate_map = null;
