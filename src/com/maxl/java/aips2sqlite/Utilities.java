@@ -53,6 +53,13 @@ public class Utilities {
 		return name.replaceAll("\\s\\s+", " ");
 	}
 
+	static public String removeStringFromString(String str1, String str2)
+	{
+		if (str1.contains(str2))
+			str1 = str1.replaceAll("\\b" + str2 + "\\b", "");
+		return str1;
+	}
+
 	static public String addStringToString(String str1, String str2) {
 		if (str1.contains(str2))
 			str1 = str1.replace(str2, "");
@@ -66,6 +73,16 @@ public class Utilities {
 		}
 		return str;
 	}
+
+    static public String capitalizeSpacedLetters(String str) {
+        // Split string
+        String[] tokens = str.split("\\s");
+        String ret = "";
+        for (String t : tokens) {
+            ret += capitalizeFirstLetter(t) + " ";
+        }
+        return ret.trim();
+    }
 
 	static public String capitalizeFully(String s, int N) {
 		// Split string

@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.rmi.CORBA.Util;
 import javax.xml.bind.JAXBException;
 
 public class SwissMedSequences extends ArticleNameParse {
@@ -169,11 +170,17 @@ public class SwissMedSequences extends ArticleNameParse {
 							String clean_name = refdata_name.toLowerCase();
 							// Exclude medicaments for animals
 							if (!isAnimalMed(clean_name)) {
+
+                                // Extract and remove packsize from name
+                                PackSize ps = pack_parse.extractPackSizeFromName(clean_name);
+                                clean_name = clean_name.replaceAll(ps.match, "");
+
 								// Cleaning: 1st pass
 								ArrayList<String> list_of_matchers = createDosageMatchers(a);
 								for (String m : list_of_matchers) {
 									clean_name = clean_name.replaceAll("\\s+" + m + "\\b", "");
 								}
+
 								ArrayList<String> list_of_galens = extractGalenFromName(clean_name);
 								for (String g : list_of_galens) {
 									galens += g + ",";
@@ -181,17 +188,23 @@ public class SwissMedSequences extends ArticleNameParse {
 								}
 								if (!galens.isEmpty())
 									galens = galens.split(",")[0].trim();	// Take only first one
+
 								// Cleaning: 2nd pass
 								clean_name = cleanName(clean_name);
+
                                 String dosage = extractDosageFromName(clean_name);
                                 if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
 									a.pack_unit += " à " + dosage;
 									clean_name = removeDosageFromName(clean_name);
 								}
+
                                 clean_name = Utilities.removeSpaces(clean_name);
 								clean_name = Utilities.capitalizeFully(clean_name, 1);
                                 // Add "galenische Form" to clean name
-								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
+								clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeSpacedLetters(galens));
+								// Remove Packungsgrösse to generate "Sequenzname"
+                                String pack_size = a.quantity + " " + a.pack_unit;
+								clean_name = Utilities.removeStringFromString(clean_name, pack_size);
                                 //
 								sub_csv_str += refdata_name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.pack_unit + ";;;";
 							} else {
@@ -202,6 +215,11 @@ public class SwissMedSequences extends ArticleNameParse {
 							String clean_name = a.name.toLowerCase();
                             //
                             if (!isAnimalMed(clean_name)) {
+
+                                // Extract and remove packsize from name
+                                PackSize ps = pack_parse.extractPackSizeFromName(clean_name);
+                                clean_name = clean_name.replaceAll(ps.match, "");
+
                                 // Cleaning: 2nd pass (compare with quantity and unit)
                                 ArrayList<String> list_of_matchers = createDosageMatchers(a);
                                 for (String m : list_of_matchers) {
@@ -249,8 +267,11 @@ public class SwissMedSequences extends ArticleNameParse {
                                 }
                                 clean_name = Utilities.removeSpaces(clean_name);
                                 clean_name = Utilities.capitalizeFully(clean_name, 1);
-                                clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens));
-                                //
+                                clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeSpacedLetters(galens));
+								// Remove Packungsgrösse to generate "Sequenzname"
+                                String pack_size = a.quantity + " " + a.pack_unit;
+								clean_name = Utilities.removeStringFromString(clean_name, pack_size);
+								//
                                 sub_csv_str += a.name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + a.pack_unit + ";;;";
                             } else {
                                 animal_med = true;

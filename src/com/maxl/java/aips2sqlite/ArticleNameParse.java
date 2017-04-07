@@ -24,17 +24,19 @@ public class ArticleNameParse {
     }
 
     public class PackSize {
-        public PackSize(String pack, String p_unit, String size, String s_unit) {
+        public PackSize(String pack, String p_unit, String size, String s_unit, String match) {
             this.pack = pack;
             this.p_unit = p_unit;
             this.size = size;
             this.s_unit = s_unit;
+            this.match = match;
         }
 
         String pack;
         String p_unit;
         String size;
         String s_unit;
+        String match;
     }
 
     public HashMap<String, String> m_map_of_short_to_long_galens = null;

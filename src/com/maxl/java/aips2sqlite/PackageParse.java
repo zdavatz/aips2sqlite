@@ -153,7 +153,7 @@ public class PackageParse extends ArticleNameParse {
             String m = match.group(2);
             String u = match.group(3);
             if (isNotNullNotEmpty(n) && isNotNullNotEmpty(m) && isNotNullNotEmpty(u))
-                return new PackSize("", "", String.valueOf(Integer.valueOf(n) * Integer.valueOf(m)), u);
+                return new PackSize("", "", String.valueOf(Integer.valueOf(n) * Integer.valueOf(m)), u, match.group(0));
         }
         // Tee, beutel, sachets
         regx = Pattern.compile("(btl|fertspr)\\s*(\\d+)\\s*(stk)");
@@ -162,9 +162,23 @@ public class PackageParse extends ArticleNameParse {
             String u = match.group(1);
             String n = match.group(2);
             if (isNotNullNotEmpty(u) && isNotNullNotEmpty(n)) {
-                return new PackSize("", "", n, u);
+                return new PackSize("", "", n, u, match.group(0));
             }
         }
+        // Identify ampullen patterns
+        regx = Pattern.compile("\\s+(\\d+)*\\s*(spritzamp|amp)\\s+(\\d+)\\s+(ml)");
+        match = regx.matcher(name);
+        if (match.find()) {
+            String a = match.group(1);    // group(0) -> whole regular expression
+            String u = match.group(2);
+            String c = match.group(3);
+            if (isNotNullNotEmpty(a) && isNotNullNotEmpty(u) && isNotNullNotEmpty(c)) {
+                return new PackSize("", "", a + "x" + c + "ml", u, match.group(0));
+            } else if (isNotNullNotEmpty(u) && isNotNullNotEmpty(c)) {
+                return new PackSize("", "", c + "ml", u, match.group(0));
+            }
+        }
+
         // Identify less complex, but more common patterns
         regx = Pattern.compile("\\s+(\\d+)*\\s*(stk|dos|amp|spritzamp|minibag|glasfl|fl(asche)*|durchstf|fert(ig)*spr|monodos|fert(ig)*pen|btl)(\\s+|\\b)");
         match = regx.matcher(name);
@@ -173,9 +187,9 @@ public class PackageParse extends ArticleNameParse {
             String u = match.group(2);
             if (isNotNullNotEmpty(u)) {
                 if (isNotNullNotEmpty(n))
-                    return new PackSize("", "", n, u);
+                    return new PackSize("", "", n, u, match.group(0));
                 else
-                    return new PackSize("", "", "1", u);
+                    return new PackSize("", "", "1", u, match.group(0));
             }
         }
         // Tubes and dispensers are special, e.g. 3 Disp 80 g
@@ -186,12 +200,12 @@ public class PackageParse extends ArticleNameParse {
             String u = match.group(2);
             if (isNotNullNotEmpty(u)) {
                 if (isNotNullNotEmpty(n))
-                    return new PackSize("", "", n, u);
+                    return new PackSize("", "", n, u, match.group(0));
                 else
-                    return new PackSize("", "", "1", u);
+                    return new PackSize("", "", "1", u, match.group(0));
             }
         }
-        return new PackSize("", "", "", "");
+        return new PackSize("", "", "", "", "");
     }
 
     public String extractGalensFromName(String name) {
