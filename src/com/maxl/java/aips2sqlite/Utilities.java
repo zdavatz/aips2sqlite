@@ -55,8 +55,12 @@ public class Utilities {
 		return name.replaceAll("\\s\\s+", " ");
 	}
 
+	static public String removeAllCommas(String name) {
+		return name.replaceAll(",", "");
+	}
+
 	static public String removeMultipleCommas(String str) {
-        return str.replaceAll(",{2,}|,\\s,|\\s,", ",");
+		return str.replaceAll(",{2,}|,\\s,|\\s,", ",");
 	}
 
     static public String removeTrailingComma(String str) {
@@ -70,6 +74,13 @@ public class Utilities {
         Matcher match = regx.matcher(str);
         return match.replaceAll("$1.$2");
     }
+
+	static public String removeStringFromString(String str1, String str2)
+	{
+		if (str1.contains(str2))
+			str1 = str1.replaceAll("\\b" + str2 + "\\b", "");
+		return str1;
+	}
 
 	static public String addStringToString(String str1, String str2, String separator) {
         /*
@@ -94,6 +105,21 @@ public class Utilities {
 			return str.substring(0, 1).toUpperCase() + str.substring(1);
 		}
 		return str;
+	}
+
+	static public String capitalizeSpacedLetters(String str) {
+		// Split string
+		String[] tokens = str.split("\\s");
+		String ret = "";
+		for (String t : tokens) {
+            if (t.matches("(effer|gel|genital|glob|gran|gtt|emul|erw).*"))
+                ret += capitalizeFirstLetter(t) + " ";
+			else if (t.matches("(kg|g|mg|mcg|ml|ie|e|mbq).*"))
+				ret += t + " ";
+			else
+				ret += capitalizeFirstLetter(t) + " ";
+		}
+		return ret.trim();
 	}
 
 	static public String capitalizeFully(String s, int N) {

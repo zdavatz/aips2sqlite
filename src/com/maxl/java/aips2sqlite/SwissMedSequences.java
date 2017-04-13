@@ -110,6 +110,10 @@ public class SwissMedSequences extends ArticleNameParse {
         // Change numbers with this format: 0,15 -> 0.15
         clean_name = Utilities.convertDecimalFormat(clean_name);
 
+        // Extract and remove packsize from name
+        PackSize ps = pp.extractPackSizeFromName(clean_name);
+        clean_name = clean_name.replaceAll(ps.match, "");
+
         // Extract Dosage from name
         DrugDosage dd = pp.extractDrugDosageFromName(clean_name);
         String dosage = dd.dose + " " + dd.unit;
@@ -153,17 +157,23 @@ public class SwissMedSequences extends ArticleNameParse {
 
         // Cleaning: 3rd official pass
         clean_name = clean_name.replaceAll(dosage, " ");
-        clean_name = Utilities.removeSpaces(clean_name);
-        clean_name = Utilities.capitalizeFully(clean_name, 1);
-        clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens), ", ");
+        // clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens), ", ");
+        clean_name = Utilities.addStringToString(clean_name, galens, " ");
 
         // Add dosage (e.g. 320mg) only if not already contained in name
         dosage = dosage.trim();
-        if (!clean_name.contains(dd.match))
-            clean_name += ", " + dosage;
+        String pack_size = a.quantity + " " + a.pack_unit;
+        if (!clean_name.contains(dd.match) && !dd.match.equals(pack_size)) {
+            clean_name += " " + dosage;
+        }
 
-        // Remove all multiple commas
-        clean_name = Utilities.removeMultipleCommas(clean_name);
+        clean_name = Utilities.capitalizeSpacedLetters(clean_name);
+        clean_name = Utilities.capitalizeFully(clean_name, 1);
+
+        // Remove multiple spaces and commas
+        clean_name = Utilities.removeAllCommas(clean_name);
+        clean_name = Utilities.removeSpaces(clean_name);
+        // clean_name = Utilities.removeMultipleCommas(clean_name);
 
         return new Pair<>(clean_name, galens);
     }
@@ -250,11 +260,15 @@ public class SwissMedSequences extends ArticleNameParse {
                             // Exclude medicaments for animals
                             if (!isAnimalMed(clean_name)) {
                                 a.gtin = gtin;
+
                                 Pair<String, String> ret_pair = extractNameAndGalen(pack_parse, a, clean_name);
                                 clean_name = ret_pair.first;
                                 galens = ret_pair.second;
-                                //
+
+                                clean_name = Utilities.removeMultipleCommas(clean_name);
+
                                 String pack_unit = a.pack_unit.replace(";", ",");
+
                                 if (isNotNullNotEmpty(gtin)) {
                                     sub_csv_str += refdata_name + ";" + clean_name + ";" + galens + ";" + gtin + ";" + a.quantity + ";" + pack_unit + ";;;";
                                 }
@@ -269,6 +283,10 @@ public class SwissMedSequences extends ArticleNameParse {
 
                                 // Change numbers with this format: 0,15 -> 0.15
                                 clean_name = Utilities.convertDecimalFormat(clean_name);
+
+                                // Extract and remove packsize from name
+                                PackSize ps = pack_parse.extractPackSizeFromName(clean_name);
+                                clean_name = clean_name.replaceAll(ps.match, "");
 
                                 // Extract Dosage from name
                                 DrugDosage dd = pack_parse.extractDrugDosageFromName(clean_name);
@@ -332,15 +350,21 @@ public class SwissMedSequences extends ArticleNameParse {
                                     clean_name = removeDosageFromName(clean_name);
                                 }
 
-                                clean_name = Utilities.removeSpaces(clean_name);
-                                clean_name = Utilities.capitalizeFully(clean_name, 1);
-                                clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens), ", ");
+								clean_name = Utilities.addStringToString(clean_name, galens, " ");
+                                // clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens), ", ");
 
                                 dosage = dosage.trim();
-                                if (!clean_name.contains(dd.match))
-                                    clean_name += ", " + dosage;
+                                if (!clean_name.contains(dd.match)) {
+                                    clean_name += " " + dosage;
+                                }
 
-                                clean_name = Utilities.removeMultipleCommas(clean_name);
+                                clean_name = Utilities.capitalizeSpacedLetters(clean_name);
+                                clean_name = Utilities.capitalizeFully(clean_name, 1);
+
+                                // Remove multiple spaces and commas
+                                clean_name = Utilities.removeAllCommas(clean_name);
+                                clean_name = Utilities.removeSpaces(clean_name);
+                                // clean_name = Utilities.removeMultipleCommas(clean_name);
 
                                 String pack_unit = a.pack_unit.replace(";", ",");
 

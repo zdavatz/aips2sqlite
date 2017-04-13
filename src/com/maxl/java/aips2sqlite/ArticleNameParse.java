@@ -36,17 +36,19 @@ public class ArticleNameParse {
     }
 
     public class PackSize {
-        public PackSize(String pack, String p_unit, String size, String s_unit) {
+        public PackSize(String pack, String p_unit, String size, String s_unit, String match) {
             this.pack = pack;
             this.p_unit = p_unit;
             this.size = size;
             this.s_unit = s_unit;
+            this.match = match;
         }
 
         String pack;
         String p_unit;
         String size;
         String s_unit;
+        String match;
     }
 
     public HashMap<String, String> m_map_of_short_to_long_galens = null;
@@ -91,7 +93,7 @@ public class ArticleNameParse {
     public String cleanName(String name, boolean removeParenthesesEnabled) {
         name = name.toLowerCase();
         // Replace stk, e.g. 6 Fertspr 0.5 ml
-        name = name.replaceAll("(\\d+)*\\s+((S|s)tk|(D|d)os|(A|a)mp|(M|m)inibag|(D|d)urchstf|(F|f)ertspr|(E|e)inwegspr|(M|m)onodos|(F|f)ert(ig)?pen|(B|b)tl|(S|s)achets|(S|s)pritzamp|(T|t)rinkamp|(F|f)l|(V|v)ial)(\\s+\\d+(\\.\\d+)?\\s+(ml|mg|g))*", "");
+        name = name.replaceAll("(\\d+)*\\s+((S|s)tk|(D|d)os|(A|a)mp|(M|m)inibag|(D|d)urchstf|(F|f)ertspr|(E|e)inwegspr|(M|m)onodos|(F|f)ert(ig)?pen|(B|b)tl|(S|s)achets|(S|s)pritzamp|(T|t)rinkamp|(F|f)l|(V|v)ial)(\\s+\\d+(\\.\\d+)?\\s+(ml|mg|g))*\\b", "");
         for (String s : strings_to_be_cleared)
             name = name.replaceAll("\\b" + s + "\\b", "");
         name = name.replaceAll("\\b(\\d+)*\\s+x\\b", "");
@@ -145,6 +147,11 @@ public class ArticleNameParse {
                     }
                 }
             }
+        }
+
+        // Make sure we take the "longest" match
+        for (String s : list_of_galens) {
+            match = match.length() < s.length() ? s : match;
         }
 
         if (list_of_galens.isEmpty()) {

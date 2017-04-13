@@ -150,14 +150,14 @@ public class PackageParse extends ArticleNameParse {
         name = name.replaceAll("2015/2016|2016/2017", "");
 
         // First identify more complex patterns, e.g. 6x 10 Stk or 3x 60 Dosen
-        Pattern regx = Pattern.compile("(\\d+)*\\s*x\\s*(\\d+)\\s*(stk|dosen|ml)\\b");
+        Pattern regx = Pattern.compile("(\\d+)*\\s*x\\s*(\\d+)\\s*(stk|dosen|ml)(\\s+|\\b)");
         Matcher match = regx.matcher(name);
         if (match.find()) {
             String n = match.group(1);    // group(0) -> whole regular expression
             String m = match.group(2);
             String u = match.group(3);
             if (isNotNullNotEmpty(n) && isNotNullNotEmpty(m) && isNotNullNotEmpty(u))
-                return new PackSize("", "", String.valueOf(Integer.valueOf(n) * Integer.valueOf(m)), u);
+                return new PackSize("", "", String.valueOf(Integer.valueOf(n) * Integer.valueOf(m)), u, match.group(0));
         }
         // Tee, beutel, sachets
         regx = Pattern.compile("(btl|fertspr)\\s*(\\d+)\\s*(stk)");
@@ -166,7 +166,21 @@ public class PackageParse extends ArticleNameParse {
             String u = match.group(1);
             String n = match.group(2);
             if (isNotNullNotEmpty(u) && isNotNullNotEmpty(n)) {
-                return new PackSize("", "", n, u);
+                return new PackSize("", "", n, u, match.group(0));
+            }
+        }
+        // Identify ampullen patterns
+        regx = Pattern.compile("\\s+(\\d+)*\\s*(amp|spritzamp|durchstf|monodos|fertspr|glasfl|fl)\\s+(\\d+|\\d+\\.\\d+)\\s+(ml)(\\s+|\\b)");
+        match = regx.matcher(name);
+        if (match.find()) {
+            // group(0) -> whole regular expression
+            String a = match.group(1);      // first number
+            String v = match.group(2);      // verabreichungsform v
+            String c = match.group(3);      // either 2 or 1.2 or 0.72
+            if (isNotNullNotEmpty(a) && isNotNullNotEmpty(v) && isNotNullNotEmpty(c)) {
+                return new PackSize("", "", a + "x" + c + "ml", v, match.group(0));
+            } else if (isNotNullNotEmpty(v) && isNotNullNotEmpty(c)) {
+                return new PackSize("", "", c + "ml", v, match.group(0));
             }
         }
         // Identify less complex, but more common patterns
@@ -177,25 +191,25 @@ public class PackageParse extends ArticleNameParse {
             String u = match.group(2);
             if (isNotNullNotEmpty(u)) {
                 if (isNotNullNotEmpty(n))
-                    return new PackSize("", "", n, u);
+                    return new PackSize("", "", n, u, match.group(0));
                 else
-                    return new PackSize("", "", "1", u);
+                    return new PackSize("", "", "1", u, match.group(0));
             }
         }
         // Tubes and dispensers are special, e.g. 3 Disp 80 g
-        regx = Pattern.compile("(\\d+)?\\s*(disp|tb)");
+        regx = Pattern.compile("(\\d+)?\\s*(disp|tb)(\\s+|\\b)");
         match = regx.matcher(name);
         if (match.find()) {
             String n = match.group(1);    // group(0) -> whole regular expression
             String u = match.group(2);
             if (isNotNullNotEmpty(u)) {
                 if (isNotNullNotEmpty(n))
-                    return new PackSize("", "", n, u);
+                    return new PackSize("", "", n, u, match.group(0));
                 else
-                    return new PackSize("", "", "1", u);
+                    return new PackSize("", "", "1", u, match.group(0));
             }
         }
-        return new PackSize("", "", "", "");
+        return new PackSize("", "", "", "", "");
     }
 
     public String extractGalensFromName(String name) {
