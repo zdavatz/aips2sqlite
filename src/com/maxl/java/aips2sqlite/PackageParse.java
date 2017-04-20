@@ -170,17 +170,18 @@ public class PackageParse extends ArticleNameParse {
             }
         }
         // Identify ampullen patterns
-        regx = Pattern.compile("\\s+(\\d+)*\\s*(amp|spritzamp|durchstf|monodos|fertspr|glasfl|fl)\\s+(\\d+|\\d+\\.\\d+)\\s+(ml)(\\s+|\\b)");
+        regx = Pattern.compile("\\s+(\\d+)*\\s*(amp|spritzamp|durchstf|monodos|fertspr|glasfl|fl|btl)\\s+(\\d+|\\d+\\.\\d+)\\s+(ml|mg|g)(\\s+|\\b)");
         match = regx.matcher(name);
         if (match.find()) {
             // group(0) -> whole regular expression
             String a = match.group(1);      // first number
             String v = match.group(2);      // verabreichungsform v
             String c = match.group(3);      // either 2 or 1.2 or 0.72
-            if (isNotNullNotEmpty(a) && isNotNullNotEmpty(v) && isNotNullNotEmpty(c)) {
-                return new PackSize("", "", a + "x" + c + "ml", v, match.group(0));
-            } else if (isNotNullNotEmpty(v) && isNotNullNotEmpty(c)) {
-                return new PackSize("", "", c + "ml", v, match.group(0));
+            String d = match.group(4);      // g / mg / ml
+            if (isNotNullNotEmpty(a) && isNotNullNotEmpty(v) && isNotNullNotEmpty(c) && isNotNullNotEmpty(d)) {
+                return new PackSize("", "", a + " x " + c + d, v, match.group(0));
+            } else if (isNotNullNotEmpty(v) && isNotNullNotEmpty(c) && isNotNullNotEmpty(d)) {
+                return new PackSize("", "", c + d, v, match.group(0));
             }
         }
         // Identify less complex, but more common patterns

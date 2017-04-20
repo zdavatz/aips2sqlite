@@ -118,14 +118,6 @@ public class SwissMedSequences extends ArticleNameParse {
         DrugDosage dd = pp.extractDrugDosageFromName(clean_name);
         String dosage = dd.dose + " " + dd.unit;
 
-        // Take care of "Beutel"
-        if (isNotNullNotEmpty(a.pack_unit)) {
-            if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
-                a.pack_unit += " à " + dosage;
-                clean_name = removeDosageFromName(clean_name);
-            }
-        }
-
         // Cleaning: 1st official pass
         ArrayList<String> list_of_matchers = createDosageMatchers(a);
         for (String m : list_of_matchers) {
@@ -143,11 +135,6 @@ public class SwissMedSequences extends ArticleNameParse {
 
         if (!galens.isEmpty())
             galens = galens.split(",")[0].trim();    // Take only first one
-
-        /*
-        if (!galen_forms.match.isEmpty())
-            galens = galen_forms.match;
-        */
 
         // Remove galen forms from name
         clean_name = clean_name.replaceAll("\\b" + galen_forms.match + "\\b", "");
@@ -343,12 +330,6 @@ public class SwissMedSequences extends ArticleNameParse {
 
                                 // Cleaning: 1st pass
                                 clean_name = cleanName(clean_name, false);
-
-                                // String dosage = extractDosageFromName(clean_name);
-                                if (a.pack_unit.equals("Beutel") && !dosage.isEmpty()) {
-                                    a.pack_unit += " à " + dosage;
-                                    clean_name = removeDosageFromName(clean_name);
-                                }
 
 								clean_name = Utilities.addStringToString(clean_name, galens, " ");
                                 // clean_name = Utilities.addStringToString(clean_name, Utilities.capitalizeFirstLetter(galens), ", ");
