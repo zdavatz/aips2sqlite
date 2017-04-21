@@ -308,7 +308,7 @@ public class DispoParse {
 			String line;
 			int num_rows = 0;
 			List<Article> list_of_articles = new ArrayList<Article>();
-			while ((line = br.readLine())!=null && num_rows<10000) {
+			while ((line = br.readLine())!=null/* && num_rows<10000*/) {
 				String token[] = line.split(";", -1);
 				String parsed_size = "";
 				String parsed_unit = "";
