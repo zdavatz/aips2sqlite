@@ -123,10 +123,10 @@ public class PseudoExpertInfo {
 	public boolean extractInfo(int idx, FileInputStream pseudo_info_file) {
 		mMedi = new MedicalInformations.MedicalInformation();
 		
-		mSectionContent = new ArrayList<String>();
-		mSectionTitles = new ArrayList<String>();
-		mBarCodes = new ArrayList<String>();
-		m_list_of_packages = new ArrayList<String>();
+		mSectionContent = new ArrayList<>();
+		mSectionTitles = new ArrayList<>();
+		mBarCodes = new ArrayList<>();
+		m_list_of_packages = new ArrayList<>();
 
 		String mediTitle = "";
 		String mediAuthor = "";
@@ -182,7 +182,7 @@ public class PseudoExpertInfo {
 			while (para.hasNext()) {
 				String paraText = para.next().getParagraphText();
 				// If this word is not found, then no pseudo FI will be produced
-				if (paraText.equals("Medizinprodukt") || paraText.equals("Dispositif médical")) {
+				if (paraText.equals("Medizinprodukt") || paraText.equals("Dispositif mÃ©dical") || paraText.equals("Pflanzliches Arzneimittel")) {
 					mediPseudoTag = paraText;
 					mediAuthor = prevParaText;
 					break;
@@ -212,7 +212,7 @@ public class PseudoExpertInfo {
 					if (numSection<mSectionTitles.size())
 						numSection++;
 					// Section "Packungen" is special
-					if (paraText.equals("Packungen") || paraText.equals("Présentation")) {
+					if (paraText.equals("Packungen") || paraText.equals("PrÃ©sentation")) {
 						isSectionPackungen = true;
 					}
 					// Close previous div
@@ -333,7 +333,7 @@ public class PseudoExpertInfo {
 			
 			// Set html content
 			mMedi.setContent(mediHtmlContent);				
-			
+
 			// Add to DB
 			addToDB();
 			
