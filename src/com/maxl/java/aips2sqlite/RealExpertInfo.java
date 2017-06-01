@@ -395,7 +395,7 @@ public class RealExpertInfo {
 
 			startTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
-				System.out.println("- Unmarshalling Refdatabase for " + CmlOptions.DB_LANGUAGE + "... ");
+				System.out.print("- Unmarshalling Refdatabase for " + CmlOptions.DB_LANGUAGE + "... ");
 
 			JAXBContext context = JAXBContext.newInstance(Refdata.class);
 			Unmarshaller um = context.createUnmarshaller();
@@ -452,7 +452,7 @@ public class RealExpertInfo {
 
 			startTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
-				System.out.println("- Processing preparations xml... ");
+				System.out.print("- Processing preparations xml... ");
 
 			context = JAXBContext.newInstance(Preparations.class);
 			um = context.createUnmarshaller();

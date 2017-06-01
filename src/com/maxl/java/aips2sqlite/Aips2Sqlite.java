@@ -321,7 +321,6 @@ public class Aips2Sqlite {
 			
 			if (!CmlOptions.ONLY_SHOPPING_CART && !CmlOptions.ONLY_DESITIN_DB) {
 				if (CmlOptions.SHOW_LOGS) {
-					System.out.println("");
 					System.out.println("- Generating sqlite database... ");
 				}						
 				long startTime = System.currentTimeMillis();
@@ -388,10 +387,6 @@ public class Aips2Sqlite {
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
 			a.downRefdataPharmaXml(Constants.FILE_REFDATA_PHARMA_XML);
 			a.downRefdataPartnerXml(Constants.FILE_REFDATA_PARTNER_XML);			
-			/* Pre-July 2015
-			a.downSwissindexXml("DE", Constants.FILE_REFDATA_PHARMA_DE_XML);
-			a.downSwissindexXml("FR", Constants.FILE_REFDATA_PHARMA_FR_XML);
-			*/
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
 			a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);

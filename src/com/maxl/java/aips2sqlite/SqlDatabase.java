@@ -73,6 +73,9 @@ public class SqlDatabase {
 	        createExpertDB();
 	        // Create product table
 	        createProductDB();
+
+			// Finalize should reduce size of db to 0.
+			finalize();
 	        
 		} catch (IOException e) {
 			System.err.println(">> SqlDatabase: DB file does not exist!");

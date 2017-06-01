@@ -430,9 +430,9 @@ public class AllDown {
 				
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("http://www.swissdrg.org/assets/Excel/System_30/131118_SwissDRG-Version_3.0_Fallpauschalenkatalog2014_d_geprueft_CHOP2014.xlsx");
+				url = new URL("https://www.swissdrg.org/download_file/view/1195");
 			else if (language.equals("FR"))
-				url = new URL("http://www.swissdrg.org/assets/Excel/System_30/131118_SwissDRG-Version_3.0_Fallpauschalenkatalog2014_f_geprueft_CHOP2014_erratum.xlsx");
+				url = new URL("https://www.swissdrg.org/download_file/view/1361");
 				
 			if (url!=null) {
 				File destination = new File(file_swiss_drg_xlsx);			
