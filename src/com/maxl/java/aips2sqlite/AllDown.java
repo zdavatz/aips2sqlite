@@ -419,6 +419,9 @@ public class AllDown {
 		ProgressBar pb = new ProgressBar();
 		
 		try {
+			// Ignore validation for https sites
+			setNoValidation();
+
 			// Start timer 
 			long startTime = System.currentTimeMillis();
 			if (disp)
@@ -430,9 +433,9 @@ public class AllDown {
 				
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("https://www.swissdrg.org/download_file/view/1195");
+				url = new URL("https://www.swissdrg.org/download_file/view/1195/268");
 			else if (language.equals("FR"))
-				url = new URL("https://www.swissdrg.org/download_file/view/1361");
+				url = new URL("https://www.swissdrg.org/download_file/view/1361/447");
 				
 			if (url!=null) {
 				File destination = new File(file_swiss_drg_xlsx);			
