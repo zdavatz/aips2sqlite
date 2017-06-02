@@ -97,7 +97,7 @@ public class DispoParse {
 			generateFullSQLiteDB(type);
 		} else if (type.equals("quick")) {
             // Generate gln to stock map (csv file)
-            generateGlnToStockCsv();
+            generatePharmaToStockCsv();
         }
 	}
 	
@@ -484,11 +484,10 @@ public class DispoParse {
 		}
 	}
 
-	private void generateGlnToStockCsv() {
+	private void generatePharmaToStockCsv() {
         // Read stock information from zurrose (short) file and voigt file
 		// Format: gln -> { stock_rose, stock_voigt }
-		TreeMap<String, int[]> map_gtin_to_stock = new TreeMap<>();
-        HashMap<String, String> map_pharma_to_gtin = new HashMap<>();
+		TreeMap<String, int[]> map_pharma_to_stock = new TreeMap<>();
 
         try {
             File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_DISPO_ZR);
@@ -506,20 +505,17 @@ public class DispoParse {
 						token[2] -> GTIN/Strichcode
 						token[8] -> Lagerbestand
                     */
-                    if (token[2] != null && token[8] != null) {
-                        if (token[2].length() == 13) {
-                            String gtin = token[0];
-                            // Add to pharma to gtin map
-                            if (token[0] != null && token[0].length() == 7)
-                                map_pharma_to_gtin.put(token[0], gtin);
-                            // Add to gtin to stock map
-                            if (token[8] != null) {
-                                int rose_stock = (int) (Float.parseFloat(token[8]));
-                                int[] s = new int[2];
-                                s[0] = rose_stock;
-                                s[1] = 0;
-                                map_gtin_to_stock.put(gtin, s);
-                            }
+                    if (token[0] != null) {
+                        if (token[0].length() == 7) {
+                            String pharma = token[0];
+                            // Rose stock
+                            int rose_stock = 0;
+                            if (token[8] != null && !token[8].isEmpty())
+                                rose_stock = (int) (Float.parseFloat(token[8]));
+                            int[] s = new int[2];
+                            s[0] = rose_stock;
+                            s[1] = 0;
+                            map_pharma_to_stock.put(pharma, s);
                         }
                     }
                 }
@@ -556,21 +552,17 @@ public class DispoParse {
                     if (token[0] != null) {
                         if (token[0].length() == 7) {
                             String pharma = token[0];
-                            if (map_pharma_to_gtin.containsKey(pharma)) {
-                                // Get gtin from map
-                                String gtin = map_pharma_to_gtin.get(pharma);
-                                // Extract voigt stock
-                                int voigt_stock = 0;
-                                if (token[1] != null && !token[1].isEmpty())
-                                    voigt_stock = (int) (Float.parseFloat(token[1]));
-                                int[] s = new int[2];
-                                if (map_gtin_to_stock.containsKey(gtin))
-                                    s = map_gtin_to_stock.get(gtin);  // Get saved stock
-                                else
-                                    s[0] = 0;   // No zur Rose stock
-                                s[1] = voigt_stock;
-                                map_gtin_to_stock.put(gtin, s);
-                            }
+                            // Extract voigt stock
+                            int voigt_stock = 0;
+                            if (token[1] != null && !token[1].isEmpty())
+                                voigt_stock = (int) (Float.parseFloat(token[1]));
+                            int[] s = new int[2];
+                            if (map_pharma_to_stock.containsKey(pharma))
+                                s = map_pharma_to_stock.get(pharma);  // Get saved stock
+                            else
+                                s[0] = 0;   // No zur Rose stock
+                            s[1] = voigt_stock;
+                            map_pharma_to_stock.put(pharma, s);
                         }
                     }
                 }
@@ -581,7 +573,7 @@ public class DispoParse {
         }
 
         String stock_str = "";
-        for (Map.Entry<String, int[]> entry : map_gtin_to_stock.entrySet()) {
+        for (Map.Entry<String, int[]> entry : map_pharma_to_stock.entrySet()) {
             int[] s = entry.getValue();
             stock_str += entry.getKey() + ";" + s[0] + ";" + s[1] + "\n";
         }
