@@ -182,7 +182,8 @@ public class PseudoExpertInfo {
 			while (para.hasNext()) {
 				String paraText = para.next().getParagraphText();
 				// If this word is not found, then no pseudo FI will be produced
-				if (paraText.equals("Medizinprodukt") || paraText.equals("Dispositif médical") || paraText.equals("Pflanzliches Arzneimittel")) {
+				if (paraText.equals("Medizinprodukt") || paraText.equals("Dispositif médical")
+						|| paraText.equals("Pflanzliches Arzneimittel") || paraText.equals("Médicament phytothérapeutique")) {
 					mediPseudoTag = paraText;
 					mediAuthor = prevParaText;
 					break;
