@@ -132,7 +132,7 @@ public class Aips2Sqlite {
 				CmlOptions.ONLY_SHOPPING_CART = true;
 			}
 			if (cmd.hasOption("zurrose")) {				
-				CmlOptions.ZUR_ROSE_DB = true;
+				CmlOptions.ZUR_ROSE_DB = cmd.getOptionValue("zurrose");
 			}
 			if (cmd.hasOption("desitin")) {
 				CmlOptions.DESITIN_DB = true;
@@ -180,7 +180,7 @@ public class Aips2Sqlite {
 		addOption(options, "quiet", "be extra quiet", false, false);
 		addOption(options, "verbose", "be extra verbose", false, false);
 		addOption(options, "nodown", "no download, parse only", false, false);		
-		addOption(options, "lang", "use given language", true, false);		
+		addOption(options, "lang", "use given language (de/fr)", true, false);
 		addOption(options, "alpha",	"only include titles which start with option value", true, false);
 		addOption(options, "regnr", "only include medications which start with option value", true, false);
 		addOption(options, "owner", "only include medications owned by option value", true, false);
@@ -191,7 +191,7 @@ public class Aips2Sqlite {
 		addOption(options, "gln", "generate csv file with Swiss gln codes", false, false);
 		addOption(options, "shop", "generate encrypted files for shopping cart", false, false);
 		addOption(options, "onlyshop", "skip generation of sqlite database", false, false);
-		addOption(options, "zurrose", "generate only zur Rose database", false, false);
+		addOption(options, "zurrose", "generate zur Rose full article database or stock/like files (fulldb/atcdb/quick)", true, false);
 		addOption(options, "desitin", "generate encrypted files for Desitin", false, false);
 		addOption(options, "onlydesitin", "skip generation of sqlite database", false, false);
 		addOption(options, "takeda", "generate sap/gln matching file", true, false);
@@ -223,15 +223,16 @@ public class Aips2Sqlite {
 		}
 
 		// Generate only zur Rose DB
-		if (CmlOptions.ZUR_ROSE_DB) {
+		if (!CmlOptions.ZUR_ROSE_DB.isEmpty()) {
 			// Encrypt zur Rose files
 			ShoppingCartRose sc_rose = new ShoppingCartRose();
 			sc_rose.encryptFiles();
 			// 
 			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_ZURROSE, "rose_access.ami", Constants.DIR_OUTPUT, 0, 4, null);
-			// Generate new rose sqlite db
+			// Generate new rose sqlite db or stock files
 			DispoParse dp = new DispoParse();
-			dp.process("csv");
+			String option = CmlOptions.ZUR_ROSE_DB.toLowerCase();
+			dp.process(option);
 		}
 		
 		boolean no_db = false;
@@ -311,7 +312,7 @@ public class Aips2Sqlite {
 			glns.generateCsvFile();
 		}
 		
-		if (!CmlOptions.DB_LANGUAGE.isEmpty() && !CmlOptions.ZUR_ROSE_DB && !no_db) {
+		if (!CmlOptions.DB_LANGUAGE.isEmpty() && CmlOptions.ZUR_ROSE_DB.isEmpty() && !no_db) {
 			// Extract drug interactions information
 			if (CmlOptions.ADD_INTERACTIONS) {
 				Interactions inter = new Interactions(CmlOptions.DB_LANGUAGE);
@@ -373,11 +374,11 @@ public class Aips2Sqlite {
 	static void allDown() {
 		AllDown a = new AllDown();
 		
-		if (CmlOptions.ZUR_ROSE_DB) {
+		if (!CmlOptions.ZUR_ROSE_DB.isEmpty()) {
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
 			a.downEphaATCCodesCsv(Constants.FILE_EPHA_ATC_CODES_CSV);
-			a.downZurRose();
+			a.downZurRose(CmlOptions.ZUR_ROSE_DB);
 		} else {
 			if (CmlOptions.SHOPPING_CART || CmlOptions.ONLY_SHOPPING_CART)
 				a.downIBSA();

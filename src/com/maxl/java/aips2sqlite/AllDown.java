@@ -693,7 +693,7 @@ public class AllDown {
 		}
 	}
 	
-	public void downZurRose() {
+	public void downZurRose(String download_option) {
 		String fl = "";
 		String fp = "";
 		String fs = "";
@@ -726,7 +726,9 @@ public class AllDown {
 
 			System.out.println("- Connected to server " + fs + "...");
 
-			String[] working_dir = {"ywesee out", "../ywesee in"};
+			// String[] working_dir = {"ywesee out", "../ywesee in"};
+			// NOTE: Following working dir is used for TESTING only!!
+			String[] working_dir = {"ywesee outTest", "ywesee inTest"};
 			
 			for (int i=0; i<working_dir.length; ++i) {
 				// Set working directory
@@ -747,18 +749,24 @@ public class AllDown {
 	            			String local_file = remote_file;
 	            			if (remote_file.equals("Artikelstamm.csv"))
 	            				local_file = Constants.CSV_FILE_DISPO_ZR;
-							if (remote_file.equals("Artikelstamm_Voigt.csv"))
+							if (remote_file.equals("Artikelstamm_Vollstamm.csv"))
+								local_file = Constants.CSV_FILE_FULL_DISPO_ZR;
+							if (remote_file.equals("Artikelstamm_Voigt_1.1.csv"))
 								local_file = Constants.CSV_FILE_VOIGT_ZR;
-	            			OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
-	                    	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");	
-	                    	boolean done = ftp_client.retrieveFile(remote_file, os);
-	                    	if (done)
-	                    		System.out.println("success.");
-	                    	else
-	                    		System.out.println("error.");
-	                    	os.close();
-	            		}
-	            	}
+
+                            if (download_option.equals("quick") && local_file.equals(Constants.CSV_FILE_FULL_DISPO_ZR))
+                                continue;
+
+                            OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
+                            System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+                            boolean done = ftp_client.retrieveFile(remote_file, os);
+                            if (done)
+                                System.out.println("success.");
+                            else
+                                System.out.println("error.");
+                            os.close();
+                        }
+                    }
 	            }
 			}            
 		} catch (IOException ex) {

@@ -29,17 +29,24 @@ public class User implements java.io.Serializable {
 	public boolean selbst_disp = false;
 	public boolean bet_mittel = false;
 	public boolean is_human = true;
-	
+	public boolean top_customer = false;    // Topkunde FLAG (zur Rose)
+
 	public String sap_id = "";
 	public String specialities = "";
 	public String capabilities = "";
 	public String bm_type = "";
 	public String status = "A";		// Default: Aktiv
-		
+
+	// Revenue / Umsatz
+	public float revenue = 0.0f;
+	// Spezialrabatt
+    public float special_rebate = 0.0f;
 	// Map of GLN to list of company-specific rebate
 	public LinkedHashMap<String, Float> rebate_map = null;
 	// Map of GLN to list of company-specific expenses
 	public LinkedHashMap<String, Float> expenses_map = null;
+    // Map of GLN to list of company-specific delivery and logistic costs
+    public LinkedHashMap<String, Float> dlk_map = null;
 	
 	public User() {
 		// Struct-like class... 'nough said.
