@@ -307,7 +307,7 @@ public class DispoParse {
 			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "Cp1252"));
 			String line;
 			int num_rows = 0;
-			List<Article> list_of_articles = new ArrayList<Article>();
+			List<Article> list_of_articles = new ArrayList<>();
 			while ((line = br.readLine())!=null/* && num_rows<10000*/) {
 				String token[] = line.split(";", -1);
 				String parsed_size = "";
