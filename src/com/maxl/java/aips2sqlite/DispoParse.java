@@ -47,7 +47,6 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -59,100 +58,108 @@ public class DispoParse {
 	private File m_db_file;
 	private Connection conn;
 	private Statement stat;
-	private PreparedStatement m_prep_rosedb;	
+	private PreparedStatement m_prep_rosedb;
 	private Map<String, String> m_atc_map = null;
 	private Map<String, Integer> m_ean_likes = null;
 	private HashMap<String, String> m_flags_map = null;
-    private HashMap<String, String> m_bag_exfacto_price_map = null;
-    private HashMap<String, String> m_bag_public_price_map = null;
-    private XSSFSheet m_dispo_articles_sheet = null;
-	
-	private Set<String> unit_set = new HashSet<String>();
-	
-	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, " +
-			"replacepharma, offmarket, flags, npl, publicprice, exfprice";
-	
-	public DispoParse() {
-		// Initialize the database
-		initSqliteDB();
-	}
-	
-	public void process(String type) {		
-		// Process atc map
-		getAtcMap();
-		// Get SL map
-		getSLMap();
-		// Enhance SL map with information on"Abgabekategorie"
-		enhanceFlags();
+	private HashMap<String, String> m_bag_exfacto_price_map = null;
+	private HashMap<String, String> m_bag_public_price_map = null;
+	private XSSFSheet m_dispo_articles_sheet = null;
 
-		if (type.equals("csv")) {
+	private Set<String> unit_set = new HashSet<String>();
+
+	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, " +
+			"replacepharma, offmarket, flags, npl, publicprice, exfprice, dlkflag";
+
+	public DispoParse() {
+		// Do nothing...
+	}
+
+	public void process(String type) {
+		if (type.equals("fulldb") || type.equals("atcdb")) {
+			// Initialize the database
+			if (type.equals("fulldb"))
+				initSqliteDB("rose_db_new_full.db");
+			else if (type.equals("atcdb"))
+				initSqliteDB("rose_db_new_atc_only.db");
+			else
+				return;
+			// Process atc map
+			getAtcMap();
+			// Get SL map
+			getSLMap();
+			// Enhance SL map with information on"Abgabekategorie"
+			enhanceFlags();
 			// Process likes
 			processLikes();
-			// Load CSV file...		
-			processCsv();
+			// Process CSV file and generate Sqlite DB
+			generateFullSQLiteDB(type);
+		} else if (type.equals("quick")) {
+			// Generate gln to stock map (csv file)
+			generatePharmaToStockCsv();
 		}
 	}
-	
-	private void initSqliteDB() {
+
+	private void initSqliteDB(String db_name) {
 		try {
 			// Initializes org.sqlite.JDBC driver
 			Class.forName("org.sqlite.JDBC");
-			
+
 			// Touch db file if it does not exist
-			String db_url = System.getProperty("user.dir") + "/output/rose_db_new_full.db";
-			m_db_file = FileOps.touchFile(db_url);				
+			String db_url = System.getProperty("user.dir") + "/output/" + db_name;
+			m_db_file = FileOps.touchFile(db_url);
 			if (m_db_file==null)
 				throw new IOException();
-		
+
 			// Creates connection
-			conn = DriverManager.getConnection("jdbc:sqlite:" + db_url);		
+			conn = DriverManager.getConnection("jdbc:sqlite:" + db_url);
 			stat = conn.createStatement();
-			
-			// Add version number 
+
+			// Add version number
 			stat.executeUpdate("PRAGMA user_version=" + Constants.FI_DB_VERSION.replaceAll("[^\\d]", "") + ";");
-			
-	        // Create android metadata table
+
+			// Create android metadata table
 			stat.executeUpdate("DROP TABLE IF EXISTS android_metadata;");
-	        stat.executeUpdate("CREATE TABLE android_metadata (locale TEXT default 'en_US');"); 	
-	        stat.executeUpdate("INSERT INTO android_metadata VALUES ('en_US');");	
-	   			
-	        // Create article db
-	        createArticleDB();
-	        
+			stat.executeUpdate("CREATE TABLE android_metadata (locale TEXT default 'en_US');");
+			stat.executeUpdate("INSERT INTO android_metadata VALUES ('en_US');");
+
+			// Create article db
+			createArticleDB();
+
 		} catch (IOException e) {
 			System.err.println(">> DispoParse: DB file does not exist!");
 			e.printStackTrace();
 		} catch (ClassNotFoundException e ) {
 			System.err.println(">> DispoParse: ClassNotFoundException!");
-			e.printStackTrace();			
+			e.printStackTrace();
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
-		} 
+		}
 	}
-	
+
 	private String mainTable() {
 		return "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	        		"title TEXT, size TEXT, galen TEXT, unit TEXT, " +
-	        		"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
-	        		"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
-	        		"replaceean TEXT, replacepharma TEXT, offmarket TEXT, " +
-	        		"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT);";
+				"title TEXT, size TEXT, galen TEXT, unit TEXT, " +
+				"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
+				"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
+				"replaceean TEXT, replacepharma TEXT, offmarket TEXT, " +
+				"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT, dlkflag TEXT);";
 	}
-	
-	private void createArticleDB()  {		       
+
+	private void createArticleDB()  {
 		try {
 			// Create SQLite database
-	        stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
-	        stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
-	        // Insert statement	
-	        m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
+			stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
+			// Insert statement
+			m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
-		} 
+		}
 	}
-	
+
 	private void addArticleDB(Article article) {
 		try {
 			m_prep_rosedb.setString(1, article.pack_title);
@@ -166,7 +173,7 @@ public class DispoParse {
 			m_prep_rosedb.setInt(9, article.stock);
 			m_prep_rosedb.setString(10, article.rose_base_price);
 			m_prep_rosedb.setString(11, article.availability);
-			m_prep_rosedb.setString(12, article.rose_supplier);		
+			m_prep_rosedb.setString(12, article.rose_supplier);
 			m_prep_rosedb.setInt(13, article.likes);
 			m_prep_rosedb.setString(14, article.replace_ean_code);
 			m_prep_rosedb.setString(15, article.replace_pharma_code);
@@ -175,29 +182,30 @@ public class DispoParse {
 			m_prep_rosedb.setBoolean(18, article.npl_article);
 			m_prep_rosedb.setString(19, article.public_price);
 			m_prep_rosedb.setString(20, article.exfactory_price);
-			m_prep_rosedb.addBatch();        
+			m_prep_rosedb.setBoolean(21, article.dlk_flag);
+			m_prep_rosedb.addBatch();
 			conn.setAutoCommit(false);
 			m_prep_rosedb.executeBatch();
-	        conn.setAutoCommit(true); 
+			conn.setAutoCommit(true);
 		} catch (SQLException e) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
-		}	
+		}
 	}
-		
+
 	private void complete() {
 		// Reorder tables alphabetically
 		reorderAlphaDB();
 		// Compress...
 		vacuum();
 	}
-	
+
 	private void reorderAlphaDB() {
 		try {
-	        stat.executeUpdate("DROP TABLE IF EXISTS rosedb_ordered;");
-        	stat.executeUpdate("CREATE TABLE rosedb_ordered " + mainTable());     
-	        stat.executeUpdate("INSERT INTO rosedb_ordered (" + AllDBRows + ") "
-					+ "SELECT " + AllDBRows + " FROM rosedb ORDER BY " 
+			stat.executeUpdate("DROP TABLE IF EXISTS rosedb_ordered;");
+			stat.executeUpdate("CREATE TABLE rosedb_ordered " + mainTable());
+			stat.executeUpdate("INSERT INTO rosedb_ordered (" + AllDBRows + ") "
+					+ "SELECT " + AllDBRows + " FROM rosedb ORDER BY "
 					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
 					+ "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("
@@ -210,14 +218,14 @@ public class DispoParse {
 					+ "'3','{3'),'4','{4'),'5','{5'),'6','{6'),"
 					+ "'7','{7'),'8','{8'),'9','{9')"
 					+ " COLLATE NOCASE;");
-	        stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
-	        stat.executeUpdate("ALTER TABLE rosedb_ordered RENAME TO rosedb;");
+			stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
+			stat.executeUpdate("ALTER TABLE rosedb_ordered RENAME TO rosedb;");
 		} catch (SQLException e) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void vacuum() {
 		try {
 			stat.executeUpdate("VACUUM;");
@@ -226,15 +234,15 @@ public class DispoParse {
 			e.printStackTrace();
 		}
 	}
-		
-	public void processLikes() {
+
+	private void processLikes() {
 		// Read like_db (if it exists)
 		File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_LIKE_DB_ZR);
 		if (!file.exists())
 			m_ean_likes = new HashMap<>();
 		else
 			m_ean_likes = readLikeMap(file.getAbsolutePath());
-		// List csv files in DIR_ZURROSE		
+		// List csv files in DIR_ZURROSE
 		File[] list_of_files = new File(Constants.DIR_ZURROSE).listFiles();
 		String like_db_str = "";
 		// Read all files and extract id, timestamp and eans
@@ -277,8 +285,8 @@ public class DispoParse {
 		// - Save like_db
 		FileOps.writeToFile(like_db_str, Constants.DIR_ZURROSE, Constants.CSV_LIKE_DB_ZR);
 	}
-	
-	public void processCsv() {
+
+	private void generateFullSQLiteDB(String db_type) {
 		/*  File format
 		 *   0: Pharmacode
 		 *   1: Artikelname
@@ -298,25 +306,34 @@ public class DispoParse {
 		 *  15: ausser Handel (a.H.)
 		 *  16: NPL-Artikel
 		 *  17: Publikumspreis
+		 *  18: Disponieren
+		 *  19: Gruppe für sonstige Zuschläge -> DLK-flag
 		 */
+		// Start timer
+		long startTime = System.currentTimeMillis();
+
+		int num_rows = 0;
 		try {
-			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_DISPO_ZR);
-			if (!file.exists()) 
+			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_FULL_DISPO_ZR);
+			if (!file.exists())
 				return;
 			FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
 			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "Cp1252"));
 			String line;
-			int num_rows = 0;
 			List<Article> list_of_articles = new ArrayList<>();
-			while ((line = br.readLine())!=null/* && num_rows<10000*/) {
+			while ((line = br.readLine())!=null && num_rows<200000) {
 				String token[] = line.split(";", -1);
 				String parsed_size = "";
 				String parsed_unit = "";
-				if (num_rows>0 && token.length>15) {
-					Article article = new Article();					
+				if (num_rows>0 && token.length>18) {
+					Article article = new Article();
 					// Pharmacode
-					if (token[0]!=null)	
-						article.pharma_code = token[0];
+					if (token[0]!=null) {
+						if (token[0].matches("[0-9]+"))
+							article.pharma_code = token[0];
+						else
+							continue;
+					}
 					// Artikelname
 					if (token[1]!=null)
 						article.pack_title = token[1];
@@ -343,9 +360,9 @@ public class DispoParse {
 										article.flags += ", " + org_gen_code;
 								}
 							}
- 							if (m_ean_likes.containsKey(ean))
+							if (m_ean_likes!=null && m_ean_likes.containsKey(ean))
 								article.likes = m_ean_likes.get(ean);	// LIKES!!!
-							else 
+							else
 								article.likes = 0;
 						}
 					}
@@ -359,11 +376,11 @@ public class DispoParse {
 							article.pack_size = parseSizeFromTitle(token[1]);
 						}
 					}
-					// Therapeutischer Code			
+					// Therapeutischer Code
 					if (token[6]!=null) {
 						if (!token[6].isEmpty())
 							article.therapy_code = token[6];
-						else 
+						else
 							article.therapy_code = "k.A.";
 					}
 					// ATC-Key
@@ -383,14 +400,14 @@ public class DispoParse {
 					if (token[9]!=null)
 						article.rose_supplier = token[9];
 					// Galen. Form
-					if (token[10]!=null)	// GALEN = Galenische Form					
+					if (token[10]!=null)	// GALEN = Galenische Form
 						article.galen_form = token[10];
 					// Dosierung
 					if (token[11]!=null) {	// UNIT = Stärke or Dosierung
 						unitParse(token[11]);
 						article.pack_unit = token[11];
-                        if (article.pack_unit.isEmpty() || article.pack_unit.equals("0"))
-    						article.pack_unit = parsed_unit = parseUnitFromTitle(token[1]);
+						if (article.pack_unit.isEmpty() || article.pack_unit.equals("0"))
+							article.pack_unit = parsed_unit = parseUnitFromTitle(token[1]);
 					}
 					// Rose Basispreis
 					if (token[12]!=null) {
@@ -411,105 +428,156 @@ public class DispoParse {
 					// NPL-Artikel
 					if (token[16]!=null)
 						article.npl_article = token[16].toLowerCase().equals("ja");
-					// Public price, see also m_bag_public_price map
                     /*
 					if (token[17]!=null) {
 						if (token[17].matches("^[0-9]+(\\.[0-9]{1,2})?$"))
 							article.public_price = String.format("%.2f", Float.parseFloat(token[17]));
 					}
 					*/
-                    // Public and exfactory prices
-                    if (!article.ean_code.isEmpty()) {
-                        String ean = article.ean_code;
-                        article.public_price = m_bag_public_price_map.containsKey(ean) ? m_bag_public_price_map.get(ean) : "";
-                        article.exfactory_price = m_bag_exfacto_price_map.containsKey(ean) ? m_bag_exfacto_price_map.get(ean) : "";
-                    }
+					// Public and exfactory prices from BAG file
+					if (!article.ean_code.isEmpty()) {
+						String ean = article.ean_code;
+						article.public_price = m_bag_public_price_map.containsKey(ean) ? m_bag_public_price_map.get(ean) : "";
+						article.exfactory_price = m_bag_exfacto_price_map.containsKey(ean) ? m_bag_exfacto_price_map.get(ean) : "";
+					}
+					// Extract DLK-flag
+					if (token[19]!=null)
+						article.dlk_flag = token[19].toLowerCase().contains("100%");    // -> true
 
-					System.out.println(num_rows + " -> " + article.pack_title
-							+ " / size = [" + article.pack_size + ", " + parsed_size + "]"
-							+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
-							+ " / pp = " + article.public_price
-                            + " / efp = " + article.exfactory_price
-							+ " / flags = " + article.flags);
+					if (num_rows % 100 == 0) {
+						System.out.println(num_rows + " [" + db_type + "] -> " + article.pack_title
+								+ " / size = [" + article.pack_size + ", " + parsed_size + "]"
+								+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
+								+ " / pp = " + article.public_price
+								+ " / efp = " + article.exfactory_price
+								+ " / flags = " + article.flags
+								+ " / dlk = " + article.dlk_flag);
+					}
 
-                    list_of_articles.add(article);
-                    addArticleDB(article);
-                }
+					list_of_articles.add(article);
+
+					if (db_type.equals("fulldb")) {
+						addArticleDB(article);
+					} else if (db_type.equals("atcdb")) {
+						// Add only products which have an ATC code
+						if (!article.atc_code.isEmpty() && !article.atc_code.equals("k.A."))
+							addArticleDB(article);
+					}
+				}
 				num_rows++;
 			}
-			complete();			
-			System.out.println("\nNumber of articles = " + list_of_articles.size());
-			// 
+			complete();
+			long stopTime = System.currentTimeMillis();
+			System.out.println("\nProcessing " + list_of_articles.size() + " articles in " + (stopTime-startTime)/1000.0f + " sec\n");
+
 			br.close();
-			
+
 			int i = 0;
 			for (String u : unit_set) {
 				i++;
 				System.out.println(i + " -> " + u);
 			}
-			
+
 		} catch (Exception e) {
-			System.err.println(">> Error in processCsv");
-		}	
+			System.err.println(">> Error in processCsv on row " + num_rows);
+		}
 	}
-	
-	public void processXlsx() {
-		/*  Sheet format
-		 *   0: Pharmacode
-		 *   1: Artikelname
-		 *   2: Strichcode
-		 *   3: Ausstand bis
-		 *   4: Fehlt auf unbestimmte Zeit
-		 *   5: Packungsinhalt
-		 *   6: Therapeutischer Code
-		 *   7: ATC-Key
-		 *   8: Lagerbestand
-		 *   9: Lieferant gem. Rose
-		 *  10: Galen. Form
-		 *  11: Dosierung
-		 *  12: Rose Basispreis (rbp)
-		 */
-		List<Article> list_of_articles = new ArrayList<Article>();
-		Iterator<Row> rowIterator = m_dispo_articles_sheet.iterator();
-		int num_rows = 0;
-		while (rowIterator.hasNext() && num_rows<100) {
-			Row row = rowIterator.next();
-			if (num_rows>0) {
-				Article article = new Article();
-				if (row.getCell(0)!=null)
-					article.pharma_code = intToString(ExcelOps.getCellValue(row.getCell(0)));
-				if (row.getCell(1)!=null)
-					article.pack_title = ExcelOps.getCellValue(row.getCell(1));
-				if (row.getCell(2)!=null)
-					article.ean_code = intToString(ExcelOps.getCellValue(row.getCell(2)));
-				if (row.getCell(3)!=null)					
-					article.availability = ExcelOps.getCellValue(row.getCell(3));
-				if (row.getCell(5)!=null)
-					article.pack_size = doubleToInt(ExcelOps.getCellValue(row.getCell(5)));				
-				if (row.getCell(6)!=null)
-					article.therapy_code = ExcelOps.getCellValue(row.getCell(6));
-				if (row.getCell(7)!=null)
-					article.atc_code = ExcelOps.getCellValue(row.getCell(7)).toUpperCase();
-				if (row.getCell(8)!=null)
-					article.stock = doubleToInt(ExcelOps.getCellValue(row.getCell(8)));
-				if (row.getCell(9)!=null)
-					article.rose_supplier = ExcelOps.getCellValue(row.getCell(9));
-				if (row.getCell(10)!=null)
-					article.galen_form = ExcelOps.getCellValue(row.getCell(10));
-				if (row.getCell(11)!=null)
-					article.pack_unit = ExcelOps.getCellValue(row.getCell(11));				
-				if (row.getCell(12)!=null)
-					article.rose_base_price = ExcelOps.getCellValue(row.getCell(12));
-				list_of_articles.add(article);
-				addArticleDB(article);
-				System.out.println(article.rose_base_price);
+
+	private void generatePharmaToStockCsv() {
+		// Read stock information from zurrose (short) file and voigt file
+		// Format: gln -> { stock_rose, stock_voigt }
+		TreeMap<String, int[]> map_pharma_to_stock = new TreeMap<>();
+
+		try {
+			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_DISPO_ZR);
+			if (!file.exists())
+				return;
+			FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "Cp1252"));
+			String line;
+			int num_rows = 0;
+			while ((line = br.readLine())!=null) {
+				String token[] = line.split(";", -1);
+				if (num_rows>0 && token.length>8) {
+					/*
+						token[0] -> Pharmacode
+						token[2] -> GTIN/Strichcode
+						token[8] -> Lagerbestand
+                    */
+					if (token[0] != null) {
+						if (token[0].length() == 7) {
+							String pharma = token[0];
+							// Rose stock
+							int rose_stock = 0;
+							if (token[8] != null && !token[8].isEmpty())
+								rose_stock = (int) (Float.parseFloat(token[8]));
+							int[] s = new int[2];
+							s[0] = rose_stock;
+							s[1] = 0;
+							map_pharma_to_stock.put(pharma, s);
+						}
+					}
+				}
+				num_rows++;
 			}
-			num_rows++;
+		} catch (Exception e) {
+			System.err.println(">> Error in generateGlnToStickCsv -> " + Constants.CSV_FILE_DISPO_ZR);
 		}
 
-		complete();
-		
-		System.out.println("Number of articles = " + list_of_articles.size());
+		try {
+			File file = new File(Constants.DIR_ZURROSE + "/" + Constants.CSV_FILE_VOIGT_ZR);
+			if (!file.exists())
+				return;
+			FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "utf-8"));
+			String line;
+			int num_rows = 0;
+			while ((line = br.readLine())!=null) {
+				String token[] = line.split(";", -1);
+				if (num_rows>0 && token.length>1) {
+					/*
+					Altes VOIGT File:
+						token[0] -> Material
+						token[1] -> Artikeltext
+						token[2] -> Lagerbestand
+						token[3] -> Basismengeeinheit
+						token[4] -> GTIN
+						token[5] -> Pharmacode
+
+					Neues VOIGT File:
+						token[0] -> Pharmacode
+						token[1] -> Lagerbestand
+					*/
+					if (token[0] != null) {
+						if (token[0].length() == 7) {
+							String pharma = token[0];
+							// Extract voigt stock
+							int voigt_stock = 0;
+							if (token[1] != null && !token[1].isEmpty())
+								voigt_stock = (int) (Float.parseFloat(token[1]));
+							int[] s = new int[2];
+							if (map_pharma_to_stock.containsKey(pharma))
+								s = map_pharma_to_stock.get(pharma);  // Get saved stock
+							else
+								s[0] = 0;   // No zur Rose stock
+							s[1] = voigt_stock;
+							map_pharma_to_stock.put(pharma, s);
+						}
+					}
+				}
+				num_rows++;
+			}
+		} catch (Exception e) {
+			System.err.println(">> Error in generateGlnToStickCsv -> " + Constants.CSV_FILE_VOIGT_ZR);
+		}
+
+		String stock_str = "";
+		for (Map.Entry<String, int[]> entry : map_pharma_to_stock.entrySet()) {
+			int[] s = entry.getValue();
+			stock_str += entry.getKey() + ";" + s[0] + ";" + s[1] + "\n";
+		}
+		String out_dir = /*System.getProperty("user.dir") +*/ Constants.DIR_OUTPUT;
+		FileOps.writeToFile(stock_str, out_dir, Constants.CSV_STOCK_INFO_ZR);
 	}
 
 	private void unitParse(String unit) {
@@ -523,7 +591,7 @@ public class DispoParse {
 	 * Extracts dosage/unit/prescription strength from package title
 	 * @param pack_title
 	 * @return extracted dosage
-     */
+	 */
 	private String parseUnitFromTitle(String pack_title) {
 		String dosage = "";
 		Pattern p = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(ml|mg|g)");
@@ -558,84 +626,84 @@ public class DispoParse {
 
 	private void getSLMap() {
 		m_flags_map = new HashMap<>();
-        m_bag_exfacto_price_map = new HashMap<>();
-        m_bag_public_price_map = new HashMap<>();
+		m_bag_exfacto_price_map = new HashMap<>();
+		m_bag_public_price_map = new HashMap<>();
 
 		String tag_content = "";
-		
+
 		XMLInputFactory xml_factory = XMLInputFactory.newInstance();
 		// Next instruction allows to read "escape characters", e.g. &amp;
 		xml_factory.setProperty("javax.xml.stream.isCoalescing", true);  // Decodes entities into one string
-		
+
 		try {
 			InputStream in = new FileInputStream(Constants.FILE_PREPARATIONS_XML);
 			XMLStreamReader reader = xml_factory.createXMLStreamReader(in, "UTF-8");
 
 			String swissmedicno5 = "";
 			String flagsb20 = "";
-            String gtin = "";
-            String state = "";
+			String gtin = "";
+			String state = "";
 
 			int num_rows = 0;
 			// Keep moving the cursor forward
-            while (reader.hasNext()) {
-                int event = reader.next();
-                // Check if the element that the cursor is currently pointing to is a start element
-                switch (event) {
-                    case XMLStreamConstants.START_DOCUMENT:
-                        break;
-                    case XMLStreamConstants.START_ELEMENT:
-                        switch (reader.getLocalName().toLowerCase()) {
-                            case "preparations":
-                                break;
-                            case "exfactoryprice":
-                                state = "exfactory";
-                                break;
-                            case "publicprice":
-                                state = "public";
-                                break;
-                        }
-                        break;
-                    case XMLStreamConstants.CHARACTERS:
-                        tag_content = reader.getText().trim();
-                        break;
-                    case XMLStreamConstants.END_ELEMENT:
-                        switch (reader.getLocalName().toLowerCase()) {
-                            case "preparation":
-                                m_flags_map.put(swissmedicno5, flagsb20);    // These meds are all in the SL-list
-                                num_rows++;
-                                System.out.print("\rProcessing BAG preparations file... " + num_rows);
-                                break;
-                            case "swissmedicno5":
-                                swissmedicno5 = tag_content;
-                                break;
-                            case "orggencode":
-                                flagsb20 = tag_content;
-                                break;
-                            case "flagsb20":
-                                flagsb20 += ";" + tag_content;
-                                break;
-                            case "gtin":
-                                gtin = tag_content;
-                                break;
-                            case "price":
-                                if (state.equals("exfactory")) {
-                                    String exf_price = tag_content;
-                                    if (gtin!=null && gtin.length() == 13) {
-                                        m_bag_exfacto_price_map.put(gtin, exf_price);
-                                    }
-                                } else if (state.equals("public")) {
-                                    String pub_price = tag_content;
-                                    if (gtin!=null && gtin.length() == 13) {
-                                        m_bag_public_price_map.put(gtin, pub_price);
-                                    }
-                                }
-                                break;
-                        }
-                        break;
-                }
-            }
-            // Test
+			while (reader.hasNext()) {
+				int event = reader.next();
+				// Check if the element that the cursor is currently pointing to is a start element
+				switch (event) {
+					case XMLStreamConstants.START_DOCUMENT:
+						break;
+					case XMLStreamConstants.START_ELEMENT:
+						switch (reader.getLocalName().toLowerCase()) {
+							case "preparations":
+								break;
+							case "exfactoryprice":
+								state = "exfactory";
+								break;
+							case "publicprice":
+								state = "public";
+								break;
+						}
+						break;
+					case XMLStreamConstants.CHARACTERS:
+						tag_content = reader.getText().trim();
+						break;
+					case XMLStreamConstants.END_ELEMENT:
+						switch (reader.getLocalName().toLowerCase()) {
+							case "preparation":
+								m_flags_map.put(swissmedicno5, flagsb20);    // These meds are all in the SL-list
+								num_rows++;
+								System.out.print("\rProcessing BAG preparations file... " + num_rows);
+								break;
+							case "swissmedicno5":
+								swissmedicno5 = tag_content;
+								break;
+							case "orggencode":
+								flagsb20 = tag_content;
+								break;
+							case "flagsb20":
+								flagsb20 += ";" + tag_content;
+								break;
+							case "gtin":
+								gtin = tag_content;
+								break;
+							case "price":
+								if (state.equals("exfactory")) {
+									String exf_price = tag_content;
+									if (gtin!=null && gtin.length() == 13) {
+										m_bag_exfacto_price_map.put(gtin, exf_price);
+									}
+								} else if (state.equals("public")) {
+									String pub_price = tag_content;
+									if (gtin!=null && gtin.length() == 13) {
+										m_bag_public_price_map.put(gtin, pub_price);
+									}
+								}
+								break;
+						}
+						break;
+				}
+			}
+			// Test
 			/*
 			System.out.println("");
 			for (Map.Entry<String, String> s : m_flags_map.entrySet()) {
@@ -646,7 +714,7 @@ public class DispoParse {
 		} catch(XMLStreamException | FileNotFoundException e) {
 			e.printStackTrace();
 		}
-	
+		System.out.println("");
 	}
 
 	private void enhanceFlags() {
@@ -693,8 +761,8 @@ public class DispoParse {
 	}
 
 	private void getAtcMap() {
-		m_atc_map = new TreeMap<String, String>();
-		
+		m_atc_map = new TreeMap<>();
+
 		try {
 			CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(Constants.FILE_EPHA_ATC_CODES_CSV), "UTF-8"));
 			List<String[]> myEntries = reader.readAll();
@@ -710,7 +778,66 @@ public class DispoParse {
 			e.printStackTrace();
 		}
 	}
-	
+
+	private void processXlsx() {
+		/*  Sheet format
+		 *   0: Pharmacode
+		 *   1: Artikelname
+		 *   2: Strichcode
+		 *   3: Ausstand bis
+		 *   4: Fehlt auf unbestimmte Zeit
+		 *   5: Packungsinhalt
+		 *   6: Therapeutischer Code
+		 *   7: ATC-Key
+		 *   8: Lagerbestand
+		 *   9: Lieferant gem. Rose
+		 *  10: Galen. Form
+		 *  11: Dosierung
+		 *  12: Rose Basispreis (rbp)
+		 */
+		List<Article> list_of_articles = new ArrayList<Article>();
+		Iterator<Row> rowIterator = m_dispo_articles_sheet.iterator();
+		int num_rows = 0;
+		while (rowIterator.hasNext() && num_rows<100) {
+			Row row = rowIterator.next();
+			if (num_rows>0) {
+				Article article = new Article();
+				if (row.getCell(0)!=null)
+					article.pharma_code = intToString(ExcelOps.getCellValue(row.getCell(0)));
+				if (row.getCell(1)!=null)
+					article.pack_title = ExcelOps.getCellValue(row.getCell(1));
+				if (row.getCell(2)!=null)
+					article.ean_code = intToString(ExcelOps.getCellValue(row.getCell(2)));
+				if (row.getCell(3)!=null)
+					article.availability = ExcelOps.getCellValue(row.getCell(3));
+				if (row.getCell(5)!=null)
+					article.pack_size = doubleToInt(ExcelOps.getCellValue(row.getCell(5)));
+				if (row.getCell(6)!=null)
+					article.therapy_code = ExcelOps.getCellValue(row.getCell(6));
+				if (row.getCell(7)!=null)
+					article.atc_code = ExcelOps.getCellValue(row.getCell(7)).toUpperCase();
+				if (row.getCell(8)!=null)
+					article.stock = doubleToInt(ExcelOps.getCellValue(row.getCell(8)));
+				if (row.getCell(9)!=null)
+					article.rose_supplier = ExcelOps.getCellValue(row.getCell(9));
+				if (row.getCell(10)!=null)
+					article.galen_form = ExcelOps.getCellValue(row.getCell(10));
+				if (row.getCell(11)!=null)
+					article.pack_unit = ExcelOps.getCellValue(row.getCell(11));
+				if (row.getCell(12)!=null)
+					article.rose_base_price = ExcelOps.getCellValue(row.getCell(12));
+				list_of_articles.add(article);
+				addArticleDB(article);
+				System.out.println(article.rose_base_price);
+			}
+			num_rows++;
+		}
+
+		complete();
+
+		System.out.println("Number of articles = " + list_of_articles.size());
+	}
+
 	private String intToString(String i) {
 		if (i!=null) {
 			int idx = i.indexOf(".");
@@ -720,15 +847,15 @@ public class DispoParse {
 				return i;
 		} else
 			return null;
-		
+
 	}
-	
+
 	private int doubleToInt(String d) {
 		if (d!=null) {
 			int idx = d.indexOf(".");
 			if (idx>0)
 				return Integer.parseInt(d.substring(0,idx));
-			else 
+			else
 				return Integer.parseInt(d);
 		} else
 			return 0;
@@ -738,7 +865,7 @@ public class DispoParse {
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		try {
 			File file = new File(filename);
-			if (!file.exists()) 
+			if (!file.exists())
 				return null;
 			FileInputStream fis = new FileInputStream(filename);
 			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
@@ -758,7 +885,7 @@ public class DispoParse {
 			br.close();
 		} catch (Exception e) {
 			System.err.println(">> Error in reading csv file");
-		} 		
+		}
 		return map;
 	}
 }
