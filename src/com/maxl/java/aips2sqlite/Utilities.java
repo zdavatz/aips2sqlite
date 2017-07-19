@@ -17,24 +17,24 @@ import javax.xml.transform.stream.StreamSource;
 public class Utilities {
 
 	final protected static char[] hexArray = "0123456789abcdef".toCharArray();
-	
+
 	static public final Map<String, Integer> doctorPreferences;
 	static {
 		// LinkedHashMap preserves insertion order
-		doctorPreferences = new LinkedHashMap<String, Integer>();
-		doctorPreferences.put("actavis", 1);	// actavis switzerland ag, 7601001376618
-		doctorPreferences.put("helvepharm", 2);	// helvepharm ag, 7601001003736	
-		doctorPreferences.put("mepha", 3);		// mepha schweiz ag, 7601001396685	
-		doctorPreferences.put("sandoz", 4);		// sandoz pharmaceuticals ag, 7601001029439
-		doctorPreferences.put("spirig", 5);		// spirig healthcare ag, 7601001394834
+		doctorPreferences = new LinkedHashMap<>();
+		// doctorPreferences.put("actavis", 1);	// actavis switzerland ag, 7601001376618
+		doctorPreferences.put("helvepharm", 1);	// helvepharm ag, 7601001003736
+		doctorPreferences.put("mepha", 2);		// mepha schweiz ag, 7601001396685
+		doctorPreferences.put("sandoz", 3);		// sandoz pharmaceuticals ag, 7601001029439
+		doctorPreferences.put("spirig", 4);		// spirig healthcare ag, 7601001394834
 	}
-	
+
 	static public final Map<String, Integer> rosePreferences;
 	static {
 		// LinkedHashMap preserves insertion order
-		rosePreferences = new LinkedHashMap<String, Integer>();
+		rosePreferences = new LinkedHashMap<>();
 		rosePreferences.put("sandoz", 1);		// sandoz pharmaceuticals ag
-		rosePreferences.put("mepha", 2);		// mepha schweiz ag	
+		rosePreferences.put("mepha", 2);		// mepha schweiz ag
 		rosePreferences.put("teva", 3);			// teva pharma ag
 	}
 
@@ -63,17 +63,17 @@ public class Utilities {
 		return str.replaceAll(",{2,}|,\\s,|\\s,", ",");
 	}
 
-    static public String removeTrailingComma(String str) {
-        if (str.endsWith(","))
-            return str.substring(0, str.length()-1);
-        return str;
-    }
+	static public String removeTrailingComma(String str) {
+		if (str.endsWith(","))
+			return str.substring(0, str.length()-1);
+		return str;
+	}
 
-    static public String convertDecimalFormat(String str) {
-        Pattern regx = Pattern.compile("(\\d+),(\\d+)");
-        Matcher match = regx.matcher(str);
-        return match.replaceAll("$1.$2");
-    }
+	static public String convertDecimalFormat(String str) {
+		Pattern regx = Pattern.compile("(\\d+),(\\d+)");
+		Matcher match = regx.matcher(str);
+		return match.replaceAll("$1.$2");
+	}
 
 	static public String removeStringFromString(String str1, String str2)
 	{
@@ -90,14 +90,14 @@ public class Utilities {
             str1 = str1.replaceAll(str2, "");
         return str1;
         */
-        str1 = str1.toLowerCase();
-        str2 = str2.toLowerCase();
-        if (str1.contains(str2))
-            return str1;
-        else {
-            str1 += separator + str2;
-            return str1;
-        }
+		str1 = str1.toLowerCase();
+		str2 = str2.toLowerCase();
+		if (str1.contains(str2))
+			return str1;
+		else {
+			str1 += separator + str2;
+			return str1;
+		}
 	}
 
 	static public String capitalizeFirstLetter(String str) {
@@ -112,12 +112,7 @@ public class Utilities {
 		String[] tokens = str.split("\\s");
 		String ret = "";
 		for (String t : tokens) {
-            if (t.matches("(effer|gel|genital|glob|gran|gtt|emul|erw).*"))
-                ret += capitalizeFirstLetter(t) + " ";
-			else if (t.matches("(kg|g|mg|mcg|ml|ie|e|mbq).*"))
-				ret += t + " ";
-			else
-				ret += capitalizeFirstLetter(t) + " ";
+			ret += capitalizeFirstLetter(t) + " ";
 		}
 		return ret.trim();
 	}
@@ -141,21 +136,21 @@ public class Utilities {
 	}
 
 	static public String bytesToHex(byte[] bytes) {
-	    char[] hexChars = new char[bytes.length * 2];
-	    for (int j=0; j<bytes.length; j++) {
-	        int v = bytes[j] & 0xFF;
-	        hexChars[j*2] = hexArray[v >>> 4];
-	        hexChars[j*2+1] = hexArray[v & 0x0F];
-	    }
-	    return new String(hexChars);
+		char[] hexChars = new char[bytes.length * 2];
+		for (int j=0; j<bytes.length; j++) {
+			int v = bytes[j] & 0xFF;
+			hexChars[j*2] = hexArray[v >>> 4];
+			hexChars[j*2+1] = hexArray[v & 0x0F];
+		}
+		return new String(hexChars);
 	}
-		
+
 	static public String calcEAN13Checksum(String ean12_str) {
 		// Sum of all uneven digits
 		int unevenSum = 0;
 		for (int i=0; i<ean12_str.length(); i+=2) {
 			unevenSum += Character.getNumericValue(ean12_str.charAt(i));
-		}		
+		}
 		// Sum of all even digits
 		int evenSum = 0;
 		for (int i=1; i<ean12_str.length(); i+=2) {
@@ -163,10 +158,10 @@ public class Utilities {
 		}
 		// Checksum = 90 - total sum
 		String checkSum = String.valueOf(90 - (3*evenSum+unevenSum));
-		
+
 		return checkSum;
-	}	
-	
+	}
+
 	static public String prettyFormat(String input) {
 		try {
 			Source xmlInput = new StreamSource(new StringReader(input));
