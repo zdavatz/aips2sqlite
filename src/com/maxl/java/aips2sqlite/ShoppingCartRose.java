@@ -73,10 +73,13 @@ public class ShoppingCartRose {
 					user.city = token[20];
 					user.email = token[21];
 					user.top_customer = token[29].toLowerCase().trim().equals("true");
-					if (!token[28].isEmpty())
-						user.special_rebate = Float.valueOf(token[28].replaceAll("[^\\d.]", ""));
-					if (!token[30].isEmpty())
-						user.revenue = Float.valueOf(token[30].replaceAll("[^\\d.]", ""));
+
+                    String special_rebate = token[28].replaceAll("[^\\d.]", "");
+					if (!special_rebate.isEmpty())
+						user.special_rebate = Float.valueOf(special_rebate);
+                    String revenue = token[30].replaceAll("[^\\d.]", "");
+					if (!revenue.isEmpty())
+                        user.revenue = Float.valueOf(revenue);
 
 					LinkedHashMap<String, Float> rebate_map = new LinkedHashMap<>();
 					LinkedHashMap<String, Float> expenses_map = new LinkedHashMap<>();
