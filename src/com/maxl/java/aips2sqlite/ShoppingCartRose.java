@@ -18,7 +18,6 @@ import com.maxl.java.shared.User;
 public class ShoppingCartRose {
 
 	public ShoppingCartRose() {
-		//
 	}
 
 	public void encryptFiles() {
@@ -51,6 +50,7 @@ public class ShoppingCartRose {
 	public void encryptCustomerMapToFile(String in_csv_file, String out_ser_file_1, String out_ser_file_2) {
 		HashMap<String, User> user_map = new HashMap<>();
 		HashMap<String, String> roseid_to_gln_map = new HashMap<>();
+
 		try {
 			File file = new File(in_csv_file);
 			if (!file.exists()) {
@@ -220,7 +220,8 @@ public class ShoppingCartRose {
 					float sales_figures = 0;
 					if (token[2]!=null) {
 						token[2] = token[2].replaceAll("'", "");
-						sales_figures = Float.valueOf(token[2]);
+                        if (!token[2].isEmpty())
+						    sales_figures = Float.valueOf(token[2]);
 					}
 					sales_figures_map.put(pharma_code, sales_figures);
 				}
