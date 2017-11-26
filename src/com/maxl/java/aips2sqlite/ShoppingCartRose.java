@@ -64,20 +64,20 @@ public class ShoppingCartRose {
 			// Parsing Kunden_alle.csv
 			while ((line = br.readLine()) != null) {
 				String token[] = line.split(";", -1);
-				if (counter>0 && token.length>29) {
+				if (counter>0 && token.length>24) {
 					User user = new User();
 					user.gln_code = token[3];
-					user.name1 = token[14];
-					user.street = token[17];
-					user.zip = token[19];
-					user.city = token[20];
-					user.email = token[21];
-					user.top_customer = token[29].toLowerCase().trim().equals("true");
+					user.name1 = token[10];
+					user.street = token[13];
+					user.zip = token[15];
+					user.city = token[16];
+					user.email = token[17];
+					user.top_customer = token[23].toLowerCase().trim().equals("true");
 
-                    String special_rebate = token[28].replaceAll("[^\\d.]", "");
+                    String special_rebate = token[22].replaceAll("[^\\d.]", "");
 					if (!special_rebate.isEmpty())
 						user.special_rebate = Float.valueOf(special_rebate);
-                    String revenue = token[30].replaceAll("[^\\d.]", "");
+                    String revenue = token[24].replaceAll("[^\\d.]", "");
 					if (!revenue.isEmpty())
                         user.revenue = Float.valueOf(revenue);
 
@@ -88,22 +88,23 @@ public class ShoppingCartRose {
 					for (int i=0; i<Utilities.doctorPreferences.size(); ++i) {
 						String pharma_company = (new ArrayList<>(Utilities.doctorPreferences.keySet())).get(i);
 						// @cybermax 07.01.2017 -> Actavis is OUT!!
-						if (!pharma_company.equals("actavis")) {
-							// indices 4-7
+						// @cybermax 26.01.2017 -> Spirig und Sandoz are OUT!!
+						if (!pharma_company.equals("actavis") && !pharma_company.equals("sandoz") && !pharma_company.equals("spirig")) {
+							// indices 4-5
 							String rebate = token[4 + i].replaceAll("[^\\d.]", "");
 							if (!rebate.isEmpty())
 								rebate_map.put(pharma_company, Float.valueOf(rebate));
 							else
 								rebate_map.put(pharma_company, 0.0f);
-							// indices 8-11
-							String expenses = token[8 + i].replaceAll("[^\\d.]", "");
+							// indices 6-7
+							String expenses = token[6 + i].replaceAll("[^\\d.]", "");
 							if (!expenses.isEmpty()) {
 								expenses_map.put(pharma_company, Float.valueOf(expenses));
 							}
 							else
 								expenses_map.put(pharma_company, 0.0f);
-							// indices 24-27
-							String dlk_costs = token[24 + i].replaceAll("[^\\d.]", "");
+							// indices 20-21
+							String dlk_costs = token[20 + i].replaceAll("[^\\d.]", "");
 							if (!dlk_costs.isEmpty())
 								dlk_map.put(pharma_company, Float.valueOf(dlk_costs));
 							else
@@ -188,14 +189,14 @@ public class ShoppingCartRose {
 		if (user_map.size()>0) {
 			encryptObjectToFile(user_map, out_ser_file_1);
 		} else {
-			System.out.println("!! Error occurred when generating " + out_ser_file_1);
+			System.out.println("!! (1) Error occurred when generating " + out_ser_file_1);
 			System.exit(1);
 		}
 		// Serialize second file
 		if (roseid_to_gln_map.size()>0) {
 			encryptObjectToFile(roseid_to_gln_map, out_ser_file_2);
 		} else {
-			System.out.println("!! Error occurred when generating " + out_ser_file_2);
+			System.out.println("!! (2) Error occurred when generating " + out_ser_file_2);
 			System.exit(1);
 		}
 	}
