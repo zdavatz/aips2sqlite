@@ -88,7 +88,7 @@ public class ShoppingCartRose {
 					for (int i=0; i<Utilities.doctorPreferences.size(); ++i) {
 						String pharma_company = (new ArrayList<>(Utilities.doctorPreferences.keySet())).get(i);
 						// @cybermax 07.01.2017 -> Actavis is OUT!!
-						// @cybermax 26.01.2017 -> Spirig und Sandoz are OUT!!
+						// @cybermax 26.11.2017 -> Spirig und Sandoz are OUT!!
 						if (!pharma_company.equals("actavis") && !pharma_company.equals("sandoz") && !pharma_company.equals("spirig")) {
 							// indices 4-5
 							String rebate = token[4 + i].replaceAll("[^\\d.]", "");
