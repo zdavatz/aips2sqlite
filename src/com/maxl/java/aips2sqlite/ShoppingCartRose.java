@@ -64,7 +64,7 @@ public class ShoppingCartRose {
 			// Parsing Kunden_alle.csv
 			while ((line = br.readLine()) != null) {
 				String token[] = line.split(";", -1);
-				if (counter>0 && token.length>25) {
+				if (counter>0 && token.length>24) {
 					User user = new User();
 					user.gln_code = token[3];
 					user.name1 = token[10];
@@ -72,12 +72,12 @@ public class ShoppingCartRose {
 					user.zip = token[15];
 					user.city = token[16];
 					user.email = token[17];
-					user.top_customer = token[25].toLowerCase().trim().equals("true");
+					user.top_customer = token[23].toLowerCase().trim().equals("true");
 
-                    String special_rebate = token[24].replaceAll("[^\\d.]", "");
+                    String special_rebate = token[22].replaceAll("[^\\d.]", "");
 					if (!special_rebate.isEmpty())
 						user.special_rebate = Float.valueOf(special_rebate);
-                    String revenue = token[26].replaceAll("[^\\d.]", "");
+                    String revenue = token[24].replaceAll("[^\\d.]", "");
 					if (!revenue.isEmpty())
                         user.revenue = Float.valueOf(revenue);
 
@@ -88,7 +88,7 @@ public class ShoppingCartRose {
 					for (int i=0; i<Utilities.doctorPreferences.size(); ++i) {
 						String pharma_company = (new ArrayList<>(Utilities.doctorPreferences.keySet())).get(i);
 						// @cybermax 07.01.2017 -> Actavis is OUT!!
-						// @cybermax 26.01.2017 -> Spirig und Sandoz are OUT!!
+						// @cybermax 26.11.2017 -> Spirig und Sandoz are OUT!!
 						if (!pharma_company.equals("actavis") && !pharma_company.equals("sandoz") && !pharma_company.equals("spirig")) {
 							// indices 4-5
 							String rebate = token[4 + i].replaceAll("[^\\d.]", "");
@@ -103,7 +103,7 @@ public class ShoppingCartRose {
 							}
 							else
 								expenses_map.put(pharma_company, 0.0f);
-							// indices 24-27
+							// indices 20-21
 							String dlk_costs = token[20 + i].replaceAll("[^\\d.]", "");
 							if (!dlk_costs.isEmpty())
 								dlk_map.put(pharma_company, Float.valueOf(dlk_costs));
