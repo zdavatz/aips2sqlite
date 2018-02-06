@@ -752,7 +752,7 @@ public class AllDown {
 	            				local_file = Constants.CSV_FILE_DISPO_ZR;
 							if (remote_file.equals("Artikelstamm_Vollstamm.csv"))
 								local_file = Constants.CSV_FILE_FULL_DISPO_ZR;
-							if (remote_file.equals("Artikelstamm_Voigt_1.1.csv"))
+							if (remote_file.equals("Artikelstamm_Voigt.csv"))
 								local_file = Constants.CSV_FILE_VOIGT_ZR;
 
                             if (download_option.equals("quick") && local_file.equals(Constants.CSV_FILE_FULL_DISPO_ZR))

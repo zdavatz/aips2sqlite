@@ -22,6 +22,7 @@ public class Article {
 	public boolean off_the_market = false;
 	public boolean npl_article = false;
 	public boolean dlk_flag = false;
+	public String pack_title_FR = "";
 	public int pack_size = 0;			// Packungsinhalt
 	public int stock = 0;
 	public int likes = 0;

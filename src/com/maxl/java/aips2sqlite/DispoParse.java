@@ -69,7 +69,7 @@ public class DispoParse {
 	private Set<String> unit_set = new HashSet<String>();
 
 	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, " +
-			"replacepharma, offmarket, flags, npl, publicprice, exfprice, dlkflag";
+			"replacepharma, offmarket, flags, npl, publicprice, exfprice, dlkflag, title_FR";
 
 	public DispoParse() {
 		// Do nothing...
@@ -144,7 +144,7 @@ public class DispoParse {
 				"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
 				"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
 				"replaceean TEXT, replacepharma TEXT, offmarket TEXT, " +
-				"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT, dlkflag TEXT);";
+				"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT, dlkflag TEXT, title_FR TEXT);";
 	}
 
 	private void createArticleDB()  {
@@ -153,7 +153,7 @@ public class DispoParse {
 			stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
 			stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
 			// Insert statement
-			m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
@@ -183,6 +183,7 @@ public class DispoParse {
 			m_prep_rosedb.setString(19, article.public_price);
 			m_prep_rosedb.setString(20, article.exfactory_price);
 			m_prep_rosedb.setBoolean(21, article.dlk_flag);
+			m_prep_rosedb.setString(22, article.pack_title_FR);
 			m_prep_rosedb.addBatch();
 			conn.setAutoCommit(false);
 			m_prep_rosedb.executeBatch();
@@ -308,6 +309,7 @@ public class DispoParse {
 		 *  17: Publikumspreis
 		 *  18: Disponieren
 		 *  19: Gruppe für sonstige Zuschläge -> DLK-flag
+		 *  20: Artikelbezeichnung FR
 		 */
 		// Start timer
 		long startTime = System.currentTimeMillis();
@@ -325,7 +327,7 @@ public class DispoParse {
 				String token[] = line.split(";", -1);
 				String parsed_size = "";
 				String parsed_unit = "";
-				if (num_rows>0 && token.length>18) {
+				if (num_rows>0 && token.length>19) {
 					Article article = new Article();
 					// Pharmacode
 					if (token[0]!=null) {
@@ -443,9 +445,12 @@ public class DispoParse {
 					// Extract DLK-flag
 					if (token[19]!=null)
 						article.dlk_flag = token[19].toLowerCase().contains("100%");    // -> true
+					// Extract Artikelbezeichnung FR
+					if (token[20]!=null)
+						article.pack_title_FR = token[20];
 
 					if (num_rows % 100 == 0) {
-						System.out.println(num_rows + " [" + db_type + "] -> " + article.pack_title
+						System.out.println(num_rows + " [" + db_type + "] -> " + article.pack_title + " / " + article.pack_title_FR
 								+ " / size = [" + article.pack_size + ", " + parsed_size + "]"
 								+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
 								+ " / pp = " + article.public_price
@@ -548,9 +553,14 @@ public class DispoParse {
 						token[0] -> Pharmacode
 						token[1] -> Lagerbestand
 					*/
+
 					if (token[0] != null) {
 						if (token[0].length() == 7) {
 							String pharma = token[0];
+
+							if (token[0].equals("6422618"))
+								System.out.println(token[0] + " -> " + token[1]);
+
 							// Extract voigt stock
 							int voigt_stock = 0;
 							if (token[1] != null && !token[1].isEmpty())
