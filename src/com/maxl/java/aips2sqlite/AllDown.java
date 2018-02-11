@@ -727,9 +727,9 @@ public class AllDown {
 
 			System.out.println("- Connected to server " + fs + "...");
 
-			// String[] working_dir = {"ywesee out", "ywesee in"};
+			String[] working_dir = {"ywesee out", "ywesee in"};
 			// NOTE: Following working dir is used for TESTING only!!
-			String[] working_dir = {"ywesee outTest", "ywesee inTest"};
+			// String[] working_dir = {"ywesee outTest", "ywesee inTest"};
 			
 			for (int i=0; i<working_dir.length; ++i) {
 				// Set working directory
