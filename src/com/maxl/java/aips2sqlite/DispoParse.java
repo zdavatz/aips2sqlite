@@ -450,7 +450,9 @@ public class DispoParse {
 						article.pack_title_FR = token[20];
 
 					if (num_rows % 100 == 0) {
-						System.out.println(num_rows + " [" + db_type + "] -> " + article.pack_title + " / " + article.pack_title_FR
+						System.out.println(num_rows + " [" + db_type + "] "
+								+ " -> " + article.ean_code
+								+ " / " + article.pack_title + " / " + article.pack_title_FR
 								+ " / size = [" + article.pack_size + ", " + parsed_size + "]"
 								+ " / unit = [" + article.pack_unit + ", " + parsed_unit + "]"
 								+ " / pp = " + article.public_price
@@ -557,9 +559,6 @@ public class DispoParse {
 					if (token[0] != null) {
 						if (token[0].length() == 7) {
 							String pharma = token[0];
-
-							if (token[0].equals("6422618"))
-								System.out.println(token[0] + " -> " + token[1]);
 
 							// Extract voigt stock
 							int voigt_stock = 0;
