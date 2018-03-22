@@ -730,7 +730,13 @@ public class AllDown {
 			String[] working_dir = {"ywesee out", "ywesee in"};
 			// NOTE: Following working dir is used for TESTING only!!
 			// String[] working_dir = {"ywesee outTest", "ywesee inTest"};
-			
+
+			List<String> list_of_daily_files = Arrays.asList(
+					Constants.CSV_FILE_FULL_DISPO_ZR,
+					Constants.CSV_FILE_VOIGT_ZR,
+					"Kunden_alle.csv",
+					"Autogenerika.csv");
+
 			for (int i=0; i<working_dir.length; ++i) {
 				// Set working directory
 				ftp_client.changeWorkingDirectory(working_dir[i]);
@@ -755,8 +761,8 @@ public class AllDown {
 							if (remote_file.equals("Artikelstamm_Voigt.csv"))
 								local_file = Constants.CSV_FILE_VOIGT_ZR;
 
-                            if (download_option.equals("quick") && local_file.equals(Constants.CSV_FILE_FULL_DISPO_ZR))
-                                continue;
+                            if (download_option.equals("quick")	&& (list_of_daily_files.contains(local_file)))
+								continue;
 
                             OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
                             System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
