@@ -448,6 +448,8 @@ public class DispoParse {
 					// Extract Artikelbezeichnung FR
 					if (token[20]!=null)
 						article.pack_title_FR = token[20];
+					else
+						article.pack_title_FR = "";
 
 					if (num_rows % 100 == 0) {
 						System.out.println(num_rows + " [" + db_type + "] "
