@@ -24,6 +24,7 @@ public class ShoppingCartRose {
 		encryptSalesFiguresToFile(Constants.DIR_ZURROSE + "Abverkaufszahlen.csv", Constants.DIR_OUTPUT + "rose_sales_fig.ser");
 		encryptCustomerMapToFile(Constants.DIR_ZURROSE + "Kunden_alle.csv", Constants.DIR_OUTPUT + "rose_conditions.ser", Constants.DIR_OUTPUT + "rose_ids.ser");
 		encryptAutoGenerikaToFile(Constants.DIR_ZURROSE + "Autogenerika.csv", Constants.DIR_OUTPUT + "rose_autogenerika.ser");
+		encryptDirectSubstToFile(Constants.DIR_ZURROSE + Constants.CSV_FILE_DIRECT_SUBST_ZR, Constants.DIR_OUTPUT + "rose_direct_subst.ser");
 	}
 
 	private void encryptObjectToFile(Object object, String file_name) {
@@ -273,6 +274,42 @@ public class ShoppingCartRose {
 		// Serialize into a byte array output stream, then encrypt
 		if (auto_generika_list.size()>0) {
 			encryptObjectToFile(auto_generika_list, out_ser_file);
+		} else {
+			System.out.println("!! Error occurred when generating " + out_ser_file);
+			System.exit(1);
+		}
+	}
+
+	public void encryptDirectSubstToFile(String in_csv_file, String out_ser_file) {
+		HashMap<String, String> direct_subst_map = new HashMap<>();
+
+		try {
+			File file = new File(in_csv_file);
+			if (!file.exists()) {
+				System.out.println(in_csv_file + " does not exist! Returning...");
+				return;
+			}
+			FileInputStream fis = new FileInputStream(in_csv_file);
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "utf-8"));
+			String line;
+			int num_rows = 0;
+			while ((line = br.readLine())!=null) {
+				if (num_rows>0 && line.contains(";")) {
+					String token[] = line.split(";", -1);
+					if (token.length==2)
+						direct_subst_map.put(token[0], token[1]);
+				}
+				num_rows++;
+			}
+			br.close();
+		} catch (Exception e) {
+			System.err.println(">> Error in reading csv file " + in_csv_file);
+			e.printStackTrace();
+		}
+
+		// Serialize into a byte array output stream, then encrypt
+		if (direct_subst_map.size()>0) {
+			encryptObjectToFile(direct_subst_map, out_ser_file);
 		} else {
 			System.out.println("!! Error occurred when generating " + out_ser_file);
 			System.exit(1);
