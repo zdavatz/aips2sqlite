@@ -694,7 +694,7 @@ public class AllDown {
 		}
 	}
 	
-	public void downZurRose(String download_option) {
+	public void downZurRose(String download_option, boolean test_mode_on) {
 		String fl = "";
 		String fp = "";
 		String fs = "";
@@ -727,10 +727,11 @@ public class AllDown {
 
 			System.out.println("- Connected to server " + fs + "...");
 
-			// String[] working_dir = {"ywesee out", "ywesee in"};
-			// NOTE: Following working dir is used for TESTING only!!
-			String[] working_dir = {"ywesee outTest", "ywesee inTest"};
-			
+			String[] working_dir = {"ywesee out", "ywesee in"};
+			if (test_mode_on) {
+				working_dir[0] = "ywesee outTest";
+				working_dir[1] = "ywesee inTest";
+			}
 			for (int i=0; i<working_dir.length; ++i) {
 				// Set working directory
 				ftp_client.changeWorkingDirectory(working_dir[i]);
@@ -763,7 +764,11 @@ public class AllDown {
                                 continue;
 
                             OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
-                            System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+							if (test_mode_on) {
+								System.out.print("- Downloading " + remote_file + " from test server " + fs + "... ");
+							} else {
+								System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+							}
                             boolean done = ftp_client.retrieveFile(remote_file, os);
                             if (done)
                                 System.out.println("success.");
