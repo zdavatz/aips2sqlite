@@ -66,6 +66,8 @@ public class Constants {
 	public static final String CSV_FILE_DISPO_ZR = "artikel_stamm_zurrose.csv";
 	public static final String CSV_FILE_FULL_DISPO_ZR = "artikel_vollstamm_zurrose.csv";
 	public static final String CSV_FILE_VOIGT_ZR = "artikel_stamm_voigt.csv";
+	public static final String CSV_FILE_DIRECT_SUBST_ZR = "direct_subst_zurrose.csv";
+	public static final String CSV_FILE_NOTA_ZR = "nota_zurrose.csv";
 	// public static final String CSV_FILE_DISPO_NEW_ZR = "artikel_stamm_zurrose_neu.csv";
     public static final String CSV_STOCK_INFO_ZR = "rose_stock.csv";
 	public static final String CSV_LIKE_DB_ZR = "like_db_zurrose.csv";

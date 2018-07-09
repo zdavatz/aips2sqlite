@@ -165,6 +165,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("plain")) {				
 				CmlOptions.PLAIN = true;
 			}
+			if (cmd.hasOption("test")) {
+				CmlOptions.TEST_MODE = true;
+			}
 			if (cmd.hasOption("stats")) {
 				CmlOptions.STATS = cmd.getOptionValue("stats");
 			}
@@ -202,6 +205,7 @@ public class Aips2Sqlite {
 		addOption(options, "reports", "generates various reports", false, false);
 		addOption(options, "indications", "generates indications section keywords report", false, false);
 		addOption(options, "plain", "does not update the package section", false, false);
+		addOption(options, "test", "starts aips2sqlite in test mode", false, false);
 		addOption(options, "stats", "generates statistics for given user", true, false);
 
 		// Parse command line options
@@ -378,7 +382,7 @@ public class Aips2Sqlite {
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
 			a.downEphaATCCodesCsv(Constants.FILE_EPHA_ATC_CODES_CSV);
-			a.downZurRose(CmlOptions.ZUR_ROSE_DB);
+			a.downZurRose(CmlOptions.ZUR_ROSE_DB, CmlOptions.TEST_MODE);
 		} else {
 			if (CmlOptions.SHOPPING_CART || CmlOptions.ONLY_SHOPPING_CART)
 				a.downIBSA();

@@ -47,6 +47,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.bcel.classfile.Constant;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -448,6 +449,8 @@ public class DispoParse {
 					// Extract Artikelbezeichnung FR
 					if (token[20]!=null)
 						article.pack_title_FR = token[20];
+					else
+						article.pack_title_FR = "";
 
 					if (num_rows % 100 == 0) {
 						System.out.println(num_rows + " [" + db_type + "] "
