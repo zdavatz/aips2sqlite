@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.maxl.java.shared.NotaPosition;
 import com.maxl.java.shared.User;
 
 public class ShoppingCartRose {
@@ -25,6 +26,7 @@ public class ShoppingCartRose {
 		encryptCustomerMapToFile(Constants.DIR_ZURROSE + "Kunden_alle.csv", Constants.DIR_OUTPUT + "rose_conditions.ser", Constants.DIR_OUTPUT + "rose_ids.ser");
 		encryptAutoGenerikaToFile(Constants.DIR_ZURROSE + "Autogenerika.csv", Constants.DIR_OUTPUT + "rose_autogenerika.ser");
 		encryptDirectSubstToFile(Constants.DIR_ZURROSE + Constants.CSV_FILE_DIRECT_SUBST_ZR, Constants.DIR_OUTPUT + "rose_direct_subst.ser");
+		encryptNotaToFile(Constants.DIR_ZURROSE + Constants.CSV_FILE_NOTA_ZR, Constants.DIR_OUTPUT + "rose_nota.ser");
 	}
 
 	private void encryptObjectToFile(Object object, String file_name) {
@@ -310,6 +312,56 @@ public class ShoppingCartRose {
 		// Serialize into a byte array output stream, then encrypt
 		if (direct_subst_map.size()>0) {
 			encryptObjectToFile(direct_subst_map, out_ser_file);
+		} else {
+			System.out.println("!! Error occurred when generating " + out_ser_file);
+			System.exit(1);
+		}
+	}
+
+	public void encryptNotaToFile(String in_csv_file, String out_ser_file) {
+		HashMap<String, List<NotaPosition>> nota_map = new HashMap<>();
+
+		try {
+			File file = new File(in_csv_file);
+			if (!file.exists()) {
+				System.out.println(in_csv_file + " does not exist! Returning...");
+				return;
+			}
+			FileInputStream fis = new FileInputStream(in_csv_file);
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "utf-8"));
+			String line;
+			int num_rows = 0;
+			while ((line = br.readLine())!=null) {
+				if (line.contains(";")) {
+					String token[] = line.split(";", -1);
+					if (token.length>4) {
+						List<NotaPosition> list_of_nota_pos = new ArrayList<>();
+						for (int i=1; i<token.length-4; i+=4) {
+							if (!token[i].isEmpty()) {
+								NotaPosition nota_pos = new NotaPosition();
+								//
+								nota_pos.pharma_code = token[i];
+								nota_pos.quantity = Integer.parseInt(token[i + 1]);
+								nota_pos.status = token[i + 2];
+								nota_pos.delivery_date = token[i + 3];
+								// Add to list
+								list_of_nota_pos.add(nota_pos);
+							}
+						}
+						nota_map.put(token[0], list_of_nota_pos);
+					}
+				}
+				num_rows++;
+			}
+			br.close();
+		} catch (Exception e) {
+			System.err.println(">> Error in reading csv file " + in_csv_file);
+			e.printStackTrace();
+		}
+
+		// Serialize into a byte array output stream, then encrypt
+		if (nota_map.size()>0) {
+			encryptObjectToFile(nota_map, out_ser_file);
 		} else {
 			System.out.println("!! Error occurred when generating " + out_ser_file);
 			System.exit(1);
