@@ -334,7 +334,7 @@ public class ShoppingCartRose {
 			while ((line = br.readLine())!=null) {
 				if (line.contains(";")) {
 					String token[] = line.split(";", -1);
-					if (token.length>4) {
+                    if (token.length>4) {
 						List<NotaPosition> list_of_nota_pos = new ArrayList<>();
 						for (int i=1; i<=token.length-4; i+=4) {
 							if (!token[i].isEmpty()) {
@@ -348,6 +348,8 @@ public class ShoppingCartRose {
 								list_of_nota_pos.add(nota_pos);
 							}
 						}
+                        // Removes special characters -- assuming that token[0] is composed of numbers only
+					    token[0] = token[0].replaceAll("[^0-9]", "");
 						nota_map.put(token[0], list_of_nota_pos);
 					}
 				}
@@ -361,7 +363,7 @@ public class ShoppingCartRose {
 
         /*
 		nota_map.forEach((k,v)-> {
-            if (k.equals("934245")) {
+            if (k.equals("100046")) {
                 System.out.println(k);
                 for (NotaPosition notaPosition : v) {
                     System.out.println(" -- " + notaPosition.pharma_code);
@@ -369,7 +371,6 @@ public class ShoppingCartRose {
             }
         });
         */
-
 		// Serialize into a byte array output stream, then encrypt
 		if (nota_map.size()>0) {
 			encryptObjectToFile(nota_map, out_ser_file);
