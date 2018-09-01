@@ -336,7 +336,7 @@ public class ShoppingCartRose {
 					String token[] = line.split(";", -1);
 					if (token.length>4) {
 						List<NotaPosition> list_of_nota_pos = new ArrayList<>();
-						for (int i=1; i<token.length-4; i+=4) {
+						for (int i=1; i<=token.length-4; i+=4) {
 							if (!token[i].isEmpty()) {
 								NotaPosition nota_pos = new NotaPosition();
 								//
@@ -358,6 +358,17 @@ public class ShoppingCartRose {
 			System.err.println(">> Error in reading csv file " + in_csv_file);
 			e.printStackTrace();
 		}
+
+        /*
+		nota_map.forEach((k,v)-> {
+            if (k.equals("934245")) {
+                System.out.println(k);
+                for (NotaPosition notaPosition : v) {
+                    System.out.println(" -- " + notaPosition.pharma_code);
+                }
+            }
+        });
+        */
 
 		// Serialize into a byte array output stream, then encrypt
 		if (nota_map.size()>0) {
