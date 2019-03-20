@@ -726,6 +726,12 @@ public class AllDown {
 			ftp_client.enterLocalPassiveMode();
 			ftp_client.setFileType(FTP.BINARY_FILE_TYPE);
 
+			int reply = ftp_client.getReplyCode();
+			if (!FTPReply.isPositiveCompletion(reply)) {
+				ftp_client.disconnect();
+				System.err.println("FTP server refused connection.");
+				return;
+			}
 			System.out.println("- Connected to server " + fs + "...");
 
 			String[] working_dir = {"ywesee out", "ywesee in"};
@@ -733,15 +739,10 @@ public class AllDown {
 				working_dir[0] = "ywesee outTest";
 				working_dir[1] = "ywesee inTest";
 			}
-			for (int i=0; i<working_dir.length; ++i) {
+			for (String dir : working_dir) {
 				// Set working directory
-				ftp_client.changeWorkingDirectory(working_dir[i]);
-				int reply = ftp_client.getReplyCode();
-				if (!FTPReply.isPositiveCompletion(reply)) {
-					ftp_client.disconnect();
-					System.err.println("FTP server refused connection.");
-					return;
-				}
+				ftp_client.changeWorkingDirectory(dir);
+
 				// Get list of filenames
 	            FTPFile[] ftpFiles = ftp_client.listFiles();            
 	            if (ftpFiles!=null && ftpFiles.length>0) {

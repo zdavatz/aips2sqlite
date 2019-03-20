@@ -11,6 +11,7 @@ public class NotaPosition implements java.io.Serializable {
     public int quantity = 0;
     public String status = "";
     public String delivery_date = "";
+    public String last_order_date = "";
 
     public NotaPosition() {
         // Struct-like class... 'nough said

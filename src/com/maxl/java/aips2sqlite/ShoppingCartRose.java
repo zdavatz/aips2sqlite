@@ -334,8 +334,27 @@ public class ShoppingCartRose {
 			while ((line = br.readLine())!=null) {
 				if (line.contains(";")) {
 					String token[] = line.split(";", -1);
-                    if (token.length>4) {
+                    if (token.length>5) {
 						List<NotaPosition> list_of_nota_pos = new ArrayList<>();
+						for (int i=1; i<=token.length-5; i+=5) {
+							if (!token[i].isEmpty()) {
+								NotaPosition nota_pos = new NotaPosition();
+								//
+								nota_pos.pharma_code = token[i];
+								nota_pos.quantity = Integer.parseInt(token[i + 1]);
+								nota_pos.status = token[i + 2];
+								nota_pos.delivery_date = token[i + 3];
+								nota_pos.last_order_date = token[i + 4];
+								// Add to list
+								list_of_nota_pos.add(nota_pos);
+							}
+						}
+                        // Removes special characters -- assuming that token[0] is composed of numbers only
+					    token[0] = token[0].replaceAll("[^0-9]", "");
+						nota_map.put(token[0], list_of_nota_pos);
+					} else if (token.length>4) {
+						// Ensure backwards compatibility
+                    	List<NotaPosition> list_of_nota_pos = new ArrayList<>();
 						for (int i=1; i<=token.length-4; i+=4) {
 							if (!token[i].isEmpty()) {
 								NotaPosition nota_pos = new NotaPosition();
@@ -348,8 +367,8 @@ public class ShoppingCartRose {
 								list_of_nota_pos.add(nota_pos);
 							}
 						}
-                        // Removes special characters -- assuming that token[0] is composed of numbers only
-					    token[0] = token[0].replaceAll("[^0-9]", "");
+						// Removes special characters -- assuming that token[0] is composed of numbers only
+						token[0] = token[0].replaceAll("[^0-9]", "");
 						nota_map.put(token[0], list_of_nota_pos);
 					}
 				}
