@@ -742,14 +742,13 @@ public class AllDown {
 			for (String dir : working_dir) {
 				// Set working directory
 				ftp_client.changeWorkingDirectory(dir);
-
 				// Get list of filenames
 	            FTPFile[] ftpFiles = ftp_client.listFiles();            
 	            if (ftpFiles!=null && ftpFiles.length>0) {
 	            	// ... then download all csv files
 	            	for (FTPFile f : ftpFiles) {
 	            		String remote_file = f.getName();
-	            		if (remote_file.endsWith("csv")) {
+	            		if ((remote_file.endsWith("csv") || remote_file.endsWith("txt")) && !remote_file.startsWith("_")) {
 	            			String local_file = remote_file;
 	            			if (remote_file.equals("Artikelstamm.csv"))
 	            				local_file = Constants.CSV_FILE_DISPO_ZR;
@@ -761,6 +760,8 @@ public class AllDown {
 								local_file = Constants.CSV_FILE_DIRECT_SUBST_ZR;
 							if (remote_file.equals("Nota.csv"))
 								local_file = Constants.CSV_FILE_NOTA_ZR;
+							if (remote_file.equals("Vollstamm_Galenic_Form_Mapping_by_Code.txt"))
+								local_file = Constants.MAP_GALENIC_CODES_ZR;
 
                             if (download_option.equals("quick"))
 								continue;
@@ -780,6 +781,8 @@ public class AllDown {
                         }
                     }
 	            }
+				// Change back to parent directory
+				ftp_client.changeToParentDirectory();
 			}            
 		} catch (IOException ex) {
 			System.out.println("Error: " + ex.getMessage());

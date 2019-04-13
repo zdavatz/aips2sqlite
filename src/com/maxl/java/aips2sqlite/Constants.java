@@ -68,9 +68,9 @@ public class Constants {
 	public static final String CSV_FILE_VOIGT_ZR = "artikel_stamm_voigt.csv";
 	public static final String CSV_FILE_DIRECT_SUBST_ZR = "direct_subst_zurrose.csv";
 	public static final String CSV_FILE_NOTA_ZR = "nota_zurrose.csv";
-	// public static final String CSV_FILE_DISPO_NEW_ZR = "artikel_stamm_zurrose_neu.csv";
     public static final String CSV_STOCK_INFO_ZR = "rose_stock.csv";
 	public static final String CSV_LIKE_DB_ZR = "like_db_zurrose.csv";
+	public static final String MAP_GALENIC_CODES_ZR = "galenic_codes_map_zurrose.txt";
 	// Files Desitin
 	public static final String DIR_DESITIN = "./input/desitin/";		
 	public static final String FILE_CUST_DESITIN = "customer_desitin.csv";
