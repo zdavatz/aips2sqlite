@@ -169,7 +169,8 @@ public class AllDown {
 			// URL url = new URL("http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls");
 			// URL url = new URL("https://www.swissmedic.ch/arzneimittel/00156/00221/00222/00230/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdHx7hGym162epYbg2c_JjKbNoKSn6A");
 			// URL url = new URL("https://www.swissmedic.ch/dam/swissmedic/de/dokumente/listen/excel-version_zugelasseneverpackungen.xlsx.download.xlsx/excel-version_zugelasseneverpackungen.xlsx");
-			URL url = new URL("https://www.swissmedic.ch/dam/swissmedic/de/dokumente/internetlisten/zugelassene_packungen_ham.xlsx.download.xlsx/Zugelassene_Packungen%20HAM_31012019.xlsx");
+			URL url = new URL("https://www.swissmedic.ch/dam/swissmedic/de/dokumente/internetlisten/zugelassene_packungen_ham.xlsx");
+			// URL url = new URL("https://www.swissmedic.ch/dam/swissmedic/de/dokumente/internetlisten/zugelassene_packungen_ham.xlsx.download.xlsx/Zugelassene_Packungen%20HAM_31012019.xlsx");
 			File destination = new File(file_packages_xls);
 			FileUtils.copyURLToFile(url, destination, 60000, 60000);
 
