@@ -18,4 +18,35 @@ repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    // This dependency is found on compile classpath of this component and consumers.
+    // implementation 'com.google.guava:guava:26.0-jre'
+
+    compile 'net.sf.barcode4j:barcode4j:2.1'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.5'
+    compile group: 'commons-net', name: 'commons-net', version: '3.3'
+    compile group: 'dom4j', name: 'dom4j', version: '1.6'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.2.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.2.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.2.3'
+    compile group: 'joda-time', name: 'joda-time', version: '2.4'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.7.2'
+    compile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'com.aliasi', name: 'lingpipe', version: '4.0.1'
+    compile group: 'com.opencsv', name: 'opencsv', version: '3.4'
+    compile group: 'org.apache.poi', name: 'poi', version: '3.9'
+    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.9'
+    compile group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.9'
+    compile group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9'
+    compile group: 'org.simpleframework', name: 'simple-xml', version: '2.6.9'
+    compile group: 'org.yaml', name: 'snakeyaml', version: '1.16'
+    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
+    compile group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '2.6.0'
+    compile group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
+}
 }
