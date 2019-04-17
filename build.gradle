@@ -49,4 +49,21 @@ dependencies {
     compile group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '2.6.0'
     compile group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
 }
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'src'
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.maxl.java.aips2sqlite.Aips2Sqlite'
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
