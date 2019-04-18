@@ -17,11 +17,11 @@ import org.jsoup.nodes.Entities.EscapeMode;
 public class InteractionsReport {
 	private boolean mHeaderAdded = false;
 	private StringBuilder mReport;
-	private String mFileName = "";	
+	private String mFileName = "";
 	private String mLanguage = "";
 	private String mStyleSheet = "";
 	private BufferedWriter mBWriter = null;
-	
+
 	public InteractionsReport(String reportBase, String language, String extension) {
 
 		mReport = new StringBuilder();
@@ -29,7 +29,7 @@ public class InteractionsReport {
 		String date_str = df.format(new Date());
 		mFileName = reportBase + "_" + date_str + "_" + language + "." + extension;
 		mLanguage = language;
-		
+
 		try {
 			File report_file = new File(mFileName);
 			if (!report_file.exists()) {
@@ -37,29 +37,29 @@ public class InteractionsReport {
 				report_file.createNewFile();
 			}
 			mBWriter = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(report_file.getAbsoluteFile()),"UTF-8"));	
+					new FileOutputStream(report_file.getAbsoluteFile()),"UTF-8"));
 		} catch(IOException e) {
 			e.printStackTrace();
-		}		
+		}
 	}
-	
-	
-	public BufferedWriter getBWriter() {		
+
+
+	public BufferedWriter getBWriter() {
 		return mBWriter;
 	}
-	
+
 	public String getLanguage() {
 		return mLanguage;
-	}	
-	
+	}
+
 	public void addStyleSheet(String styleSheet) {
 		mStyleSheet = styleSheet;
 	}
-	
+
 	public void append(String str) {
 		mReport.append(str);
 	}
-	
+
 	public void addHtmlHeader(String title, String version) {
 		DateFormat df = new SimpleDateFormat("dd.MM.yy");
 		String date_str = df.format(new Date());
@@ -72,28 +72,28 @@ public class InteractionsReport {
 			mReport.append("<p>Version " + version + " - " + date_str + "</p>");
 			mReport.append("<p>Lizenz: GPL v3.0</p>");
 			mReport.append("<br/>");
-			mReport.append("<p>Konzept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
+			mReport.append("<p>Konzept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>");
 			mReport.append("<p>Entwicklung: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
 			mReport.append("<br/>");
 			mReport.append("<p>Verwendete Files:</p>");
 			mReport.append("<p>- <a target=\"_new\" href=\"https://download.epha.ch/cleaned/matrix.csv\">matrix.csv</a> (Stand: " + date_str + ")</p>");
 			mReport.append("<br/>");
-			mHeaderAdded = true;			
+			mHeaderAdded = true;
 		} else if (mLanguage.equals("fr")){
-			mReport.append("<h3>Compendium des Médicaments Suisse</h3>");
+			mReport.append("<h3>Compendium des MÃ©dicaments Suisse</h3>");
 			mReport.append("<p>Version " + version + " - " + date_str + "</p>");
 			mReport.append("<p>Licence: GPL v3.0</p>");
 			mReport.append("<br/>");
-			mReport.append("<p>Concept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>"); 
-			mReport.append("<p>Développement: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
+			mReport.append("<p>Concept: Zeno R.R. Davatz - <a target=\"_new\" href=\"http://www.ywesee.com\">ywesee GmbH</a></p>");
+			mReport.append("<p>DÃ©veloppement: Dr. Max Lungarella - <a target=\"_new\" href=\"http://www.dynamicdevices.ch\">Dynamic Devices AG</a></p>");
 			mReport.append("<br/>");
-			mReport.append("<p>Fichiers utilisés:</p>");
-			mReport.append("<p>- <a target=\"_new\" href=\"https://download.epha.ch/cleaned/matrix.csv\">matrix.csv</a> (actualisé: " + date_str + ")</p>");
-			mReport.append("<br/>");			
-			mHeaderAdded = true;			
-		} 
+			mReport.append("<p>Fichiers utilisÃ©s:</p>");
+			mReport.append("<p>- <a target=\"_new\" href=\"https://download.epha.ch/cleaned/matrix.csv\">matrix.csv</a> (actualisÃ©: " + date_str + ")</p>");
+			mReport.append("<br/>");
+			mHeaderAdded = true;
+		}
 	}
-		
+
 	public String treemapToHtmlTable(Map<String, ArrayList<String>> error_map) {
 		StringBuilder html = new StringBuilder();
 		html.append("<br/>Total Interaktionen in DB: " + error_map.size());
@@ -109,11 +109,11 @@ public class InteractionsReport {
 				for (String html_content : entry.getValue()) {		// atc1-atc2, html
 					html.append("<tr>");
 					if (counter==0) {
-						html.append("<td>" + inter_cnt + "</td>");						
+						html.append("<td>" + inter_cnt + "</td>");
 						html.append("<td>" + entry.getKey() + "</td>");
 						html.append("<td>" + html_content + "</td>");
 					} else {
-						html.append("<td></td>");	
+						html.append("<td></td>");
 						html.append("<td></td>");
 						html.append("<td>" + html_content + "</td>");
 					}
@@ -125,7 +125,7 @@ public class InteractionsReport {
 		html.append("</table>");
 		return html.toString();
 	}
-	
+
 	public void writeHtmlToFile() {
 		// Pretty formatting
 		Document mDoc = Jsoup.parse(mReport.toString());

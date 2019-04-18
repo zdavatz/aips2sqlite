@@ -25,3 +25,5 @@ jars/output/
 .idea/
 out/
 src/com/maxl/java/aips2sqlite/Crypto.java
+.gradle
+build

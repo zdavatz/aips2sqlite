@@ -1,10 +1,10 @@
 package com.maxl.java.aips2sqlite;
 
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
-// Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2015.06.24 um 09:25:25 PM CEST 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 generiert
+// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a>
+// Ã„nderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren.
+// Generiert: 2015.06.24 um 09:25:25 PM CEST
 //
 
 import java.util.ArrayList;
@@ -20,10 +20,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 
 /**
-* <p>Java-Klasse für anonymous complex type.
-* 
+* <p>Java-Klasse fÃ¼r anonymous complex type.
+*
 * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
-* 
+*
 * <pre>
 * &lt;complexType>
 *   &lt;complexContent>
@@ -145,8 +145,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 *   &lt;/complexContent>
 * &lt;/complexType>
 * </pre>
-* 
-* 
+*
+*
 */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
@@ -166,25 +166,25 @@ public class Refdata {
 
  /**
   * Gets the value of the item property.
-  * 
+  *
   * <p>
   * This accessor method returns a reference to the live list,
   * not a snapshot. Therefore any modification you make to the
   * returned list will be present inside the JAXB object.
   * This is why there is not a <CODE>set</CODE> method for the item property.
-  * 
+  *
   * <p>
   * For example, to add a new item, do as follows:
   * <pre>
   *    getITEM().add(newItem);
   * </pre>
-  * 
-  * 
+  *
+  *
   * <p>
   * Objects of the following type(s) are allowed in the list
   * {@link Refdata.ITEM }
-  * 
-  * 
+  *
+  *
   */
  public List<Refdata.ITEM> getItem() {
      if (item == null) {
@@ -195,11 +195,11 @@ public class Refdata {
 
  /**
   * Ruft den Wert der result-Eigenschaft ab.
-  * 
+  *
   * @return
   *     possible object is
   *     {@link Refdata.RESULT }
-  *     
+  *
   */
  public Refdata.RESULT getRESULT() {
      return result;
@@ -207,11 +207,11 @@ public class Refdata {
 
  /**
   * Legt den Wert der result-Eigenschaft fest.
-  * 
+  *
   * @param value
   *     allowed object is
   *     {@link Refdata.RESULT }
-  *     
+  *
   */
  public void setRESULT(Refdata.RESULT value) {
      this.result = value;
@@ -219,11 +219,11 @@ public class Refdata {
 
  /**
   * Ruft den Wert der creationdatetime-Eigenschaft ab.
-  * 
+  *
   * @return
   *     possible object is
   *     {@link XMLGregorianCalendar }
-  *     
+  *
   */
  public XMLGregorianCalendar getCREATIONDATETIME() {
      return creationdatetime;
@@ -231,11 +231,11 @@ public class Refdata {
 
  /**
   * Legt den Wert der creationdatetime-Eigenschaft fest.
-  * 
+  *
   * @param value
   *     allowed object is
   *     {@link XMLGregorianCalendar }
-  *     
+  *
   */
  public void setCREATIONDATETIME(XMLGregorianCalendar value) {
      this.creationdatetime = value;
@@ -243,10 +243,10 @@ public class Refdata {
 
 
  /**
-  * <p>Java-Klasse für anonymous complex type.
-  * 
+  * <p>Java-Klasse fÃ¼r anonymous complex type.
+  *
   * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
-  * 
+  *
   * <pre>
   * &lt;complexType>
   *   &lt;complexContent>
@@ -323,8 +323,8 @@ public class Refdata {
   *   &lt;/complexContent>
   * &lt;/complexType>
   * </pre>
-  * 
-  * 
+  *
+  *
   */
  @XmlAccessorType(XmlAccessType.FIELD)
  @XmlType(name = "", propOrder = {
@@ -364,11 +364,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der atype-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getATYPE() {
          return atype;
@@ -376,11 +376,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der atype-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setATYPE(String value) {
          this.atype = value;
@@ -388,11 +388,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der gtin-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getGtin() {
          return gtin;
@@ -400,11 +400,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der gtin-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setGTIN(String value) {
          this.gtin = value;
@@ -412,11 +412,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der phar-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getPhar() {
          return phar;
@@ -424,11 +424,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der phar-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setPhar(String value) {
          this.phar = value;
@@ -436,11 +436,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der swmcauthnr-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getSWMCAUTHNR() {
          return swmcauthnr;
@@ -448,11 +448,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der swmcauthnr-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setSWMCAUTHNR(String value) {
          this.swmcauthnr = value;
@@ -460,11 +460,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der namede-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getNameDE() {
          return namede;
@@ -472,11 +472,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der namede-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setNameDE(String value) {
          this.namede = value;
@@ -484,11 +484,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der namefr-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getNameFR() {
          return namefr;
@@ -496,11 +496,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der namefr-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setNameFR(String value) {
          this.namefr = value;
@@ -508,11 +508,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der atc-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getATC() {
          return atc;
@@ -520,11 +520,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der atc-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setATC(String value) {
          this.atc = value;
@@ -532,11 +532,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der authholdername-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getAUTHHOLDERNAME() {
          return authholdername;
@@ -544,11 +544,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der authholdername-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setAUTHHOLDERNAME(String value) {
          this.authholdername = value;
@@ -556,11 +556,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der authholdergln-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getAUTHHOLDERGLN() {
          return authholdergln;
@@ -568,11 +568,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der authholdergln-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setAUTHHOLDERGLN(String value) {
          this.authholdergln = value;
@@ -580,11 +580,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der dt-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link XMLGregorianCalendar }
-      *     
+      *
       */
      public XMLGregorianCalendar getDT() {
          return dt;
@@ -592,11 +592,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der dt-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link XMLGregorianCalendar }
-      *     
+      *
       */
      public void setDT(XMLGregorianCalendar value) {
          this.dt = value;
@@ -606,10 +606,10 @@ public class Refdata {
 
 
  /**
-  * <p>Java-Klasse für anonymous complex type.
-  * 
+  * <p>Java-Klasse fÃ¼r anonymous complex type.
+  *
   * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
-  * 
+  *
   * <pre>
   * &lt;complexType>
   *   &lt;complexContent>
@@ -644,8 +644,8 @@ public class Refdata {
   *   &lt;/complexContent>
   * &lt;/complexType>
   * </pre>
-  * 
-  * 
+  *
+  *
   */
  @XmlAccessorType(XmlAccessType.FIELD)
  @XmlType(name = "", propOrder = {
@@ -667,11 +667,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der okerror-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getOKERROR() {
          return okerror;
@@ -679,11 +679,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der okerror-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setOKERROR(String value) {
          this.okerror = value;
@@ -691,11 +691,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der nbrrecord-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link Integer }
-      *     
+      *
       */
      public Integer getNBRRECORD() {
          return nbrrecord;
@@ -703,11 +703,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der nbrrecord-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link Integer }
-      *     
+      *
       */
      public void setNBRRECORD(Integer value) {
          this.nbrrecord = value;
@@ -715,11 +715,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der errorcode-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getERRORCODE() {
          return errorcode;
@@ -727,11 +727,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der errorcode-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setERRORCODE(String value) {
          this.errorcode = value;
@@ -739,11 +739,11 @@ public class Refdata {
 
      /**
       * Ruft den Wert der message-Eigenschaft ab.
-      * 
+      *
       * @return
       *     possible object is
       *     {@link String }
-      *     
+      *
       */
      public String getMESSAGE() {
          return message;
@@ -751,11 +751,11 @@ public class Refdata {
 
      /**
       * Legt den Wert der message-Eigenschaft fest.
-      * 
+      *
       * @param value
       *     allowed object is
       *     {@link String }
-      *     
+      *
       */
      public void setMESSAGE(String value) {
          this.message = value;
