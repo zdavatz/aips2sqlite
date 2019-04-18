@@ -11,11 +11,13 @@ java version "1.8.0_92" (tested on Windows, Linux, Mac OS X)
 
 ## Build aips2sqlite.jar from commandline
 
-make aips2sqlte
+`make aips2sqlite`
+
+the output will be placed here: build/libs
 
 ## Clean the build folder
 
-make clean
+`make clean
 
 ## Caveats
 
