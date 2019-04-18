@@ -13,7 +13,7 @@ java version "1.8.0_92" (tested on Windows, Linux, Mac OS X)
 
 `make aips2sqlite`
 
-the output will be placed here: `build/libs
+the output will be placed here: `build/libs`
 
 ## Clean the build folder
 
