@@ -67,10 +67,43 @@ public class DispoParse {
 	private HashMap<String, String> m_bag_public_price_map = null;
 	private XSSFSheet m_dispo_articles_sheet = null;
 
+	/**
+	 * Symmetric bidirectional map
+	 * @param <K>
+	 */
+	public class BiHashMap<K extends Object> {
+
+		private Map<K,K> forward = new HashMap<>();
+		private Map<K,K> backward = new HashMap<>();
+
+		public synchronized void add(K key, K value) {
+			forward.put(key, value);
+			backward.put(value, key);
+		}
+
+		public synchronized boolean forwardContainsKey(K key) {
+			return forward.containsKey(key);
+		}
+
+		public synchronized boolean backwardContainsKey(K key) {
+			return backward.containsKey(key);
+		}
+
+		public synchronized K getForward(K key) {
+			return forward.get(key);
+		}
+
+		public synchronized K getBackward(K key) {
+			return backward.get(key);
+		}
+	}
+
+	private BiHashMap<String> m_galenic_code_to_form_bimap = null;
+
 	private Set<String> unit_set = new HashSet<String>();
 
 	private String AllDBRows = "title, size, galen, unit, eancode, pharmacode, atc, theracode, stock, price, availability, supplier, likes, replaceean, " +
-			"replacepharma, offmarket, flags, npl, publicprice, exfprice, dlkflag, title_FR";
+			"replacepharma, offmarket, flags, npl, publicprice, exfprice, dlkflag, title_FR, galencode";
 
 	public DispoParse() {
 		// Do nothing...
@@ -91,6 +124,8 @@ public class DispoParse {
 			getSLMap();
 			// Enhance SL map with information on"Abgabekategorie"
 			enhanceFlags();
+			// Get galenic form to galenic code map
+			getGalenicCodeMap();
 			// Process likes
 			processLikes();
 			// Process CSV file and generate Sqlite DB
@@ -145,7 +180,8 @@ public class DispoParse {
 				"eancode TEXT, pharmacode TEXT, atc TEXT, theracode TEXT, " +
 				"stock INTEGER, price TEXT, availability TEXT, supplier TEXT, likes INTEGER, " +
 				"replaceean TEXT, replacepharma TEXT, offmarket TEXT, " +
-				"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT, dlkflag TEXT, title_FR TEXT);";
+				"flags TEXT, npl TEXT, publicprice TEXT, exfprice TEXT, dlkflag TEXT, title_FR TEXT, " +
+				"galencode TEXT);";
 	}
 
 	private void createArticleDB()  {
@@ -154,7 +190,7 @@ public class DispoParse {
 			stat.executeUpdate("DROP TABLE IF EXISTS rosedb;");
 			stat.executeUpdate("CREATE TABLE rosedb " + mainTable());
 			// Insert statement
-			m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			m_prep_rosedb = conn.prepareStatement("INSERT INTO rosedb VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 		} catch (SQLException e ) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
@@ -185,6 +221,7 @@ public class DispoParse {
 			m_prep_rosedb.setString(20, article.exfactory_price);
 			m_prep_rosedb.setBoolean(21, article.dlk_flag);
 			m_prep_rosedb.setString(22, article.pack_title_FR);
+			m_prep_rosedb.setString(23, article.galen_code);
 			m_prep_rosedb.addBatch();
 			conn.setAutoCommit(false);
 			m_prep_rosedb.executeBatch();
@@ -234,6 +271,41 @@ public class DispoParse {
 		} catch (SQLException e) {
 			System.err.println(">> DispoParse: SQLException!");
 			e.printStackTrace();
+		}
+	}
+
+	private void getGalenicCodeMap()
+	{
+		File file = new File(Constants.DIR_ZURROSE + "/" + Constants.MAP_GALENIC_CODES_ZR);
+		if (!file.exists())
+			return;
+		m_galenic_code_to_form_bimap = new BiHashMap<>();
+		try {
+			FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
+			String line;
+			while ((line = br.readLine()) != null) {
+				String token[] = line.split(" ", -1);
+				if (token.length > 1) {
+					/*
+						token[0] -> Galenic Code
+						token[1] -> Galenic Form
+					*/
+					if (token[0] != null && token[1] != null) {
+						String galenic_code = token[0].trim();
+						String galenic_form = "";
+						for (int i=1; i<token.length; ++i) {
+							galenic_form += " " + token[i];
+						}
+						galenic_form = galenic_form.trim();
+						if (galenic_form != null && galenic_code != null) {
+							m_galenic_code_to_form_bimap.add(galenic_code, galenic_form);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.err.println(">> Error in processing file " + Constants.MAP_GALENIC_CODES_ZR);
 		}
 	}
 
@@ -300,7 +372,7 @@ public class DispoParse {
 		 *   7: ATC-Key
 		 *   8: Lagerbestand
 		 *   9: Lieferant gem. Rose
-		 *  10: Galen. Form
+		 *  10: Galen. Code
 		 *  11: Dosierung
 		 *  12: Rose Basispreis (rbp)
 		 *  13: EAN
@@ -403,8 +475,16 @@ public class DispoParse {
 					if (token[9]!=null)
 						article.rose_supplier = token[9];
 					// Galen. Form
-					if (token[10]!=null)	// GALEN = Galenische Form
-						article.galen_form = token[10];
+					if (token[10]!=null) {    // GALEN = Galenischer Code
+						if (m_galenic_code_to_form_bimap.forwardContainsKey(token[10])) {
+							article.galen_form = m_galenic_code_to_form_bimap.getForward(token[10]);
+							article.galen_code = token[10];
+						} else if (m_galenic_code_to_form_bimap.backwardContainsKey(token[10])) {
+							article.galen_form = token[10];
+							article.galen_code = m_galenic_code_to_form_bimap.getBackward(token[10]);
+						}
+						System.out.println(article.pack_title + " -> " + article.galen_code + " <=> " + article.galen_form);
+					}
 					// Dosierung
 					if (token[11]!=null) {	// UNIT = Stärke or Dosierung
 						unitParse(token[11]);

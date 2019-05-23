@@ -11,6 +11,7 @@ public class Article {
 	public String atc_class = "";
 	public String therapy_code = "";	
 	public String galen_form = "";
+	public String galen_code = "";		// New on 06-Apr-2019
 	public String rose_supplier = "";
 	public String availability = "";
 	public String rose_base_price = "";
