@@ -749,7 +749,7 @@ public class AllDown {
 	            	// ... then download all csv files
 	            	for (FTPFile f : ftpFiles) {
 	            		String remote_file = f.getName();
-	            		if (remote_file.endsWith("csv")) {
+	            		if (remote_file.endsWith("csv") || (remote_file.endsWith("txt") && !remote_file.startsWith("_"))) {
 	            			String local_file = remote_file;
 	            			if (remote_file.equals("Artikelstamm.csv"))
 	            				local_file = Constants.CSV_FILE_DISPO_ZR;
@@ -761,8 +761,10 @@ public class AllDown {
 								local_file = Constants.CSV_FILE_DIRECT_SUBST_ZR;
 							if (remote_file.equals("Nota.csv"))
 								local_file = Constants.CSV_FILE_NOTA_ZR;
+							if (remote_file.equals("Vollstamm_Galenic_Form_Mapping_by_Code.txt"))
+								local_file = Constants.MAP_GALENIC_CODES_ZR;
 
-                            if (download_option.equals("quick"))
+								if (download_option.equals("quick"))
 								continue;
 
                             OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);

@@ -393,7 +393,7 @@ public class DispoParse {
 			if (!file.exists())
 				return;
 			FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
-			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "Cp1252"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "ISO8859_1"));
 			String line;
 			List<Article> list_of_articles = new ArrayList<>();
 			while ((line = br.readLine())!=null && num_rows<200000) {
@@ -476,14 +476,20 @@ public class DispoParse {
 						article.rose_supplier = token[9];
 					// Galen. Form
 					if (token[10]!=null) {    // GALEN = Galenischer Code
-						if (m_galenic_code_to_form_bimap.forwardContainsKey(token[10])) {
-							article.galen_form = m_galenic_code_to_form_bimap.getForward(token[10]);
-							article.galen_code = token[10];
-						} else if (m_galenic_code_to_form_bimap.backwardContainsKey(token[10])) {
-							article.galen_form = token[10];
-							article.galen_code = m_galenic_code_to_form_bimap.getBackward(token[10]);
+						if (m_galenic_code_to_form_bimap!=null) {
+							if (m_galenic_code_to_form_bimap.forwardContainsKey(token[10])) {
+								article.galen_form = m_galenic_code_to_form_bimap.getForward(token[10]);
+								article.galen_code = token[10];
+							} else if (m_galenic_code_to_form_bimap.backwardContainsKey(token[10])) {
+								article.galen_form = token[10];
+								article.galen_code = m_galenic_code_to_form_bimap.getBackward(token[10]);
+							}
+							// System.out.println(article.pack_title + " -> " + article.galen_code + " <=> " + article.galen_form);
+						} else {
+							System.err.println(">> m_galenic_code_to_form_bimap is empty!");
+							System.err.println(">> Stopping execution now...");
+							System.exit(1);
 						}
-						System.out.println(article.pack_title + " -> " + article.galen_code + " <=> " + article.galen_form);
 					}
 					// Dosierung
 					if (token[11]!=null) {	// UNIT = Stärke or Dosierung
@@ -569,7 +575,7 @@ public class DispoParse {
 			}
 
 		} catch (Exception e) {
-			System.err.println(">> Error in processCsv on row " + num_rows);
+			System.err.println(">> Error in generateFullSQLiteDB on row " + num_rows + " of " + Constants.CSV_FILE_FULL_DISPO_ZR);
 		}
 	}
 
