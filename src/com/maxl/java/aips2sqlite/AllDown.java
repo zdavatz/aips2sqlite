@@ -475,9 +475,9 @@ public class AllDown {
 			
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("http://download.epha.ch/data/matrix/matrix.csv");
+				url = new URL("https://raw.githubusercontent.com/zdavatz/oddb2xml_files/master/interactions_de_utf8.csv");
 			else if (language.equals("FR"))
-				url = new URL("http://download.epha.ch/data/matrix/matrix.csv");
+				url = new URL("https://raw.githubusercontent.com/zdavatz/oddb2xml_files/master/interactions_de_utf8.csv");
 				
 			if (url!=null) {
 				File destination = new File(file_interactions_csv);			
@@ -514,9 +514,9 @@ public class AllDown {
 			
 			URL url = null;
 			if (language.equals("DE"))
-				url = new URL("http://download.epha.ch/cleaned/produkte.json");
+				url = new URL("https://raw.githubusercontent.com/zdavatz/oddb2xml_files/master/products_de.json");
 			else if (language.equals("FR"))
-				url = new URL("http://download.epha.ch/cleaned/produkte.json");
+				url = new URL("https://raw.githubusercontent.com/zdavatz/oddb2xml_files/master/products_de.json");
 			if (url!=null) {
 				File destination = new File(file_products_json);			
 				
@@ -555,7 +555,7 @@ public class AllDown {
 			}
 			
 			URL url = null;
-			url = new URL("http://download.epha.ch/data/atc/atc.csv");
+			url = new URL("https://raw.githubusercontent.com/zdavatz/oddb2xml_files/master/atc_codes.csv");
 				
 			if (url!=null) {
 				File destination = new File(file_atc_codes_csv);			
