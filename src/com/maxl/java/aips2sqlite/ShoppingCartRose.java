@@ -1,5 +1,6 @@
 package com.maxl.java.aips2sqlite;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -187,9 +188,15 @@ public class ShoppingCartRose {
 			e.printStackTrace();
 		}
 
+		ObjectMapper mapper = new ObjectMapper();
 		// Serialize into a byte array output stream, then encrypt
 		if (user_map.size()>0) {
 			encryptObjectToFile(user_map, out_ser_file_1);
+			try {
+				mapper.writeValue(new File(out_ser_file_1 + ".json"), user_map);
+			} catch (Exception e) {
+				System.out.println("JSON error: " + e.getMessage());
+			}
 		} else {
 			System.out.println("!! (1) Error occurred when generating " + out_ser_file_1);
 			System.exit(1);
@@ -197,6 +204,11 @@ public class ShoppingCartRose {
 		// Serialize second file
 		if (roseid_to_gln_map.size()>0) {
 			encryptObjectToFile(roseid_to_gln_map, out_ser_file_2);
+			try {
+				mapper.writeValue(new File(out_ser_file_2 + ".json"), user_map);
+			} catch (Exception e) {
+				System.out.println("JSON error: " + e.getMessage());
+			}
 		} else {
 			System.out.println("!! (2) Error occurred when generating " + out_ser_file_2);
 			System.exit(1);
@@ -276,6 +288,12 @@ public class ShoppingCartRose {
 		// Serialize into a byte array output stream, then encrypt
 		if (auto_generika_list.size()>0) {
 			encryptObjectToFile(auto_generika_list, out_ser_file);
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				mapper.writeValue(new File(out_ser_file + ".json"), auto_generika_list);
+			} catch (Exception e) {
+				System.out.println("JSON error: " + e.getMessage());
+			}
 		} else {
 			System.out.println("!! Error occurred when generating " + out_ser_file);
 			System.exit(1);
@@ -393,6 +411,12 @@ public class ShoppingCartRose {
 		// Serialize into a byte array output stream, then encrypt
 		if (nota_map.size()>0) {
 			encryptObjectToFile(nota_map, out_ser_file);
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				mapper.writeValue(new File(out_ser_file + ".json"), nota_map);
+			} catch (Exception e) {
+				System.out.println("JSON error: " + e.getMessage());
+			}
 		} else {
 			System.out.println("!! Error occurred when generating " + out_ser_file);
 			System.exit(1);
