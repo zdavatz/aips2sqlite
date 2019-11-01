@@ -330,6 +330,12 @@ public class ShoppingCartRose {
 		// Serialize into a byte array output stream, then encrypt
 		if (direct_subst_map.size()>0) {
 			encryptObjectToFile(direct_subst_map, out_ser_file);
+			try {
+				ObjectMapper mapper = new ObjectMapper();
+				mapper.writeValue(new File(out_ser_file + ".json"), direct_subst_map);
+			} catch (Exception e) {
+				System.out.println("JSON error: " + e.getMessage());
+			}
 		} else {
 			System.out.println("!! Error occurred when generating " + out_ser_file);
 			System.exit(1);
