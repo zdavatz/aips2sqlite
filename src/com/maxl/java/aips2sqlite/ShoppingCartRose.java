@@ -205,7 +205,7 @@ public class ShoppingCartRose {
 		if (roseid_to_gln_map.size()>0) {
 			encryptObjectToFile(roseid_to_gln_map, out_ser_file_2);
 			try {
-				mapper.writeValue(new File(out_ser_file_2 + ".json"), user_map);
+				mapper.writeValue(new File(out_ser_file_2 + ".json"), roseid_to_gln_map);
 			} catch (Exception e) {
 				System.out.println("JSON error: " + e.getMessage());
 			}
