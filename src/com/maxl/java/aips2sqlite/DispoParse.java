@@ -409,6 +409,16 @@ public class DispoParse {
 						else
 							continue;
 					}
+					try {
+						// https://github.com/zdavatz/aips2sqlite/issues/26
+						Long pharma_code = Long.parseLong(article.pharma_code);
+						if (pharma_code > 7900000L) {
+							continue;
+						}
+					}
+					catch (NumberFormatException e) {
+						continue;
+					}
 					// Artikelname
 					if (token[1]!=null)
 						article.pack_title = token[1];
