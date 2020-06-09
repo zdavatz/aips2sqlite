@@ -156,7 +156,12 @@ public class RealPatientInfo {
 						package_size = package_size.replaceAll("\\.00", "");
 					}
 					if (row.getCell(12) != null)
-						package_unit = row.getCell(12).getStringCellValue();	// Einheit
+						try {
+							package_unit = row.getCell(12).getStringCellValue();	// Einheit
+						} catch (Exception e) {
+							// There was case that the package unit is a number, ignore it
+							// https://github.com/zdavatz/aips2sqlite/issues/30
+						}
 					if (row.getCell(13) != null)
 						swissmedic_cat = row.getCell(13).getStringCellValue();	// Abgabekategorie	
 					if (row.getCell(18) != null)
