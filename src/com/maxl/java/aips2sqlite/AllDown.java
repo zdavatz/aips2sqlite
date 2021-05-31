@@ -105,7 +105,7 @@ public class AllDown {
 			//HtmlSubmitInput acceptBtn = currentPage.getElementByName("ctl00$MainContent$btnOK");			
 			//currentPage = acceptBtn.click();
 			// Simulate button click on "Yes" button
-			acceptBtn = currentPage.getElementByName("ctl00$MainContent$BtnYes");	
+			HtmlSubmitInput acceptBtn = currentPage.getElementByName("ctl00$MainContent$BtnYes");	
 
 			InputStream is = acceptBtn.click().getWebResponse().getContentAsStream();
 						
