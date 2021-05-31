@@ -101,9 +101,9 @@ public class AllDown {
 			WebClient webClient = new WebClient();
 			// Get Swissmedic webpage
 			HtmlPage currentPage = webClient.getPage("http://download.swissmedicinfo.ch/");
-			// Simulate button click on "OK" button
-			HtmlSubmitInput acceptBtn = currentPage.getElementByName("ctl00$MainContent$btnOK");			
-			currentPage = acceptBtn.click();
+			// Simulate button click on "OK" button: no longer needed as of transition to Refdata Foundation
+			//HtmlSubmitInput acceptBtn = currentPage.getElementByName("ctl00$MainContent$btnOK");			
+			//currentPage = acceptBtn.click();
 			// Simulate button click on "Yes" button
 			acceptBtn = currentPage.getElementByName("ctl00$MainContent$BtnYes");	
 
