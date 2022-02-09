@@ -277,9 +277,9 @@ public class AllDown {
 			SOAPBody soapBody = envelope.getBody();
 			// Construct SOAP request message
 			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadArticleInput");
-			soapBodyElement1.addNamespaceDeclaration("", "https://refdatabase.refdata.ch/");				
+			soapBodyElement1.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/");				
 			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("ATYPE");
-			soapBodyElement2.addNamespaceDeclaration("", "https://refdatabase.refdata.ch/Article_in");			
+			soapBodyElement2.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/Article_in");			
 			soapBodyElement2.addTextNode("ALL");	
 			soapRequest.saveChanges();
 			// If needed print out soapRequest in a pretty format
@@ -339,9 +339,9 @@ public class AllDown {
 			SOAPBody soapBody = envelope.getBody();
 			// Construct SOAP request message
 			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadPartnerInput");
-			soapBodyElement1.addNamespaceDeclaration("", "https://refdatabase.refdata.ch/");				
+			soapBodyElement1.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/");				
 			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("PTYPE");
-			soapBodyElement2.addNamespaceDeclaration("", "https://refdatabase.refdata.ch/Partner_in");			
+			soapBodyElement2.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/Partner_in");			
 			soapBodyElement2.addTextNode("ALL");	
 			soapRequest.saveChanges();
 			// If needed print out soapRequest in a pretty format
@@ -350,6 +350,7 @@ public class AllDown {
 			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();			
 			SOAPConnection connection = soapConnectionFactory.createConnection();			
 			// wsURL contains service end point
+
 			String wsURL = "https://refdatabase.refdata.ch/Service/Partner.asmx?WSDL";
 			SOAPMessage soapResponse = connection.call(soapRequest, wsURL);
 			// Extract response
