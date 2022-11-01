@@ -392,7 +392,7 @@ public class AllDown {
 				pb.start();
 			}
 			
-			URL url = new URL("http://www.spezialitaetenliste.ch/File.axd?file=XMLPublications.zip");
+			URL url = new URL("https://www.spezialitaetenliste.ch/File.axd?file=XMLPublications.zip");
 			File destination = new File("./downloads/tmp/preparations.zip");
 			FileUtils.copyURLToFile(url, destination, 60000, 60000);
 			
