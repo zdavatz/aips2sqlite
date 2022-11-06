@@ -169,7 +169,12 @@ public class BaseDataParser {
                     quantity = quantity.replaceAll("\\.00", "");
                 }
                 if (row.getCell(12) != null) {
-                    unit = row.getCell(12).getStringCellValue();
+                    try {
+                        unit = row.getCell(12).getStringCellValue();
+                    } catch (Exception e) {
+                        // Empty when unit is not string
+                        System.out.print("\rWarning: Unit is not a string ("+ swissmedic_no5 +")");
+                    }
                 }
 
                 String smn5_plus = swissmedic_no5 + dosage_id;
