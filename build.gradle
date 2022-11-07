@@ -19,36 +19,41 @@ repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     mavenCentral()
-    jcenter()
+    maven { url "https://clojars.org/repo" }
 }
 
 dependencies {
     // This dependency is found on compile classpath of this component and consumers.
     // implementation 'com.google.guava:guava:26.0-jre'
 
-    compile 'net.sf.barcode4j:barcode4j:2.1'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
-    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.5'
-    compile group: 'commons-net', name: 'commons-net', version: '3.3'
-    compile group: 'dom4j', name: 'dom4j', version: '1.6'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.2.3'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.2.3'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.2.3'
-    compile group: 'joda-time', name: 'joda-time', version: '2.4'
-    compile group: 'org.jsoup', name: 'jsoup', version: '1.7.2'
-    compile group: 'junit', name: 'junit', version: '4.12'
-    compile group: 'com.aliasi', name: 'lingpipe', version: '4.0.1'
-    compile group: 'com.opencsv', name: 'opencsv', version: '3.4'
-    compile group: 'org.apache.poi', name: 'poi', version: '3.9'
-    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.9'
-    compile group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.9'
-    compile group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9'
-    compile group: 'org.simpleframework', name: 'simple-xml', version: '2.6.9'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.16'
-    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
-    compile group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '2.6.0'
-    compile group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
+    implementation 'net.sf.barcode4j:barcode4j:2.1'
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.5'
+    implementation group: 'commons-net', name: 'commons-net', version: '3.3'
+    implementation group: 'dom4j', name: 'dom4j', version: '1.6'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.2.3'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.2.3'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.2.3'
+    implementation group: 'joda-time', name: 'joda-time', version: '2.4'
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.7.2'
+    implementation group: 'junit', name: 'junit', version: '4.12'
+    implementation group: 'com.aliasi', name: 'lingpipe', version: '4.0.1'
+    implementation group: 'com.opencsv', name: 'opencsv', version: '3.4'
+    implementation group: 'org.apache.poi', name: 'poi', version: '3.9'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '3.9'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.9'
+    implementation group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9'
+    implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.6.9'
+    implementation group: 'org.yaml', name: 'snakeyaml', version: '1.16'
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
+    implementation group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '2.6.0'
+    implementation group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
+
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+    implementation 'jakarta.xml.soap:jakarta.xml.soap-api:3.0.0'
+    implementation group: 'com.sun.xml.messaging.saaj', name: 'saaj-impl', version: '3.0.0'
+    implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.1'
 }
 
 sourceSets {
@@ -65,6 +70,7 @@ jar {
     }
 
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
