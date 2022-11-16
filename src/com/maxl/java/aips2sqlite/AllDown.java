@@ -586,7 +586,7 @@ public class AllDown {
 			}
 
 			URL url = null;
-			url = new URL("https://www.medregbm.admin.ch/Publikation/CreateExcelListMedizinalPersons");
+			url = new URL("https://www.swissmedic.ch/dam/swissmedic/de/dokumente/internetlisten/medizinalpersonen_betreg.xlsx.download.xlsx/Medizinalpersonen%20BetReg%202022-10-17.xlsx");
 			if (url!=null) {
 				File destination = new File(file_glncodes_people_xlsx);
 				// FileUtils.copyURLToFile(url, destination);
@@ -598,7 +598,7 @@ public class AllDown {
 			}
 
 			startTime = System.currentTimeMillis();
-			url = new URL("https://www.medregbm.admin.ch/Publikation/CreateExcelListBetriebs");
+			url = new URL("https://www.swissmedic.ch/dam/swissmedic/de/dokumente/internetlisten/betriebe_betreg.xlsx.download.xlsx/Betriebe%20BetReg%202022-10-17.xlsx");
 			if (url!=null) {
 				File destination = new File(file_glncodes_companies_xlsx);
 				FileUtils.copyURLToFile(url, destination, 60000, 60000);
