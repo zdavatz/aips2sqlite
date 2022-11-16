@@ -48,7 +48,7 @@ dependencies {
     implementation group: 'org.yaml', name: 'snakeyaml', version: '1.16'
     implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
     implementation group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '2.6.0'
-    implementation group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.12'
+    implementation group: 'net.sourceforge.htmlunit', name: 'htmlunit', version: '2.66.0'
 
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
     implementation 'jakarta.xml.soap:jakarta.xml.soap-api:3.0.0'
