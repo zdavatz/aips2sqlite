@@ -210,11 +210,9 @@ public class AllDown {
 			SOAPEnvelope envelope = soapPart.getEnvelope();
 			SOAPBody soapBody = envelope.getBody();
 			// Construct SOAP request message
-			SOAPElement soapBodyElement1 = soapBody.addChildElement("pharmacode");
-			soapBodyElement1.addNamespaceDeclaration("", "http://swissindex.e-mediat.net/SwissindexPharma_out_V101");
+			SOAPElement soapBodyElement1 = soapBody.addChildElement("pharmacode", "", "http://swissindex.e-mediat.net/SwissindexPharma_out_V101");
 			soapBodyElement1.addTextNode("DownloadAll");
-			SOAPElement soapBodyElement2 = soapBody.addChildElement("lang");
-			soapBodyElement2.addNamespaceDeclaration("", "http://swissindex.e-mediat.net/SwissindexPharma_out_V101");
+			SOAPElement soapBodyElement2 = soapBody.addChildElement("lang", "", "http://swissindex.e-mediat.net/SwissindexPharma_out_V101");
 			if (language.equals("DE"))
 				soapBodyElement2.addTextNode("DE");
 			else if (language.equals("FR"))
@@ -276,11 +274,9 @@ public class AllDown {
 			SOAPEnvelope envelope = soapPart.getEnvelope();
 			SOAPBody soapBody = envelope.getBody();
 			// Construct SOAP request message
-			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadArticleInput");
-			soapBodyElement1.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/");				
-			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("ATYPE");
-			soapBodyElement2.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/Article_in");			
-			soapBodyElement2.addTextNode("ALL");	
+			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadArticleInput", "", "http://refdatabase.refdata.ch/");
+			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("ATYPE", "", "http://refdatabase.refdata.ch/Article_in");
+			soapBodyElement2.addTextNode("ALL");
 			soapRequest.saveChanges();
 			// If needed print out soapRequest in a pretty format
 			// System.out.println(prettyFormatSoapXml(soapRequest));
@@ -338,11 +334,9 @@ public class AllDown {
 			SOAPEnvelope envelope = soapPart.getEnvelope();
 			SOAPBody soapBody = envelope.getBody();
 			// Construct SOAP request message
-			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadPartnerInput");
-			soapBodyElement1.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/");				
-			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("PTYPE");
-			soapBodyElement2.addNamespaceDeclaration("", "http://refdatabase.refdata.ch/Partner_in");			
-			soapBodyElement2.addTextNode("ALL");	
+			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadPartnerInput", "", "http://refdatabase.refdata.ch/");
+			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("PTYPE", "", "http://refdatabase.refdata.ch/Partner_in");
+			soapBodyElement2.addTextNode("ALL");
 			soapRequest.saveChanges();
 			// If needed print out soapRequest in a pretty format
 			// System.out.println(prettyFormatSoapXml(soapRequest));
