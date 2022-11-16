@@ -113,8 +113,8 @@ public class AllDown {
 			FileUtils.copyInputStreamToFile(is, destination);
 			
 			is.close();	
-			webClient.closeAllWindows();
 			
+			webClient.close();
 			if (!disp)
 				pb.stopp();
 			
