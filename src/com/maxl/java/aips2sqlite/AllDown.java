@@ -71,6 +71,8 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.lang3.RegExUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
@@ -129,22 +131,22 @@ public class AllDown {
 				if (listOfFiles[i].isFile()) {
 					String file = listOfFiles[i].getName();
 					if (file.endsWith(".xml")) {
-				        File src = new File("./downloads/tmp/unzipped_tmp/" + file);
-				        File dst = new File(file_medical_infos_xml);
-				        FileUtils.copyFile(src, dst);
+						File src = new File("./downloads/tmp/unzipped_tmp/" + file);
+						File dst = new File(file_medical_infos_xml);
+						FileUtils.copyFile(src, dst);
 						// Stop timer
 						long stopTime = System.currentTimeMillis();
 						System.out.println("\r- Downloading AIPS file... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 					} else if (file.endsWith(".xsd")) {
-				        File src = new File("./downloads/tmp/unzipped_tmp/" + file);
-				        File dst = new File(file_medical_infos_xsd);
-				        FileUtils.copyFile(src, dst);
+						File src = new File("./downloads/tmp/unzipped_tmp/" + file);
+						File dst = new File(file_medical_infos_xsd);
+						FileUtils.copyFile(src, dst);
 					}
 				}
 			}
 
-	        // Delete folder ./tmp
-	        FileUtils.deleteDirectory(new File("./xml/tmp"));
+			// Delete folder ./tmp
+			FileUtils.deleteDirectory(new File("./xml/tmp"));
 		} catch(Exception e) {
 			if (!disp)
 				pb.stopp();
@@ -234,7 +236,7 @@ public class AllDown {
 			String strBody = getStringFromDoc(doc);
 			String xmlBody = prettyFormat(strBody);
 			// Note: parsing the Document tree and using the removeAttribute function is hopeless!
-			xmlBody = xmlBody.replaceAll("xmlns.*?\".*?\" ", "");
+			xmlBody = RegExUtils.removeAll(xmlBody, "xmlns.*?\".*?\" ");
 			long len = writeToFile(xmlBody, file_refdata_pharma_xml);
 
 			if (!disp)
@@ -293,7 +295,7 @@ public class AllDown {
 			String strBody = getStringFromDoc(doc);
 			String xmlBody = prettyFormat(strBody);
 			// Note: parsing the Document tree and using the removeAttribute function is hopeless!
-			xmlBody = xmlBody.replaceAll("xmlns.*?\".*?\" ", "");
+			xmlBody = RegExUtils.removeAll(xmlBody, "xmlns.*?\".*?\" ");
 
 			long len = writeToFile(xmlBody, file_refdata_pharma_xml);
 
@@ -418,18 +420,18 @@ public class AllDown {
 
 			unzipToTemp(destination);
 
-	        // Copy file ./tmp/unzipped_preparations/Preparations.xml to ./xml/bag_preparations_xml.xml
-	        File src = new File("./downloads/tmp/unzipped_tmp/Preparations.xml");
-	        File dst = new File(file_preparations_xml);
-	        FileUtils.copyFile(src, dst);
+			// Copy file ./tmp/unzipped_preparations/Preparations.xml to ./xml/bag_preparations_xml.xml
+			File src = new File("./downloads/tmp/unzipped_tmp/Preparations.xml");
+			File dst = new File(file_preparations_xml);
+			FileUtils.copyFile(src, dst);
 
-	        if (!disp)
-	        	pb.stopp();
-	        long stopTime = System.currentTimeMillis();
-	        System.out.println("\r- Downloading Preparations file... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			if (!disp)
+				pb.stopp();
+			long stopTime = System.currentTimeMillis();
+			System.out.println("\r- Downloading Preparations file... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 
-	        // Delete folder ./tmp
-	        FileUtils.deleteDirectory(new File("./downloads/tmp"));
+			// Delete folder ./tmp
+			FileUtils.deleteDirectory(new File("./downloads/tmp"));
 		} catch (Exception e) {
 			if (!disp)
 				pb.stopp();
@@ -682,26 +684,26 @@ public class AllDown {
 
 			System.out.println("- Connected to server " + fs + "...");
 			 //get list of filenames
-            FTPFile[] ftpFiles = ftp_client.listFiles();
+			FTPFile[] ftpFiles = ftp_client.listFiles();
 
-            List<String> list_remote_files = Arrays.asList("Konditionen.csv", "Targeting_diff.csv", "Address.csv");
-            List<String> list_local_files = Arrays.asList(Constants.FILE_CUST_IBSA, Constants.FILE_TARG_IBSA, Constants.FILE_MOOS_ADDR);
+			List<String> list_remote_files = Arrays.asList("Konditionen.csv", "Targeting_diff.csv", "Address.csv");
+			List<String> list_local_files = Arrays.asList(Constants.FILE_CUST_IBSA, Constants.FILE_TARG_IBSA, Constants.FILE_MOOS_ADDR);
 
-            if (ftpFiles!=null && ftpFiles.length>0) {
-            	int index = 0;
-            	for (String remote_file : list_remote_files) {
-	            	OutputStream os = new FileOutputStream(Constants.DIR_IBSA + "/" + list_local_files.get(index));
-	            	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+			if (ftpFiles!=null && ftpFiles.length>0) {
+				int index = 0;
+				for (String remote_file : list_remote_files) {
+					OutputStream os = new FileOutputStream(Constants.DIR_IBSA + "/" + list_local_files.get(index));
+					System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
 
-	            	boolean done = ftp_client.retrieveFile(remote_file, os);
-	            	if (done)
-	            		System.out.println("file downloaded successfully.");
-	            	else
-	            		System.out.println("error.");
-	            	os.close();
-	            	index++;
-            	}
-            }
+					boolean done = ftp_client.retrieveFile(remote_file, os);
+					if (done)
+						System.out.println("file downloaded successfully.");
+					else
+						System.out.println("error.");
+					os.close();
+					index++;
+				}
+			}
 		} catch (IOException ex) {
 			System.out.println("Error: " + ex.getMessage());
 			ex.printStackTrace();
@@ -765,15 +767,15 @@ public class AllDown {
 					return;
 				}
 				// Get list of filenames
-	            FTPFile[] ftpFiles = ftp_client.listFiles();
-	            if (ftpFiles!=null && ftpFiles.length>0) {
-	            	// ... then download all csv files
-	            	for (FTPFile f : ftpFiles) {
-	            		String remote_file = f.getName();
-	            		if (remote_file.endsWith("csv") || (remote_file.endsWith("txt") && !remote_file.startsWith("_"))) {
-	            			String local_file = remote_file;
-	            			if (remote_file.equals("Artikelstamm.csv"))
-	            				local_file = Constants.CSV_FILE_DISPO_ZR;
+				FTPFile[] ftpFiles = ftp_client.listFiles();
+				if (ftpFiles!=null && ftpFiles.length>0) {
+					// ... then download all csv files
+					for (FTPFile f : ftpFiles) {
+						String remote_file = f.getName();
+						if (remote_file.endsWith("csv") || (remote_file.endsWith("txt") && !remote_file.startsWith("_"))) {
+							String local_file = remote_file;
+							if (remote_file.equals("Artikelstamm.csv"))
+								local_file = Constants.CSV_FILE_DISPO_ZR;
 							if (remote_file.equals("Artikelstamm_Vollstamm.csv"))
 								local_file = Constants.CSV_FILE_FULL_DISPO_ZR;
 							if (remote_file.equals("Artikelstamm_Voigt.csv"))
@@ -788,21 +790,21 @@ public class AllDown {
 								if (download_option.equals("quick"))
 								continue;
 
-                            OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
+							OutputStream os = new FileOutputStream(Constants.DIR_ZURROSE + "/" + local_file);
 							if (test_mode_on) {
 								System.out.print("- Downloading " + remote_file + " from test server " + fs + "... ");
 							} else {
 								System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
 							}
-                            boolean done = ftp_client.retrieveFile(remote_file, os);
-                            if (done)
-                                System.out.println("success.");
-                            else
-                                System.out.println("error.");
-                            os.close();
-                        }
-                    }
-	            }
+							boolean done = ftp_client.retrieveFile(remote_file, os);
+							if (done)
+								System.out.println("success.");
+							else
+								System.out.println("error.");
+							os.close();
+						}
+					}
+				}
 			}
 		} catch (IOException ex) {
 			System.out.println("Error: " + ex.getMessage());
@@ -862,28 +864,28 @@ public class AllDown {
 				return;
 			}
 			// Get list of filenames
-            FTPFile[] ftpFiles = ftp_client.listFiles();
-            if (ftpFiles!=null && ftpFiles.length>0) {
-            	// ... then download all csv files
-            	for (FTPFile f : ftpFiles) {
-            		String remote_file = f.getName();
-            		if (remote_file.endsWith("csv")) {
-            			String local_file = remote_file;
-            			if (remote_file.startsWith("Kunden"))
-            				local_file = Constants.FILE_CUST_DESITIN;
-            			if (remote_file.startsWith("Artikel"))
-            				local_file = Constants.FILE_ARTICLES_DESITIN;
-            			OutputStream os = new FileOutputStream(Constants.DIR_DESITIN + "/" + local_file);
-                    	System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
-                    	boolean done = ftp_client.retrieveFile(remote_file, os);
-                    	if (done)
-                    		System.out.println("success.");
-                    	else
-                    		System.out.println("error.");
-                    	os.close();
-            		}
-            	}
-            }
+			FTPFile[] ftpFiles = ftp_client.listFiles();
+			if (ftpFiles!=null && ftpFiles.length>0) {
+				// ... then download all csv files
+				for (FTPFile f : ftpFiles) {
+					String remote_file = f.getName();
+					if (remote_file.endsWith("csv")) {
+						String local_file = remote_file;
+						if (remote_file.startsWith("Kunden"))
+							local_file = Constants.FILE_CUST_DESITIN;
+						if (remote_file.startsWith("Artikel"))
+							local_file = Constants.FILE_ARTICLES_DESITIN;
+						OutputStream os = new FileOutputStream(Constants.DIR_DESITIN + "/" + local_file);
+						System.out.print("- Downloading " + remote_file + " from server " + fs + "... ");
+						boolean done = ftp_client.retrieveFile(remote_file, os);
+						if (done)
+							System.out.println("success.");
+						else
+							System.out.println("error.");
+						os.close();
+					}
+				}
+			}
 		} catch (IOException ex) {
 			System.out.println("Error: " + ex.getMessage());
 			ex.printStackTrace();
@@ -899,12 +901,12 @@ public class AllDown {
 		}
 	}
 
-    /*
-     *  fix for exception
-     *  javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException:
-     *  PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException:
-     *  unable to find valid certification path to requested target
-     */
+	/*
+	 *  fix for exception
+	 *  javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException:
+	 *  PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException:
+	 *  unable to find valid certification path to requested target
+	 */
 	private void setNoValidation() throws Exception {
 		// Create a trust manager that does not validate certificate chains
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
@@ -946,38 +948,38 @@ public class AllDown {
 			ZipInputStream zin = new ZipInputStream(new FileInputStream(dst));
 			String workingDir = "./downloads/tmp" + File.separator + "unzipped_tmp";
 			byte buffer[] = new byte[4096];
-		    int bytesRead;
+			int bytesRead;
 
 			ZipEntry entry = null;
-	        while ((entry = zin.getNextEntry()) != null) {
-	            String dirName = workingDir;
+			while ((entry = zin.getNextEntry()) != null) {
+				String dirName = workingDir;
 
-	            int endIndex = entry.getName().lastIndexOf(File.separatorChar);
-	            if (endIndex != -1) {
-	                dirName += entry.getName().substring(0, endIndex);
-	            }
+				int endIndex = entry.getName().lastIndexOf(File.separatorChar);
+				if (endIndex != -1) {
+					dirName += entry.getName().substring(0, endIndex);
+				}
 
-	            File newDir = new File(dirName);
-	            // If the directory that this entry should be inflated under does not exist, create it
-	            if (!newDir.exists() && !newDir.mkdir()) {
-	            	throw new ZipException("Could not create directory " + dirName + "\n");
-	            }
+				File newDir = new File(dirName);
+				// If the directory that this entry should be inflated under does not exist, create it
+				if (!newDir.exists() && !newDir.mkdir()) {
+					throw new ZipException("Could not create directory " + dirName + "\n");
+				}
 
-	            // Copy data from ZipEntry to file
-	            FileOutputStream fos = new FileOutputStream(workingDir + File.separator + entry.getName());
-	            while ((bytesRead = zin.read(buffer)) != -1) {
-	                fos.write(buffer, 0, bytesRead);
-	            }
-	            fos.close();
-	        }
-	        zin.close();
+				// Copy data from ZipEntry to file
+				FileOutputStream fos = new FileOutputStream(workingDir + File.separator + entry.getName());
+				while ((bytesRead = zin.read(buffer)) != -1) {
+					fos.write(buffer, 0, bytesRead);
+				}
+				fos.close();
+			}
+			zin.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private long writeToFile(String stringToWrite, String filename) {
-        try {
+		try {
 			File wfile = new File(filename);
 			if (!wfile.exists())
 				wfile.createNewFile();
@@ -986,32 +988,32 @@ public class AllDown {
 			bw.write(stringToWrite);
 			bw.close();
 			return wfile.length();
- 		} catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
- 		}
-        return 0;
+		}
+		return 0;
 	}
 
 	private String getStringFromDoc(Document doc)    {
-	    DOMImplementationLS domImplementation = (DOMImplementationLS) doc.getImplementation();
-	    LSSerializer lsSerializer = domImplementation.createLSSerializer();
-	    return lsSerializer.writeToString(doc);
+		DOMImplementationLS domImplementation = (DOMImplementationLS) doc.getImplementation();
+		LSSerializer lsSerializer = domImplementation.createLSSerializer();
+		return lsSerializer.writeToString(doc);
 	}
 
 	private String prettyFormat(String input) {
-	    try {
-	        Source xmlInput = new StreamSource(new StringReader(input));
-	        StringWriter stringWriter = new StringWriter();
-	        StreamResult xmlOutput = new StreamResult(stringWriter);
-	        Transformer transformer = TransformerFactory.newInstance().newTransformer();
-	        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-	        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-	        transformer.transform(xmlInput, xmlOutput);
-	        return xmlOutput.getWriter().toString();
-	    } catch (Exception e) {
-	        throw new RuntimeException(e); // simple exception handling, please review it
-	    }
+		try {
+			Source xmlInput = new StreamSource(new StringReader(input));
+			StringWriter stringWriter = new StringWriter();
+			StreamResult xmlOutput = new StreamResult(stringWriter);
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			transformer.transform(xmlInput, xmlOutput);
+			return xmlOutput.getWriter().toString();
+		} catch (Exception e) {
+			throw new RuntimeException(e); // simple exception handling, please review it
+		}
 	}
 
 	private String prettyFormatSoapXml(SOAPMessage soap) {
