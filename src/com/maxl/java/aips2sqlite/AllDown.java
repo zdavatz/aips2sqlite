@@ -71,6 +71,8 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
@@ -349,10 +351,13 @@ public class AllDown {
 			SOAPMessage soapResponse = connection.call(soapRequest, wsURL);
 			// Extract response
 			Document doc = soapResponse.getSOAPBody().extractContentAsDocument();
+
+			this.cleanNameSpace(doc);
+
 			String strBody = getStringFromDoc(doc);
+
 			String xmlBody = prettyFormat(strBody);
-			// Note: parsing the Document tree and using the removeAttribute function is hopeless!
-			xmlBody = xmlBody.replaceAll("xmlns.*?\".*?\" ", "");
+			xmlBody = StringUtils.remove(xmlBody, " xmlns=\"\"");
 
 			long len = writeToFile(xmlBody, file_refdata_partner_xml);
 
@@ -368,6 +373,27 @@ public class AllDown {
 				pb.stopp();
 			System.err.println(" Exception: in 'downRefdataPartnerXml'");
 			e.printStackTrace();
+		}
+	}
+
+	public Document cleanNameSpace(Document doc) {
+
+		NodeList list = doc.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			removeNameSpace(list.item(i), "");
+		}
+
+		return doc;
+	}
+	private void removeNameSpace(Node node, String nameSpaceURI) {
+
+		if (node.getNodeType() == Node.ELEMENT_NODE) {
+			Document ownerDoc = node.getOwnerDocument();
+			ownerDoc.renameNode(node, nameSpaceURI, node.getLocalName());
+		}
+		NodeList list = node.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			removeNameSpace(list.item(i), nameSpaceURI);
 		}
 	}
 
