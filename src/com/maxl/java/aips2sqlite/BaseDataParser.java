@@ -86,7 +86,7 @@ public class BaseDataParser {
                 if (row.getCell(11) != null) {
                     quantity = ExcelOps.getCellValue(row.getCell(11));
                     // Numeric and floating, remove trailing zeros (.00)
-                    quantity = quantity.replaceAll("\\.00", "");
+                    quantity = quantity.replace(".00", "");
                     // System.out.println(quantity);
                 }
                 if (row.getCell(12) != null) {
@@ -166,7 +166,7 @@ public class BaseDataParser {
                 if (row.getCell(11) != null) {
                     quantity = ExcelOps.getCellValue(row.getCell(11));
                     // Numeric and floating, remove trailing zeros (.00)
-                    quantity = quantity.replaceAll("\\.00", "");
+                    quantity = quantity.replace(".00", "");
                 }
                 if (row.getCell(12) != null) {
                     try {

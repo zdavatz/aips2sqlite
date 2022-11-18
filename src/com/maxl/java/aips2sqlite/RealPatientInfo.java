@@ -19,6 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package com.maxl.java.aips2sqlite;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -51,9 +52,9 @@ import com.maxl.java.aips2sqlite.Preparations.Preparation;
 import com.opencsv.CSVReader;
 
 public class RealPatientInfo {
-	
+
 	List<MedicalInformations.MedicalInformation> m_med_list = null;
-	
+
 	// Map to list with all the relevant information
 	// HashMap is faster, but TreeMap is sort by the key :)
 	private static Map<String, ArrayList<String>> m_package_info;
@@ -63,30 +64,30 @@ public class RealPatientInfo {
 
 	// Map to String of additional info, key is the SwissmedicNo5
 	private static Map<String, String> m_add_info_map;
-	
+
 	/*
 	 * Constructors
 	 */
 	public RealPatientInfo(List<MedicalInformations.MedicalInformation> med_list) {
 		m_med_list = med_list;
-		
+
 		// Initialize maps
 		m_package_info = new TreeMap<String, ArrayList<String>>();
 		m_atc_map = new TreeMap<String, String>();
 		m_add_info_map = new TreeMap<String, String>();
 	}
-	
+
 	/*
 	 * Getters / setters
 	 */
 	public void setMedList(List<MedicalInformations.MedicalInformation> med_list) {
 		m_med_list = med_list;
 	}
-	
+
 	public List<MedicalInformations.MedicalInformation> getMedList() {
 		return m_med_list;
 	}
-	
+
 	/**
 	 * Extracts package info from Swissmedic package Excel file
 	 */
@@ -95,7 +96,7 @@ public class RealPatientInfo {
 			long startTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
 				System.out.print("- Processing packages xlsx... ");
-			// Load Swissmedic xls file			
+			// Load Swissmedic xls file
 			FileInputStream packages_file = new FileInputStream(Constants.FILE_PACKAGES_XLSX);
 			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
 			XSSFWorkbook packages_workbook = new XSSFWorkbook(packages_file);
@@ -105,7 +106,7 @@ public class RealPatientInfo {
 			/*
 			if (SHOW_LOGS)
 				System.out.print("- Processing packages xls... ");
-			// Load Swissmedic xls file			
+			// Load Swissmedic xls file
 			FileInputStream packages_file = new FileInputStream(FILE_PACKAGES_XLS);
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 			HSSFWorkbook packages_workbook = new HSSFWorkbook(packages_file);
@@ -139,17 +140,17 @@ public class RealPatientInfo {
 
 					// 0: Zulassungsnummer, 1: Dosisst�rkenummer, 2: Pr�paratebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
 					// 7: Erstzulassung Pr�parat, 8: Zulassungsdatum Sequenz, 9: G�ltigkeitsdatum, 10: Packungscode, 11: Packungsgr�sse
-					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisst�rke, 15: Abgabekategorie Pr�parat, 
+					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisst�rke, 15: Abgabekategorie Pr�parat,
 					// 16: Wirkstoff, 17: Zusammensetzung, 18: Anwendungsgebiet Pr�parat, 19: Anwendungsgebiet Dosisst�rke, 20: Gentechnisch hergestellte Wirkstoffe
 					// 21: Kategorie bei Insulinen, 22: Bet�ubungsmittelhaltigen Pr�paraten
-						
+
 					// @cybermax: 15.10.2013 - work around for Excel cells of type "Special" (cell0 and cell10)
 					if (row.getCell(0) != null)
 						swissmedic_no5 = String.format("%05d", (int)(row.getCell(0).getNumericCellValue()));	// Swissmedic registration number (5 digits)
 					if (row.getCell(2) != null)
 						sequence_name = row.getCell(2).getStringCellValue(); 	// Sequence name
 					if (row.getCell(4) != null)
-						heilmittel_code = row.getCell(4).getStringCellValue();	// Heilmittelcode					
+						heilmittel_code = row.getCell(4).getStringCellValue();	// Heilmittelcode
 					if (row.getCell(11) != null) {
 						package_size = ExcelOps.getCellValue(row.getCell(11));    // Packungsgr�sse
 						// Numeric and floating, remove trailing zeros (.00)
@@ -163,10 +164,10 @@ public class RealPatientInfo {
 							// https://github.com/zdavatz/aips2sqlite/issues/30
 						}
 					if (row.getCell(13) != null)
-						swissmedic_cat = row.getCell(13).getStringCellValue();	// Abgabekategorie	
+						swissmedic_cat = row.getCell(13).getStringCellValue();	// Abgabekategorie
 					if (row.getCell(18) != null)
-						application_area = row.getCell(18).getStringCellValue();	// Anwendungsgebiet				
-					if (row.getCell(10) != null) {							
+						application_area = row.getCell(18).getStringCellValue();	// Anwendungsgebiet
+					if (row.getCell(10) != null) {
 						package_id = String.format("%03d", (int)(row.getCell(10).getNumericCellValue()));		// Verpackungs ID
 						swissmedic_no8 = swissmedic_no5 + package_id;
 						// Fill in row
@@ -188,7 +189,7 @@ public class RealPatientInfo {
 						if (CmlOptions.DB_LANGUAGE.equals("de"))
 							withdrawn_str = "a.H.";	// ausser Handel
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-							withdrawn_str = "p.c.";	// 
+							withdrawn_str = "p.c.";	//
 						else if (CmlOptions.DB_LANGUAGE.equals("it"))
 							withdrawn_str = "f.c.";	// fuori commercio
 						pack.add(withdrawn_str); 	// 10
@@ -198,7 +199,7 @@ public class RealPatientInfo {
 						// 22.03.2014: EAN-13 barcodes - initialization
 						ean_code_str = "7680" + swissmedic_no8;
 						pack.add(ean_code_str); 	// 14
-						
+
 						m_package_info.put(swissmedic_no8, pack);
 					}
 				}
@@ -210,7 +211,7 @@ public class RealPatientInfo {
 						+ (stopTime - startTime) / 1000.0f + " sec");
 			}
 			startTime = System.currentTimeMillis();
-			
+
 			if (CmlOptions.SHOW_LOGS)
 				System.out.print("- Processing atc classes xls... ");
 			if (CmlOptions.DB_LANGUAGE.equals("de")) {
@@ -287,7 +288,7 @@ public class RealPatientInfo {
 			stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
 				System.out.println((m_atc_map.size() + 1) + " classes in " + (stopTime - startTime) / 1000.0f + " sec");
-			
+
 			// Load Refdata xml file
 			File refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_XML);
 			FileInputStream refdata_fis = new FileInputStream(refdata_xml_file);
@@ -314,14 +315,14 @@ public class RealPatientInfo {
 						if (CmlOptions.DB_LANGUAGE.equals("de"))
 							pi_row.set(1, pharma.getNameDE());
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-							pi_row.set(1, pharma.getNameFR());		
+							pi_row.set(1, pharma.getNameFR());
 						// If med is in refdata file, then it is "in Handel!!" ;)
 						pi_row.set(10, "");
 						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
 						pi_row.set(14, ean_code);
 					} else {
 						if (CmlOptions.SHOW_ERRORS) {
-							System.err.println(">> Does not exist in BAG xls: " + smno8 
+							System.err.println(">> Does not exist in BAG xls: " + smno8
 									+ " (" + pharma.getNameDE() + ")");
 						}
 					}
@@ -333,7 +334,7 @@ public class RealPatientInfo {
 						System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getNameDE());
 				}
 			}
-			
+
 			stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
 				System.out.println(pharma_list.size() + " medis in " + (stopTime - startTime) / 1000.0f + " sec");
@@ -374,7 +375,7 @@ public class RealPatientInfo {
 							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 								flagSB20_str = "QP 10%";
 							else if (CmlOptions.DB_LANGUAGE.equals("it"))
-								flagSB20_str = "QP 10%";							
+								flagSB20_str = "QP 10%";
 						} else
 							flagSB20_str = "";
 					}
@@ -444,7 +445,7 @@ public class RealPatientInfo {
 										pi_row.set(8, "CHF " + ep);
 									} catch (NumberFormatException e) {
 										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Number format exception (exfactory price): " + swissMedicNo8 
+											System.err.println("Number format exception (exfactory price): " + swissMedicNo8
 													+ " (" + public_price.size() + ")");
 									}
 								}
@@ -461,11 +462,11 @@ public class RealPatientInfo {
 											pi_row.set(11, ", LS");
 									} catch (NullPointerException e) {
 										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Null pointer exception (public price): " + swissMedicNo8 
-													+ " (" + public_price.size() + ")");										
+											System.err.println("Null pointer exception (public price): " + swissMedicNo8
+													+ " (" + public_price.size() + ")");
 									} catch (NumberFormatException e) {
 										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Number format exception (public price): " + swissMedicNo8 
+											System.err.println("Number format exception (public price): " + swissMedicNo8
 													+ " (" + public_price.size() + ")");
 									}
 								}
@@ -500,33 +501,33 @@ public class RealPatientInfo {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void process() {
 		// Extract package information (this is the heavy-duty bit)
 		extractPackageInfo();
-		
+
 		// Load CSS file
 		String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
-		
+
 		// Initialize counters for different languages
 		int med_counter = 0;
 		int tot_med_counter = 0;
 		String pi_complete_xml = "";
 		String file_report = "";
-		
+
 		HtmlUtils html_utils = null;
-		
+
 		ArrayList<String> list_of_authnrs = new ArrayList<String>();
-		
-		System.out.println("Processing Patient Infos...");	
-		
+
+		System.out.println("Processing Patient Infos...");
+
 		for( MedicalInformations.MedicalInformation m : m_med_list ) {
-			// --> Read PATIENTENINFOS! <--				
+			// --> Read PATIENTENINFOS! <--
 			if (m.getLang().equals(CmlOptions.DB_LANGUAGE) && m.getType().equals("pi")) {
-				if (tot_med_counter<5000) {									
-					if (m.getTitle().trim().toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())  
-							&& m.getAuthHolder().toLowerCase().startsWith(CmlOptions.OPT_MED_OWNER.toLowerCase())) {	
-						
+				if (tot_med_counter<5000) {
+					if (m.getTitle().trim().toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())
+							&& m.getAuthHolder().toLowerCase().startsWith(CmlOptions.OPT_MED_OWNER.toLowerCase())) {
+
 						// Extract section titles and section ids
 						/*
 						MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
@@ -536,77 +537,85 @@ public class RealPatientInfo {
 						for( MedicalInformations.MedicalInformation.Sections.Section s : med_section_list ) {
 							ids_str += (s.getId() + ",");
 							titles_str += (s.getTitle() + ";");
-						}	
+						}
 						*/
-						
+
 						boolean exists = false;
 						if (list_of_authnrs.contains(m.getAuthNrs())) {
 							exists = true;
 						}
 						list_of_authnrs.add(m.getAuthNrs());
-						
-						System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + m.getAuthNrs());// + " ver -> "+ m.getVersion());						
+
+						System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + m.getAuthNrs());// + " ver -> "+ m.getVersion());
 						if (!exists) {
 							file_report += "   " + m.getAuthNrs() + " -> " + m.getTitle() + "\n";
 						} else {
 							file_report += "***" + m.getAuthNrs() + " -> " + m.getTitle() + "\n";
 						}
-												
+
 						// Clean html
 						html_utils = new HtmlUtils(m.getContent());
 						html_utils.setLanguage(CmlOptions.DB_LANGUAGE);
-						// Remove spans 
-						html_utils.clean();	
-																		
-						// Sanitize html, the function returns nicely formatted html												
+						// Remove spans
+						html_utils.clean();
+
+						// Sanitize html, the function returns nicely formatted html
 						String html_sanitized = html_utils.sanitizePatient(m.getTitle(), m.getAuthHolder(), m.getAuthNrs(), CmlOptions.DB_LANGUAGE);
 						String mContent_str = html_sanitized;
-						
+
 						/*
 						 * Update "Packungen" section and extract therapeutisches index
 						 */
 						mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, m.getAuthNrs(), html_sanitized, new ArrayList<String>());
-					
+
 						if (CmlOptions.XML_FILE==true) {
-							// Add header to html file							
-							mContent_str = mContent_str.replaceAll("<head>", 
-									"<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><style>" + amiko_style_v1_str + "</style>");	
+							// Add header to html file
+							mContent_str = mContent_str.replaceAll("<head>",
+									"<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><style>" + amiko_style_v1_str + "</style>");
 
 							// --> Note: following line is not really necessary...
 							// m.setContent(mContent_str);
-									
+
 							// Add header to xml file
-							String xml_str = html_utils.convertHtmlToXml("pi", m.getTitle(), mContent_str, m.getAuthNrs());									
-							xml_str = html_utils.addHeaderToXml("singlepi", xml_str);
+							String xml_str = html_utils.convertHtmlToXml("pi", m.getTitle(), mContent_str, m.getAuthNrs());
 							pi_complete_xml += (xml_str + "\n");
-							
+
+							BufferedWriter writer = null;
 							// Write to html and xml files to disk
 							String name = m.getTitle();
 							// Replace all "Sonderzeichen"
-							name = name.trim().replaceAll("[^a-zA-Z0-9]+", "_");									
+							name = name.trim().replaceAll("[^a-zA-Z0-9]+", "_");
 							if (CmlOptions.DB_LANGUAGE.equals("de")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_de_html/", name + "_pi_de.html");
-								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_de_xml/", name + "_pi_de.xml");
+								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_de_xml/", name + "_pi_de.xml");
 							} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_fr_html/", name + "_pi_fr.html");
-								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_fr_xml/", name + "_pi_fr.xml");
+								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_fr_xml/", name + "_pi_fr.xml");
 							} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_it_html/", name + "_pi_it.html");
-								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_it_xml/", name + "_pi_it.xml");
+								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_it_xml/", name + "_pi_it.xml");
+							}
+							if (writer != null) {
+								html_utils.addHeaderToXml("singlepi", xml_str, writer);
+								try {
+									writer.close();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
 							}
 						}
-						
+
 						med_counter++;
 					}
 				}
 				tot_med_counter++;
 			}
 		}
-				
+
 		if (!file_report.isEmpty()) {
 			FileOps.writeToFile(file_report, Constants.DIR_OUTPUT, "pi_swissno5_parse_report.txt");
 		}
-		
+
 		System.out.println();
 		System.out.println("--------------------------------------------");
 		System.out.println("Total number of med infos in database: " + m_med_list.size());
@@ -614,21 +623,21 @@ public class RealPatientInfo {
 		System.out.println("Number of PI which were processed: " + med_counter);
 		System.out.println("--------------------------------------------");
 	}
-	
-	private String updateSectionPackungen(String title, String atc_code, Map<String, ArrayList<String>> pack_info, 
+
+	private String updateSectionPackungen(String title, String atc_code, Map<String, ArrayList<String>> pack_info,
 			String regnr_str, String content_str, List<String> tIndex_list) {
 		Document doc = Jsoup.parse(content_str, "UTF-16");
 		doc.outputSettings().escapeMode(EscapeMode.xhtml);
 		doc.outputSettings().prettyPrint(true);
 		doc.outputSettings().indentAmount(4);
-		
+
 		// package info string for original
 		List<String> pinfo_originals_str = new ArrayList<String>();
 		// package info string for generika
 		List<String> pinfo_generics_str = new ArrayList<String>();
 		// package info string for the rest
 		List<String> pinfo_str = new ArrayList<String>();
-		
+
 		int index = 0;
 
 		// Extract swissmedicno5 registration numbers
@@ -637,7 +646,7 @@ public class RealPatientInfo {
 			// Extract original / generika info + Selbstbehalt info from
 			// "add_info_map"
 			String orggen_str = "";		// O=Original, G=Generika
-			String flagsb_str = "";		// SB=Selbstbehalt 
+			String flagsb_str = "";		// SB=Selbstbehalt
 			String addinfo_str = m_add_info_map.get(s);
 			if (addinfo_str != null) {
 				List<String> ai_list = Arrays.asList(addinfo_str.split("\\s*;\\s*"));
@@ -660,13 +669,13 @@ public class RealPatientInfo {
 				// Check if swissmedicno8_key is a key of the map
 				if (pack_info.containsKey(swissmedicno8_key)) {
 					ArrayList<String> pi_row = m_package_info.get(swissmedicno8_key);
-					if (pi_row != null) {										
-						
+					if (pi_row != null) {
+
 						// Remove double spaces in title and capitalize
 						// String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "), 1);
 						String medtitle = capitalizeFully(pi_row.get(1).replaceAll("\\s+", " "));
 						// Remove [QAP?] -> not an easy one!
-						medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");						
+						medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");
 						// --> Add "ausser Handel" information
 						String withdrawn_str = "";
 						if (pi_row.get(10).length() > 0)
@@ -674,9 +683,9 @@ public class RealPatientInfo {
 						// --> Add public price information
 						if (pi_row.get(7).length() > 0) {
 							// The rest of the package information
-							String append_str = ", " + pi_row.get(7) 
-									+ withdrawn_str + " [" + pi_row.get(5) 
-									+ pi_row.get(11) + pi_row.get(12) 
+							String append_str = ", " + pi_row.get(7)
+									+ withdrawn_str + " [" + pi_row.get(5)
+									+ pi_row.get(11) + pi_row.get(12)
 									+ flagsb_str + orggen_str + "]";
 							// Generate package info string
 							if (orggen_str.equals(", O"))
@@ -684,7 +693,7 @@ public class RealPatientInfo {
 							else if (orggen_str.equals(", G"))
 								pinfo_generics_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
 							else
-								pinfo_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");								
+								pinfo_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>");
 						} else {
 							//
 							// @maxl (10.01.2014): Price for swissmedicNo8 pack is not listed in bag_preparations.xml!!
@@ -692,7 +701,7 @@ public class RealPatientInfo {
 							pinfo_str.add("<p class=\"spacing1\">"
 										+ medtitle + withdrawn_str + " [" + pi_row.get(5) +"]</p>");
 						}
-						
+
 						// --> Add "tindex_str" and "application_str" (see
 						// SqlDatabase.java)
 						if (index == 0) {
@@ -705,37 +714,37 @@ public class RealPatientInfo {
 			}
 		}
 		// Re-order the string alphabetically
-		if (!pinfo_originals_str.isEmpty()) {		
-			Collections.sort(pinfo_originals_str, new AlphanumComp()); 
-		}	
-		if (!pinfo_generics_str.isEmpty()) {		
+		if (!pinfo_originals_str.isEmpty()) {
+			Collections.sort(pinfo_originals_str, new AlphanumComp());
+		}
+		if (!pinfo_generics_str.isEmpty()) {
 			Collections.sort(pinfo_generics_str, new AlphanumComp());
 		}
-		if (!pinfo_str.isEmpty()) {		
+		if (!pinfo_str.isEmpty()) {
 			Collections.sort(pinfo_str, new AlphanumComp());
-		}		
+		}
 		// Concatenate lists...
 		pinfo_originals_str.addAll(pinfo_generics_str);
 		pinfo_originals_str.addAll(pinfo_str);
 		// Put everything in pinfo_str
 		pinfo_str = pinfo_originals_str;
-		
+
 		// In case nothing was found
 		if (index == 0) {
 			tIndex_list.add("");
 			tIndex_list.add("");
 		}
-		
+
 		/*
 		* Replace package information
 		*/
 		if (CmlOptions.PLAIN==false) {
-			// Replace original package information with pinfo_str	
+			// Replace original package information with pinfo_str
 			String p_str = "<p class=\"spacing2\"> </p>";
 			for (String p : pinfo_str) {
 				p_str += p;
-			}	
-		
+			}
+
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);
 			Elements elems = null;
 			if (CmlOptions.DB_LANGUAGE.equals("de"))
@@ -743,24 +752,24 @@ public class RealPatientInfo {
 			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quels sont les emballages � disposition)");
 			else if (CmlOptions.DB_LANGUAGE.equals("it"))
-				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quali confezioni sono disponibili?)");			
+				elems = doc.select("div[id^=section]").select("div:matchesOwn(Quali confezioni sono disponibili?)");
 			if (elems!=null) {
 				for (Element e : elems) {
 					Elements siblings = e.siblingElements();
 					if (siblings!=null) {
-						// ** Chapter "Packungen"						
+						// ** Chapter "Packungen"
 						// System.out.println(e.siblingElements().last().html());
 						// Note: do not use "append"
 						if (siblings.last()!=null)
 							siblings.last().after(p_str);
 					}
 				}
-			}			
+			}
 		}
-		
+
 		return doc.html();
 	}
-	
+
 	private String capitalizeFully(String s) {
 		// Split string
 		String[] tokens = s.split("\\s");

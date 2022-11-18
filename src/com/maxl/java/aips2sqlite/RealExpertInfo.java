@@ -73,56 +73,56 @@ public class RealExpertInfo {
 
 	// Main sqlite database
 	SqlDatabase m_sql_db;
-	
+
 	List<MedicalInformations.MedicalInformation> m_med_list = null;
 
 	// Map to list with all the relevant information
 	// HashMap is faster, but TreeMap is sort by the key :)
 	private static Map<String, ArrayList<String>> m_package_info;
-	
+
 	// Map to Swiss DRG: atc code -> (dosage class, price)
-	private static Map<String, ArrayList<String>> m_swiss_drg_info;	
-	private static Map<String, String> m_swiss_drg_footnote;	
-	
+	private static Map<String, ArrayList<String>> m_swiss_drg_info;
+	private static Map<String, String> m_swiss_drg_footnote;
+
 	// Map to string of atc classes, key is the ATC-code or any of its substrings
 	private static Map<String, String> m_atc_map;
-	
+
 	// Map from swissmedic no.5 to atc codes
-	private static Map<String, String> m_smn5_atc_map;	
-	
+	private static Map<String, String> m_smn5_atc_map;
+
 	// Map to string of additional info, key is the SwissmedicNo5
-	private static Map<String, String> m_add_info_map;	
-	
-	// Packages string used for "shopping" purposes (will contain ean code, pharma codes, prices etc.) 
-	private List<String> m_list_of_packages = null;		
-	
+	private static Map<String, String> m_add_info_map;
+
+	// Packages string used for "shopping" purposes (will contain ean code, pharma codes, prices etc.)
+	private List<String> m_list_of_packages = null;
+
 	// List of ean codes
-	private List<String> m_list_of_eancodes = null;	
-		
+	private List<String> m_list_of_eancodes = null;
+
 	// Map of swissmedicno5 to list of names
 	private HashMap<String, ArrayList<String>> m_smn5_to_list_of_names = null;
-	
+
 	// Map of products
-	private Map<String, Product> m_map_products = null;	
+	private Map<String, Product> m_map_products = null;
 
 	// Map of eancodes to owner
 	private Map<String, String> m_map_eancode_to_owner = null;
-	
+
 	// Package section string
 	private static String m_pack_info_str = "";
-	
+
 	// Stop word hashset
 	HashSet<String> m_stop_words_hash = null;
 	/*
 	 * Constructors
 	 */
-	public RealExpertInfo(SqlDatabase sql_db, 
-			List<MedicalInformations.MedicalInformation> med_list, 
+	public RealExpertInfo(SqlDatabase sql_db,
+			List<MedicalInformations.MedicalInformation> med_list,
 			Map<String, Product> map_products) {
 		m_sql_db = sql_db;
 		m_med_list = med_list;
 		m_map_products = map_products;
-		
+
 		// Initialize maps and lists
 		m_package_info = new TreeMap<String, ArrayList<String>>();
 		m_swiss_drg_info = new TreeMap<String, ArrayList<String>>();
@@ -134,18 +134,18 @@ public class RealExpertInfo {
 		m_list_of_eancodes = new ArrayList<String>();
 		m_map_eancode_to_owner = new HashMap<String, String>();
 	}
-	
+
 	/*
 	 * Getters / setters
 	 */
 	public void setMedList(List<MedicalInformations.MedicalInformation> med_list) {
 		m_med_list = med_list;
 	}
-	
+
 	public List<MedicalInformations.MedicalInformation> getMedList() {
 		return m_med_list;
 	}
-	
+
 	/**
 	 * Extracts all stop words from the stop word text file, used to generate "therapy index"
 	 */
@@ -155,17 +155,17 @@ public class RealExpertInfo {
 		if (CmlOptions.DB_LANGUAGE.equals("de"))
 			stopWords_str = FileOps.readFromFile(Constants.FILE_STOP_WORDS_DE);
 		else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-			stopWords_str = FileOps.readFromFile(Constants.FILE_STOP_WORDS_FR);				
+			stopWords_str = FileOps.readFromFile(Constants.FILE_STOP_WORDS_FR);
 		// Create stop word hash set!
 		if (stopWords_str!=null) {
 			List<String> sw = Arrays.asList(stopWords_str.split("\n"));
 			m_stop_words_hash = new HashSet<String>();
 			for (String w : sw) {
 				m_stop_words_hash.add(w.trim().toLowerCase());
-			}	
+			}
 		}
-	}	
-	
+	}
+
 	/**
 	 * Extracts package info from Swissmedic package Excel file
 	 */
@@ -174,7 +174,7 @@ public class RealExpertInfo {
 			long startTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
 				System.out.print("- Processing packages xlsx... ");
-			// Load Swissmedic xls file			
+			// Load Swissmedic xls file
 			FileInputStream packages_file = new FileInputStream(Constants.FILE_PACKAGES_XLSX);
 			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
 			XSSFWorkbook packages_workbook = new XSSFWorkbook(packages_file);
@@ -184,7 +184,7 @@ public class RealExpertInfo {
 			/*
 			if (SHOW_LOGS)
 				System.out.print("- Processing packages xls... ");
-			// Load Swissmedic xls file			
+			// Load Swissmedic xls file
 			FileInputStream packages_file = new FileInputStream(FILE_PACKAGES_XLS);
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 			HSSFWorkbook packages_workbook = new HSSFWorkbook(packages_file);
@@ -217,13 +217,13 @@ public class RealExpertInfo {
 					String ean_code_str = "";
 					String pharma_code_str = "";
 					String owner_str = "";
-					
+
 					// 0: Zulassungsnummer, 1: Dosisstärkenummer, 2: Präparatebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
 					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Packungscode, 11: Packungsgrösse
-					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisstärke, 15: Abgabekategorie Präparat, 
+					// 12: Einheit, 13: Abgabekategorie Packung, 14: Abgabekategorie Dosisstärke, 15: Abgabekategorie Präparat,
 					// 16: Wirkstoff, 17: Zusammensetzung, 18: Anwendungsgebiet Präparat, 19: Anwendungsgebiet Dosisstärke, 20: Gentechnisch hergestellte Wirkstoffe
 					// 21: Kategorie bei Insulinen, 22: Betäubungsmittelhaltigen Präparaten
-					
+
 					// @cybermax: 15.10.2013 - work around for Excel cells of type "Special" (cell0 and cell10)
 					if (row.getCell(0) != null)
 						swissmedic_no5 = String.format("%05d", (int)(row.getCell(0).getNumericCellValue()));	// Swissmedic registration number (5 digits)
@@ -232,7 +232,7 @@ public class RealExpertInfo {
 					if (row.getCell(3) != null)
 						owner_str = ExcelOps.getCellValue(row.getCell(3));				// Owner
 					if (row.getCell(4) != null)
-						heilmittel_code = ExcelOps.getCellValue(row.getCell(4));	// Heilmittelcode					
+						heilmittel_code = ExcelOps.getCellValue(row.getCell(4));	// Heilmittelcode
 					if (row.getCell(11) != null) {
 						package_size = ExcelOps.getCellValue(row.getCell(11));    // Packungsgr?sse
 						// Numeric and floating, remove trailing zeros (.00)
@@ -241,10 +241,10 @@ public class RealExpertInfo {
 					if (row.getCell(12) != null)
 						package_unit = ExcelOps.getCellValue(row.getCell(12));		// Einheit
 					if (row.getCell(13) != null)
-						swissmedic_cat = ExcelOps.getCellValue(row.getCell(13));	// Abgabekategorie Packung	
+						swissmedic_cat = ExcelOps.getCellValue(row.getCell(13));	// Abgabekategorie Packung
 					if (row.getCell(18) != null)
-						application_area = ExcelOps.getCellValue(row.getCell(18));	// Anwendungsgebiet Präparat				
-					if (row.getCell(10) != null) {							
+						application_area = ExcelOps.getCellValue(row.getCell(18));	// Anwendungsgebiet Präparat
+					if (row.getCell(10) != null) {
 						package_id = String.format("%03d", (int)(row.getCell(10).getNumericCellValue()));	// Verpackungs ID
 						swissmedic_no8 = swissmedic_no5 + package_id;
 						// Fill in row
@@ -266,7 +266,7 @@ public class RealExpertInfo {
 						if (CmlOptions.DB_LANGUAGE.equals("de"))
 							withdrawn_str = "a.H.";	// ausser Handel
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-							withdrawn_str = "p.c.";	// 
+							withdrawn_str = "p.c.";	//
 						pack.add(withdrawn_str); 	// 10
 						pack.add(speciality_str); 	// 11
 						pack.add(plimitation_str); 	// 12
@@ -277,7 +277,7 @@ public class RealExpertInfo {
 						pack.add(pharma_code_str);	// 15
 						pack.add(sequence_name);	// 16
 						pack.add(owner_str);		// 17
-						
+
 						m_package_info.put(swissmedic_no8, pack);
 					}
 				}
@@ -289,7 +289,7 @@ public class RealExpertInfo {
 						+ (stopTime - startTime) / 1000.0f + " sec");
 			}
 			startTime = System.currentTimeMillis();
-			
+
 			if (CmlOptions.SHOW_LOGS)
 				System.out.print("- Processing atc classes xls... ");
 			if (CmlOptions.DB_LANGUAGE.equals("de")) {
@@ -300,7 +300,7 @@ public class RealExpertInfo {
 				HSSFWorkbook atc_classes_workbook = new HSSFWorkbook(atc_classes_file);
 				// Get first sheet from workbook
 				// HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(1);	// --> 2013 file
-				HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(0);		// --> 2014 file			
+				HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(0);		// --> 2014 file
 				// Iterate through all rows of first sheet
 				rowIterator = atc_classes_sheet.iterator();
 
@@ -341,7 +341,7 @@ public class RealExpertInfo {
 				// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
 				HSSFWorkbook atc_classes_workbook = new HSSFWorkbook(atc_classes_file);
 				// Get first sheet from workbook
-				HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(0);		// --> 2014 file			
+				HSSFSheet atc_classes_sheet = atc_classes_workbook.getSheetAt(0);		// --> 2014 file
 				// Iterate through all rows of first sheet
 				rowIterator = atc_classes_sheet.iterator();
 
@@ -365,11 +365,11 @@ public class RealExpertInfo {
 									m_atc_map.put(atc_code, atc_class);
 								}
 							}
-						}							
+						}
 					}
 					num_rows++;
 				}
-				
+
 				// Load multilingual ATC classes txt file, replace English with French
 				String atc_classes_multi = FileOps.readFromFile(Constants.FILE_ATC_MULTI_LINGUAL_TXT);
 				// Loop through all lines
@@ -388,7 +388,7 @@ public class RealExpertInfo {
 			stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
 				System.out.println((m_atc_map.size() + 1) + " classes in " + (stopTime - startTime) / 1000.0f + " sec");
-		
+
 			// Load Refdata xml file
 			File refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_XML);
 			FileInputStream refdata_fis = new FileInputStream(refdata_xml_file);
@@ -408,16 +408,16 @@ public class RealExpertInfo {
 				String pharma_code = pharma.getPhar();
 				String owner = pharma.getAUTHHOLDERNAME();
 				if (ean_code.length() == 13) {
-					smno8 = ean_code.substring(4, 12);									
+					smno8 = ean_code.substring(4, 12);
 					// Extract pharma corresponding to swissmedicno8 (source: swissmedic package file)
-					ArrayList<String> pi_row = m_package_info.get(smno8);					
+					ArrayList<String> pi_row = m_package_info.get(smno8);
 					// Replace sequence_name
 					if (pi_row != null) {
 						// Präparatname + galenische Form
 						if (CmlOptions.DB_LANGUAGE.equals("de"))
 							pi_row.set(1, pharma.getNameDE());
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-							pi_row.set(1, pharma.getNameFR());		
+							pi_row.set(1, pharma.getNameFR());
 						// If med is in refdata file, then it is "in Handel!!" ;)
 						pi_row.set(10, "");	// By default this is set to a.H. or p.C.
 						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
@@ -426,7 +426,7 @@ public class RealExpertInfo {
 						pi_row.set(15, pharma_code);
 						// Owner
 						pi_row.set(17, owner);
-					} 
+					}
 					else {
 						if (CmlOptions.SHOW_ERRORS) {
 							if (pharma.getATYPE().equals("PHARMA"))
@@ -544,7 +544,7 @@ public class RealExpertInfo {
 										pi_row.set(8, "CHF " + ep);
 									} catch (NumberFormatException e) {
 										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Number format exception (exfactory price): " + swissMedicNo8 
+											System.err.println("Number format exception (exfactory price): " + swissMedicNo8
 													+ " (" + public_price.size() + ")");
 									}
 								}
@@ -559,11 +559,11 @@ public class RealExpertInfo {
 											pi_row.set(11, ", LS");
 									} catch (NullPointerException e) {
 										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Null pointer exception (public price): " + swissMedicNo8 
-													+ " (" + public_price.size() + ")");										
+											System.err.println("Null pointer exception (public price): " + swissMedicNo8
+													+ " (" + public_price.size() + ")");
 									} catch (NumberFormatException e) {
 										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Number format exception (public price): " + swissMedicNo8 
+											System.err.println("Number format exception (public price): " + swissMedicNo8
 													+ " (" + public_price.size() + ")");
 									}
 								}
@@ -590,7 +590,7 @@ public class RealExpertInfo {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Extracts Swiss DRG info from Swiss DRG Excel file
 	 */
@@ -599,47 +599,47 @@ public class RealExpertInfo {
 			long startTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
 				System.out.print("- Processing Swiss DRG xlsx... ");
-			// Load Swiss DRG file	
-			FileInputStream swiss_drg_file = null;			
+			// Load Swiss DRG file
+			FileInputStream swiss_drg_file = null;
 			if (CmlOptions.DB_LANGUAGE.equals("de"))
 				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_DE_XLSX);
 			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_FR_XLSX);
 			else
 				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_DE_XLSX);
-			
+
 			// Get workbook instance for XLSX file (XSSF = Horrible SpreadSheet Format)
 			XSSFWorkbook swiss_drg_workbook = new XSSFWorkbook(swiss_drg_file);
-			
-			// Get "Anlage 2 und Anlage 3" 				
+
+			// Get "Anlage 2 und Anlage 3"
 			String zusatz_entgelt = "";
 			String atc_code = "";
 			String dosage_class = "";
 			String price = "";
-			
+
 			// TODO: Add code for Anlage 3 (a==5)
 			for (int a=4; a<=4; a++) {
 				int num_rows = 0;
-				String current_footnote = "";				
-				
+				String current_footnote = "";
+
 				XSSFSheet swiss_drg_sheet = swiss_drg_workbook.getSheetAt(a);
-		
+
 				// Iterate through all rows of first sheet
 				Iterator<Row> rowIterator = swiss_drg_sheet.iterator();
-				
+
 				while (rowIterator.hasNext()) {
 					if (num_rows>7) {
 						Row row = rowIterator.next();
 						if (row.getCell(0)!=null)	// Zusatzentgelt
-							zusatz_entgelt = ExcelOps.getCellValue(row.getCell(0));					
+							zusatz_entgelt = ExcelOps.getCellValue(row.getCell(0));
 						if (row.getCell(2)!= null)	// ATC Code
-							atc_code = ExcelOps.getCellValue(row.getCell(2)).replaceAll("[^A-Za-z0-9.]", ""); 
+							atc_code = ExcelOps.getCellValue(row.getCell(2)).replaceAll("[^A-Za-z0-9.]", "");
 						if (row.getCell(3)!=null)	// Dosage class
 							dosage_class = ExcelOps.getCellValue(row.getCell(3));
 						if (row.getCell(4)!=null) 	// Price
 							price = ExcelOps.getCellValue(row.getCell(4));
-					
-						if (!zusatz_entgelt.isEmpty() && !dosage_class.isEmpty() && !price.isEmpty() && 
+
+						if (!zusatz_entgelt.isEmpty() && !dosage_class.isEmpty() && !price.isEmpty() &&
 								!atc_code.contains(".") && !dosage_class.equals("BLANK") && !price.equals("BLANK")) {
 							String swiss_drg_str = "";
 							if (a==4) {
@@ -650,7 +650,7 @@ public class RealExpertInfo {
 							}
 							else if (a==5)
 								swiss_drg_str = zusatz_entgelt + ", " + price;
-								
+
 							// Get list of dosages for a particular atc code
 							ArrayList<String> dosages = m_swiss_drg_info.get(atc_code);
 							// If there is no list, create a new one
@@ -658,9 +658,9 @@ public class RealExpertInfo {
 								dosages = new ArrayList<String>();
 							dosages.add(swiss_drg_str);
 							// Update global swiss drg list
-							m_swiss_drg_info.put(atc_code, dosages);	
+							m_swiss_drg_info.put(atc_code, dosages);
 							// Update footnote map
-							m_swiss_drg_footnote.put(atc_code, current_footnote);						
+							m_swiss_drg_footnote.put(atc_code, current_footnote);
 						} else if (!zusatz_entgelt.isEmpty() && dosage_class.equals("BLANK") && price.equals("BLANK")) {
 							if (zusatz_entgelt.contains(" ")) {
 								String[] sub_script = zusatz_entgelt.split(" ");
@@ -674,52 +674,52 @@ public class RealExpertInfo {
 					num_rows++;
 				}
 			}
-			
+
 			long stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS) {
 				System.out.println("processed all Swiss DRG packages in " + (stopTime - startTime) / 1000.0f + " sec");
-			}						
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}		
-	}	
-	
+		}
+	}
+
 	/**
 	 * Extract EPha SwissmedicNo5 to ATC map
 	 */
 	private void extractSwissmedicNo5ToAtcMap() {
 		try {
 			long startTime = System.currentTimeMillis();
-			
+
 			if (CmlOptions.SHOW_LOGS)
 				System.out.print("- Processing EPha product json file... ");
-			// Load EPha product json file		
+			// Load EPha product json file
 			if (CmlOptions.DB_LANGUAGE.equals("de")) {
-				ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally				
-				TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};				
-				Map<String,Object> ephaProductData = mapper.readValue(new File(Constants.FILE_EPHA_PRODUCTS_DE_JSON), typeRef);								
+				ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
+				TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+				Map<String,Object> ephaProductData = mapper.readValue(new File(Constants.FILE_EPHA_PRODUCTS_DE_JSON), typeRef);
 				@SuppressWarnings("unchecked")
-				ArrayList<HashMap<String,String>> medList = (ArrayList<HashMap<String,String>>)ephaProductData.get("documents");				 
+				ArrayList<HashMap<String,String>> medList = (ArrayList<HashMap<String,String>>)ephaProductData.get("documents");
 				for (HashMap<String,String> med : medList) {
 					String s[] = med.get("zulassung").split(" ");
 					for (String smno5 : s)
 						m_smn5_atc_map.put(smno5, med.get("atc"));
 				}
 			} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-				ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally				
-				TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};				
-				Map<String,Object> ephaProductData = mapper.readValue(new File(Constants.FILE_EPHA_PRODUCTS_FR_JSON), typeRef);								
+				ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
+				TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+				Map<String,Object> ephaProductData = mapper.readValue(new File(Constants.FILE_EPHA_PRODUCTS_FR_JSON), typeRef);
 				@SuppressWarnings("unchecked")
-				ArrayList<HashMap<String,String>> medList = (ArrayList<HashMap<String,String>>)ephaProductData.get("documents");				 
+				ArrayList<HashMap<String,String>> medList = (ArrayList<HashMap<String,String>>)ephaProductData.get("documents");
 				for (HashMap<String,String> med : medList) {
 					String s[] = med.get("zulassung").split(" ");
 					for (String smno5 : s)
 						m_smn5_atc_map.put(smno5, med.get("atc"));
 				}
 			}
-				
+
 			long stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS) {
 				System.out.println("processed EPha product json file in " + (stopTime - startTime) / 1000.0f + " sec");
@@ -728,9 +728,9 @@ public class RealExpertInfo {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}			
+		}
 	}
-	
+
 	/**
 	 * Mapping between swissmedicno5 registration numbers and names
 	 */
@@ -748,36 +748,36 @@ public class RealExpertInfo {
 					list_of_names = m_smn5_to_list_of_names.get(regnr_str);
 				}
 				list_of_names.add(title_aips);
-				m_smn5_to_list_of_names.put(regnr_str, list_of_names);		
+				m_smn5_to_list_of_names.put(regnr_str, list_of_names);
 			}
 		}
 	}
-	
-	
+
+
 	/**
 	 * Main data processing happens here...
 	 */
 	public void process() {
-		
+
 		// Get stop words first
 		getStopWords();
-		
+
 		// Extract EPha SwissmedicNo5 to ATC map
 		extractSwissmedicNo5ToAtcMap();
-		
+
 		// Extract package information (this is the heavy-duty bit)
 		extractPackageInfo();
-			
+
 		// Extract Swiss DRG information
 		extractSwissDRGInfo();
-		
+
 		// Extract between swissmedicno5 and names
 		extractReg5noNamesMapping();
-				
+
 		try {
 			// Load CSS file: used only for self-contained xml files
 			String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
-					
+
 			// Create error report file
 			ParseReport parse_errors = null;
 			if (CmlOptions.GENERATE_REPORTS==true) {
@@ -787,15 +787,15 @@ public class RealExpertInfo {
 				else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 					parse_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
 			}
-			
+
 			// Create indications report file
 			BufferedWriter bw_indications = null;
 			Map<String, String> tm_indications = new TreeMap<String, String>();
 			if (CmlOptions.INDICATIONS_REPORT==true) {
 				ParseReport indications_report = new ParseReport(Constants.FILE_INDICATIONS_REPORT, CmlOptions.DB_LANGUAGE, "txt");
-				bw_indications = indications_report.getBWriter();				
-			}			
-			
+				bw_indications = indications_report.getBWriter();
+			}
+
 			/*
 			 * Add pseudo Fachinfos to SQLite database
 			 */
@@ -805,8 +805,8 @@ public class RealExpertInfo {
 				// Process
 				tot_pseudo_counter = pseudo_fi.process();
 				System.out.println("");
-			}			
-			
+			}
+
 			/*
 			 * Add real Fachinfos to SQLite database
 			 */
@@ -818,16 +818,16 @@ public class RealExpertInfo {
 			int missing_atc_code = 0;
 			int errors = 0;
 			String fi_complete_xml = "";
-			
+
 			// First pass is always with DB_LANGUAGE set to German! (most complete information)
 			// The file dumped in ./reports is fed to AllDown.java to generate a multilingual ATC code / ATC class file, e.g. German - French
 			Set<String> atccode_set = new TreeSet<String>();
-			
+
 			// Treemap for owner error report (sorted by key)
 			TreeMap<String, ArrayList<String>> tm_owner_error = new TreeMap<String, ArrayList<String>>();
-			
+
 			HtmlUtils html_utils = null;
-			
+
 			System.out.println("Processing real Fachinfos...");
 
 			// --> Read FACHINFOS! <--
@@ -1227,19 +1227,24 @@ public class RealExpertInfo {
 
 									// Add header to xml file
 									String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);
-									xml_str = html_utils.addHeaderToXml("singlefi", xml_str);
-									fi_complete_xml += (xml_str + "\n");
 
+									BufferedWriter writer = null;
 									// Write to html and xml files to disk
 									String name = m.getTitle();
 									// Replace all "Sonderzeichen"
 									name = name.replaceAll("[^a-zA-Z0-9]+", "_");
 									if (CmlOptions.DB_LANGUAGE.equals("de")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
-										FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
+										// FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
+										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
 									} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
-										FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+										// FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+									}
+									if (writer != null) {
+										html_utils.addHeaderToXml("singlefi", xml_str, writer);
+										writer.close();
 									}
 								}
 							}
@@ -1299,25 +1304,30 @@ public class RealExpertInfo {
 			System.out.println("--------------------------------------------");
 			System.out.println("Total number of pseudo Fachinfos: " + tot_pseudo_counter);
 			System.out.println("--------------------------------------------");
-			
-			if (CmlOptions.XML_FILE==true) {				
-				fi_complete_xml = html_utils.addHeaderToXml("kompendium", fi_complete_xml);
+
+			if (CmlOptions.XML_FILE==true) {
+				BufferedWriter writer = null;
 				// Write kompendium xml file to disk
 				if (CmlOptions.DB_LANGUAGE.equals("de")) {
-					FileOps.writeToFile(fi_complete_xml, Constants.FI_FILE_XML_BASE, "fi_de.xml");
+					writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE, "fi_de.xml");
 					if (CmlOptions.ZIP_BIG_FILES)
 						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_de.xml");
 				}
 				else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-					FileOps.writeToFile(fi_complete_xml, Constants.FI_FILE_XML_BASE, "fi_fr.xml");
+					writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");
 					if (CmlOptions.ZIP_BIG_FILES)
-						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");				
+						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");
 				}
+				if (writer != null) {
+					html_utils.addHeaderToXml("kompendium", fi_complete_xml, writer);
+					writer.close();
+				}
+
 				// Copy stylesheet file to ./fis/ folders
 				try {
 					File src = new File(Constants.FILE_STYLE_CSS_BASE + "v1.css");
 					File dst_de = new File(Constants.FI_FILE_XML_BASE + "fi_de_html/");
-					File dst_fr = new File(Constants.FI_FILE_XML_BASE + "fi_fr_html/");			
+					File dst_fr = new File(Constants.FI_FILE_XML_BASE + "fi_fr_html/");
 					if (src.exists() ) {
 						if (dst_de.exists())
 							FileUtils.copyFileToDirectory(src, dst_de);
@@ -1326,21 +1336,21 @@ public class RealExpertInfo {
 					}
 				} catch(IOException e) {
 					// TODO: Unhandled!
-				}				
+				}
 			}
-			
+
 			if (CmlOptions.GENERATE_REPORTS==true) {
 				parse_errors.append("<br/>");
 				parse_errors.append("<p>Number of medications with package information: " + tot_med_counter + "</p>");
-				parse_errors.append("<p>Number of medications in generated database: " + med_counter + "</p>");				
+				parse_errors.append("<p>Number of medications in generated database: " + med_counter + "</p>");
 				parse_errors.append("<p>Number of errors in database: " + errors + "</p>");
 				parse_errors.append("<p>Number of missing registration number: " + missing_regnr_str + "</p>");
 				parse_errors.append("<p>Number of missing package info: " + missing_pack_info + "</p>");
 				parse_errors.append("<p>Number of missing atc codes: " + missing_atc_code + "</p>");
-				parse_errors.append("<br/>");				
+				parse_errors.append("<br/>");
 				// Write and close report file
 				parse_errors.writeHtmlToFile();
-				parse_errors.getBWriter().close();					
+				parse_errors.getBWriter().close();
 
 				// Write owner error report to file
 				ParseReport owner_errors = new ParseReport(Constants.FILE_OWNER_REPORT, CmlOptions.DB_LANGUAGE, "html");
@@ -1352,7 +1362,7 @@ public class RealExpertInfo {
 					owner_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
 				owner_errors.append(owner_errors.treemapToHtmlTable(tm_owner_error));
 				owner_errors.writeHtmlToFile();
-				owner_errors.getBWriter().close();	
+				owner_errors.getBWriter().close();
 				// Dump to console...
 				/*
 				for (Map.Entry<String, ArrayList<String>> entry : tm_owner_error.entrySet()) {
@@ -1363,18 +1373,18 @@ public class RealExpertInfo {
 				}
 				*/
 			}
-			
+
 			if (CmlOptions.INDICATIONS_REPORT==true) {
 				// Dump everything to file
 				bw_indications.write("Total number of words: " + tm_indications.size() + "\n\n");
 				for (Map.Entry<String, String> entry : tm_indications.entrySet()) {
-				    String key = entry.getKey();
-				    String value = entry.getValue();
-				    bw_indications.write(key + " [" + value + "]\n");
+					String key = entry.getKey();
+					String value = entry.getValue();
+					bw_indications.write(key + " [" + value + "]\n");
 				}
 				bw_indications.close();
 			}
-			
+
 			if (CmlOptions.DB_LANGUAGE.equals("de")) {
 				// Dump set to file, currently we do this only for German
 				File atccodes_file = new File("./output/atc_codes_used_set.txt");
@@ -1383,8 +1393,8 @@ public class RealExpertInfo {
 					atccodes_file.createNewFile();
 				}
 				FileWriter fwriter = new FileWriter(atccodes_file.getAbsoluteFile());
-				BufferedWriter bwriter = new BufferedWriter(fwriter);  
-				
+				BufferedWriter bwriter = new BufferedWriter(fwriter);
+
 				Iterator<String> set_iterator = atccode_set.iterator();
 				while (set_iterator.hasNext()) {
 					bwriter.write(set_iterator.next() + "\n");
@@ -1393,12 +1403,12 @@ public class RealExpertInfo {
 			}
 
 			System.out.println("");
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
-		}	
+		}
 	}
-	
+
 	private String getSwissmedicNo8(String swissmedicNo5, int n) {
 		String key = "";
 		if (n<10)
@@ -1406,11 +1416,11 @@ public class RealExpertInfo {
 		else if (n<100)
 			key = swissmedicNo5 + String.valueOf(n).format("0%d", n);
 		else
-			key = swissmedicNo5 + String.valueOf(n).format("%d", n);	
+			key = swissmedicNo5 + String.valueOf(n).format("%d", n);
 		return key;
-	}	
-	
-	private String updateSectionPackungen(String title, String author, String atc_code, Map<String, ArrayList<String>> pack_info, 
+	}
+
+	private String updateSectionPackungen(String title, String author, String atc_code, Map<String, ArrayList<String>> pack_info,
 			String regnr_str, String content_str, List<String> tIndex_list) {
 		Document doc = Jsoup.parse(content_str, "UTF-16");
 		// package info string for original
@@ -1421,19 +1431,19 @@ public class RealExpertInfo {
 		List<String> pinfo_str = new ArrayList<>();
 		// String containg all barcodes
 		List<String> barcode_list = new ArrayList<>();
-		
+
 		int index = 0;
 
 		TokenizerFactory tokenizerFactory = IndoEuropeanTokenizerFactory.INSTANCE;
 		JaccardDistance m_jaccard = new JaccardDistance(tokenizerFactory);
-		
+
 		// Extract swissmedicno5 registration numbers
 		List<String> swissmedicno5_list = Arrays.asList(regnr_str.split("\\s*,\\s*"));
 		for (String smno5 : swissmedicno5_list) {
 			// Extract original / generika info + Selbstbehalt info from
 			// "add_info_map"
 			String orggen_str = "";		// O=Original, G=Generika
-			String flagsb_str = "";		// SB=Selbstbehalt 
+			String flagsb_str = "";		// SB=Selbstbehalt
 			String addinfo_str = m_add_info_map.get(smno5);
 			if (addinfo_str != null) {
 				List<String> ai_list = Arrays.asList(addinfo_str.split("\\s*;\\s*"));
@@ -1453,18 +1463,18 @@ public class RealExpertInfo {
 				// Check if swissmedicno8_key is a key of the map
 				if (pack_info.containsKey(swissmedicno8_key)) {
 					ArrayList<String> pi_row = m_package_info.get(swissmedicno8_key);
-					if (pi_row != null) {		
+					if (pi_row != null) {
 						boolean doit = true;
 
 						// Minimal clean up of the name
 						String title_refdata = pi_row.get(1).replaceAll(" %", "%").replaceAll("\\s+", " ");
 						String title_swissmedic = pi_row.get(16).replaceAll(" %", "%").replaceAll("\\s+", " ");
 						String eancode = pi_row.get(14);
-						
+
 						title_aips = title_aips.toLowerCase();
 						title_swissmedic = title_swissmedic.toLowerCase();
 						title_refdata = title_refdata.toLowerCase();
-						
+
 						// String owner = pi_row.get(17);
 						// For the articles list in m_smn5_to_list_of_names calculate proximity between aips and refdata info
 						if (m_smn5_to_list_of_names.containsKey(regnr_str)) {
@@ -1479,7 +1489,7 @@ public class RealExpertInfo {
 									proximity = 1.0;
 								else
 									proximity = m_jaccard.proximity(title_aips, title_swissmedic);
-								
+
 								if (proximity<0.5)
 									doit = false;
 								else if (m_map_eancode_to_owner.containsKey(eancode)) {
@@ -1488,23 +1498,23 @@ public class RealExpertInfo {
 								} else if (!title_aips.contains("paediatric") && (title_swissmedic.contains("paediatric") || title_refdata.contains("paediatric"))) {
 									doit = false;
 								} else if (!title_aips.contains("infant") && (title_swissmedic.contains("infant") || title_refdata.contains("infant"))) {
-									doit = false;									
+									doit = false;
 								} else
 									m_map_eancode_to_owner.put(eancode, author);
 								System.out.println(title_aips + " / " + title_swissmedic + " / " + title_refdata + " / " + author + " -> " + proximity);
 							}
 						}
-						
+
 						if (doit)
 						{
 							// This string is used for "shopping carts" and contatins:
 							// Präparatname | Package size | Package unit | Public price
 							// | Exfactory price | Spezialitätenliste, Swissmedic Kategorie, Limitations
 							// | EAN code | Pharma code
-							String barcode_html = "";		
-							String efp = pi_row.get(8);	// exfactory price		
+							String barcode_html = "";
+							String efp = pi_row.get(8);	// exfactory price
 							String pup = pi_row.get(7);	// public price
-							String fep = "";						
+							String fep = "";
 							String fap = "";
 							String vat = "";
 							int visible = 0xff;		// by default visible to all!
@@ -1522,10 +1532,10 @@ public class RealExpertInfo {
 								if (product.pp>0.0f)
 									pup = String.format("CHF %.2f", product.pp);
 								if (product.fap>0.0f)
-									fap = String.format("CHF %.2f", product.fap);							
+									fap = String.format("CHF %.2f", product.fap);
 								if (product.fep>0.0f)
 									fep = String.format("CHF %.2f", product.fep);
-								if (product.vat>0.0f)								
+								if (product.vat>0.0f)
 									vat = String.format("%.2f", product.vat);
 								visible = product.visible;
 								has_free_samples = product.free_sample;
@@ -1535,22 +1545,22 @@ public class RealExpertInfo {
 								System.out.println("EFP = " + efp);
 								System.out.println("PUP = " + pup);
 								System.out.println("FAP = " + fap);
-								System.out.println("FEP = " + fep);							
+								System.out.println("FEP = " + fep);
 								System.out.println("--------------------------");
 								*/
 							}
-	
+
 							// Some articles are listed in swissmedic_packages file but are not in the refdata file
 							if (pi_row.get(10).equals("a.H.")) {
-								pi_row.set(10, "ev.nn.i.H.");							
+								pi_row.set(10, "ev.nn.i.H.");
 							}
 							if (pi_row.get(10).equals("p.c.")) {
-								pi_row.set(10, "ev.ep.e.c.");							
-							}						
-												
-							// Add only if medication is "in Handel" -> check pi_row.get(10)						
+								pi_row.set(10, "ev.ep.e.c.");
+							}
+
+							// Add only if medication is "in Handel" -> check pi_row.get(10)
 							if (pi_row.get(10).isEmpty() || pi_row.get(10).equals("ev.nn.i.H.") || pi_row.get(10).equals("ev.ep.e.c.")) {
-								// --> Extract EAN-13 or EAN-12 and generate barcodes							
+								// --> Extract EAN-13 or EAN-12 and generate barcodes
 								try {
 									if (!eancode.isEmpty()) {
 										if (eancode.length()==12) {
@@ -1565,17 +1575,17 @@ public class RealExpertInfo {
 								} catch(IOException e) {
 									e.printStackTrace();
 								}
-								m_list_of_packages.add(title_refdata + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|" 
+								m_list_of_packages.add(title_refdata + "|" + pi_row.get(3) + "|" + pi_row.get(4) + "|"
 										+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
 										+ pi_row.get(5) + ", " + pi_row.get(11) + ", " + pi_row.get(12) + "|"
 										+ eancode + "|" + pi_row.get(15) + "|" + visible + "|" + has_free_samples + "\n");
 								m_list_of_eancodes.add(eancode);
 							}
-							
+
 							// Capitalize first word only
 							String medtitle = Utilities.capitalizeFully(title_refdata, 1);
 							// Remove [QAP?] -> not an easy one!
-							medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");						
+							medtitle = medtitle.replaceAll("\\[(.*?)\\?\\] ", "");
 							// --> Add "ausser Handel" information
 							String withdrawn_str = "";
 							if (pi_row.get(10).length()>0)
@@ -1585,23 +1595,23 @@ public class RealExpertInfo {
 							String price_fap = !fap.isEmpty() ? "EFP" + fap.replace("CHF", "") : "";
 							// String price_fep = !fep.isEmpty() ? "FEP" + fep.replace("CHF", "") : "";
 							String price_pp = !pup.isEmpty() ? "PP" + pup.replace("CHF", "") : "";
-							
+
 							String price_info = "";
 							if (price_efp.length()>0)
 								price_info += ", " + price_efp;
 							else if (price_fap.length()>0)
-								price_info += ", " + price_fap;							
+								price_info += ", " + price_fap;
 							if (price_pp.length()>0)
 								price_info += ", " + price_pp;
-							
+
 							if (price_info.length()>0) {
 								// The rest of the package information
-								String append_str = withdrawn_str + " [" + pi_row.get(5) 
-										+ pi_row.get(11) + pi_row.get(12) 
+								String append_str = withdrawn_str + " [" + pi_row.get(5)
+										+ pi_row.get(11) + pi_row.get(12)
 										+ flagsb_str + orggen_str + "]";
 								// @maxl 15.01.2016: For articles in SL add also pricing information
 								if (pi_row.get(11).contains("SL") || pi_row.get(11).contains("LS")) {
-									append_str = price_info + append_str; 
+									append_str = price_info + append_str;
 								}
 								// Generate package info string
 								if (orggen_str.equals(", O"))
@@ -1609,14 +1619,14 @@ public class RealExpertInfo {
 								else if (orggen_str.equals(", G"))
 									pinfo_generics_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>" + barcode_html);
 								else
-									pinfo_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>" + barcode_html);								
+									pinfo_str.add("<p class=\"spacing1\">" + medtitle + append_str + "</p>" + barcode_html);
 							} else {
 								//
 								// @maxl (10.01.2014): Price for swissmedicNo8 pack is not listed in bag_preparations.xml!!
 								//
 								pinfo_str.add("<p class=\"spacing1\">" + medtitle + withdrawn_str + " [" + pi_row.get(5) + "]</p>" + barcode_html);
 							}
-							
+
 							// --> Add "tindex_str" and "application_str" (see
 							// SqlDatabase.java)
 							if (index == 0) {
@@ -1628,71 +1638,71 @@ public class RealExpertInfo {
 					}
 				}
 			}
-		}		
+		}
 		// Re-order the string alphabetically
 		if (!m_list_of_packages.isEmpty()) {
 			Collections.sort(m_list_of_packages, new AlphanumComp());
-		}			
-		if (!pinfo_originals_str.isEmpty()) {		
-			Collections.sort(pinfo_originals_str, new AlphanumComp()); 
-		}	
-		if (!pinfo_generics_str.isEmpty()) {		
+		}
+		if (!pinfo_originals_str.isEmpty()) {
+			Collections.sort(pinfo_originals_str, new AlphanumComp());
+		}
+		if (!pinfo_generics_str.isEmpty()) {
 			Collections.sort(pinfo_generics_str, new AlphanumComp());
 		}
-		if (!pinfo_str.isEmpty()) {		
+		if (!pinfo_str.isEmpty()) {
 			Collections.sort(pinfo_str, new AlphanumComp());
-		}		
+		}
 		// Concatenate lists...
 		pinfo_originals_str.addAll(pinfo_generics_str);
 		pinfo_originals_str.addAll(pinfo_str);
 		// Put everything in pinfo_str
 		pinfo_str = pinfo_originals_str;
-		
+
 		// In case nothing was found
 		if (index == 0) {
 			tIndex_list.add("");
 			tIndex_list.add("");
 		}
-		
+
 		/*
 		* Replace package information
 		*/
 		if (CmlOptions.PLAIN==false) {
-			// Replace original package information with pinfo_str	
+			// Replace original package information with pinfo_str
 			String p_str = "";
 			for (String p : pinfo_str) {
 				p_str += p;
-			}				
-			
+			}
+
 			// Generate a html-deprived string file
-			m_pack_info_str = p_str.replaceAll("<p class=\"spacing1\">[<](/)?img[^>]*[>]</p>", ""); 
-			m_pack_info_str = m_pack_info_str.replaceAll("<p class=\"barcode\">[<](/)?img[^>]*[>]</p>", ""); 			
+			m_pack_info_str = p_str.replaceAll("<p class=\"spacing1\">[<](/)?img[^>]*[>]</p>", "");
+			m_pack_info_str = m_pack_info_str.replaceAll("<p class=\"barcode\">[<](/)?img[^>]*[>]</p>", "");
 			m_pack_info_str = m_pack_info_str.replaceAll("\\<p.*?\\>", "");
 			m_pack_info_str = m_pack_info_str.replaceAll("<\\/p\\>", "\n");
-					
+
 			// Remove last \n
 			if (m_pack_info_str.length() > 0)
 				m_pack_info_str = m_pack_info_str.substring(0, m_pack_info_str.length() - 1);
-	
+
 			doc.outputSettings().escapeMode(EscapeMode.xhtml);
 			Element div7800 = doc.select("[id=Section7800]").first();
-			
+
 			// Initialize section titles
 			String packages_title = "Packungen";
-			String swiss_drg_title = "Swiss DRG";			
+			String swiss_drg_title = "Swiss DRG";
 			if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 				packages_title = "Présentation";
 				swiss_drg_title = "Swiss DRG";
 			}
-			
+
 			// Generate html for chapter "Packagungen" and subchapter "Swiss DRGs"
 			// ** Chapter "Packungen"
 			String section_html = "<div class=\"absTitle\">" + packages_title + "</div>" + p_str;
 			// ** Subchapter "Swiss DRGs"
 			// Loop through list of dosages for a particular atc code and format appropriately
-			if (atc_code!=null) {		
+			if (atc_code!=null) {
 				// Update DRG footnote super scripts
-				String footnotes = "1";				
+				String footnotes = "1";
 				String fn = m_swiss_drg_footnote.get(atc_code);
 				if (fn!=null)
 					footnotes += (", " + fn);
@@ -1705,11 +1715,11 @@ public class RealExpertInfo {
 					for (String drg : dosages)
 						drg_str += "<p class=\"spacing1\">" + drg + "</p>";
 					if (!drg_str.isEmpty()) {
-							section_html += ("<p class=\"paragraph\"></p><div class=\"absTitle\">" + swiss_drg_title 
+							section_html += ("<p class=\"paragraph\"></p><div class=\"absTitle\">" + swiss_drg_title
 									+ "<sup>" + footnotes + "</sup></div>" + drg_str);
 					}
-					
-					section_html += "<p class=\"noSpacing\"></p>";					
+
+					section_html += "<p class=\"noSpacing\"></p>";
 					if (CmlOptions.DB_LANGUAGE.equals("de")) {
 						section_html += "<p class=\"spacing1\"><sup>1</sup> Alle Spitäler müssen im Rahmen der jährlichen Datenerhebung (Detaillieferung) die SwissDRG AG zwingend über die Höhe der in Rechnung gestellten Zusatzentgelte informieren.</p>";
 						section_html += "<p class=\"spacing1\"><sup>2</sup> Eine zusätzliche Abrechnung ist im Zusammenhang mit einer Fallpauschale der Basis-DRGs L60 oder L71 nicht möglich.</p>";
@@ -1727,7 +1737,7 @@ public class RealExpertInfo {
 					}
 				}
 			}
-			
+
 			if (div7800 != null) {
 				div7800.html(section_html);
 			} else {
@@ -1740,7 +1750,7 @@ public class RealExpertInfo {
 				}
 			}
 		}
-			
+
 		return doc.html();
 	}
 }

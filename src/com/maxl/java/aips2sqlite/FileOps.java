@@ -47,24 +47,24 @@ public class FileOps {
 	}
 
 	static public String readCSSfromFile(String filename) {
-		String css_str = "";		
-        try {
-        	FileInputStream fis = new FileInputStream(filename);
-            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-            String line;
-            while ((line = br.readLine()) != null) {
-                css_str += line;
-            }
-            System.out.println(">> Success: Read CSS file " + filename);
-            br.close();
-        }
-        catch (Exception e) {
-        	System.err.println(">> Error in reading in CSS file");        	
-        }
-        
-		return css_str;	
+		String css_str = "";
+		try {
+			FileInputStream fis = new FileInputStream(filename);
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+			String line;
+			while ((line = br.readLine()) != null) {
+				css_str += line;
+			}
+			System.out.println(">> Success: Read CSS file " + filename);
+			br.close();
+		}
+		catch (Exception e) {
+			System.err.println(">> Error in reading in CSS file");
+		}
+
+		return css_str;
 	}
-	
+
 	static public String readFromFile(String filename) {
 		String file_str = "";
 		try {
@@ -80,9 +80,19 @@ public class FileOps {
 		}
 
 		return file_str;
-	}	
-	
-	static public void writeToFile(String string_to_write, String dir_name,	String file_name) {
+	}
+
+	static public void writeToFile(String string_to_write, String dir_name, String file_name) {
+		try {
+			BufferedWriter bw = writerToFile(dir_name, file_name);
+			bw.write(string_to_write);
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	static public BufferedWriter writerToFile(String dir_name, String file_name) {
 		try {
 			File wdir = new File(dir_name);
 			if (!wdir.exists())
@@ -92,20 +102,20 @@ public class FileOps {
 				wfile.getParentFile().mkdirs();
 				wfile.createNewFile();
 			}
-			
+
 			// FileWriter fw = new FileWriter(wfile.getAbsoluteFile());
 			CharsetEncoder encoder = Charset.forName("UTF-8").newEncoder();
 			encoder.onMalformedInput(CodingErrorAction.REPORT);
 			encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
 			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(wfile.getAbsoluteFile()), encoder);
 			BufferedWriter bw = new BufferedWriter(osw);
-			bw.write(string_to_write);
-			bw.close();
+			return bw;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
-	
+
 	static public void zipToFile(String dir_name, String file_name) {
 		byte[] buffer = new byte[1024];
 
@@ -127,7 +137,7 @@ public class FileOps {
 			e.printStackTrace();
 		}
 	}
-			
+
 	static public void writeToFile(String path, byte[] buf) {
 		try {
 			FileOutputStream fos = new FileOutputStream(path);
@@ -137,7 +147,7 @@ public class FileOps {
 			e.printStackTrace();
 		}
 	}
-	
+
 	static public void encryptFileToDir(String filename, String dir) {
 		// First check if path exists
 		File f = new File(dir);
@@ -148,9 +158,9 @@ public class FileOps {
 		try {
 			File inputFile = new File(dir + "/" + filename);
 			FileInputStream inputStream = new FileInputStream(inputFile);
-	        byte[] serializedBytes = new byte[(int) inputFile.length()];
-	        inputStream.read(serializedBytes);
-	        
+			byte[] serializedBytes = new byte[(int) inputFile.length()];
+			inputStream.read(serializedBytes);
+
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
 			if (serializedBytes.length>0) {
@@ -160,13 +170,13 @@ public class FileOps {
 			writeToFile(Constants.DIR_OUTPUT + filename +".ser", encrypted_msg);
 			System.out.println("Saved encrypted file " + filename +".ser");
 
-	        inputStream.close();
+			inputStream.close();
 		} catch(IOException e) {
 			e.printStackTrace();
-		} 
+		}
 	}
-	
-	static public void encryptCsvToDir(String in_filename_1, String in_filename_2, String in_dir, 
+
+	static public void encryptCsvToDir(String in_filename_1, String in_filename_2, String in_dir,
 			String out_filename, String out_dir, int skip, int cols,
 			Map<String, String> map_pharma_groups) {
 		// First check if paths exist
@@ -183,7 +193,7 @@ public class FileOps {
 		}
 		try {
 			Map<String, String> tree_map = new TreeMap<String, String>();
-			// Load csv file and dump to map			
+			// Load csv file and dump to map
 			{
 				FileInputStream glnCodesCsv = new FileInputStream(in_dir + "/" + in_filename_1 + ".csv");
 				BufferedReader br = new BufferedReader(new InputStreamReader(glnCodesCsv, "UTF-8"));
@@ -198,33 +208,33 @@ public class FileOps {
 							gln[3]: email
 							gln[4]: name Gruppierung (gilt nur für Apotheken)
 							gln[5]: ??
-						*/ 
+						*/
 						if (cols==2)
 							tree_map.put(gln[0], gln[1]);
 						else if (cols==3)
 							tree_map.put(gln[0], gln[1]+";"+gln[2]);
-						else if (cols==4)							
+						else if (cols==4)
 							tree_map.put(gln[0], gln[1]+";"+gln[2]+";"+gln[3]);
 						else if (cols==5) {
 							String name_group = gln[4].toLowerCase();
 							String standard_name_group = name_group + " standard";
 							String aktion_name_group = name_group + " aktion";
 							if (map_pharma_groups.containsKey(standard_name_group)) {
-								// Non-standard pharma group category								
-								String group_id = map_pharma_groups.get(standard_name_group);						
-								tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback
-							} else if (map_pharma_groups.containsKey(aktion_name_group)) {								
 								// Non-standard pharma group category
-								String group_id = map_pharma_groups.get(aktion_name_group);						
-								tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback								
+								String group_id = map_pharma_groups.get(standard_name_group);
+								tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback
+							} else if (map_pharma_groups.containsKey(aktion_name_group)) {
+								// Non-standard pharma group category
+								String group_id = map_pharma_groups.get(aktion_name_group);
+								tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback
 							} else {
 								// Standard A or B category
 								tree_map.put(gln[0], gln[1]+";");	// gln[1] is default
 							}
 						}
 					}
-				}			
-				glnCodesCsv.close();				
+				}
+				glnCodesCsv.close();
 				br.close();
 			}
 			// Used when files are merged
@@ -239,11 +249,11 @@ public class FileOps {
 						// If gln[0] is not contained in map, add it...
 						if (!tree_map.containsKey(gln[0]) && gln.length>(cols-1)) {
 							/*
-							  	gln[0]: ean code
-							  	gln[1]: category (Kundenkategorie) - A oder B
-							  	gln[2]: type (Arzt, Apotheke, etc...)
-							  	gln[3]: email
-							  	gln[4]: name Gruppierung (gilt nur für Apotheken)
+								gln[0]: ean code
+								gln[1]: category (Kundenkategorie) - A oder B
+								gln[2]: type (Arzt, Apotheke, etc...)
+								gln[3]: email
+								gln[4]: name Gruppierung (gilt nur für Apotheken)
 								gln[5]: ??
 							 */
 							if (cols==2)
@@ -255,28 +265,28 @@ public class FileOps {
 								String standard_name_group = name_group + " standard";
 								String aktion_name_group = name_group + " aktion";
 								if (map_pharma_groups.containsKey(standard_name_group)) {
-									// Non-standard pharma group category								
-									String group_id = map_pharma_groups.get(standard_name_group);						
-									tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback
-								} else if (map_pharma_groups.containsKey(aktion_name_group)) {								
 									// Non-standard pharma group category
-									String group_id = map_pharma_groups.get(aktion_name_group);						
-									tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback								
+									String group_id = map_pharma_groups.get(standard_name_group);
+									tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback
+								} else if (map_pharma_groups.containsKey(aktion_name_group)) {
+									// Non-standard pharma group category
+									String group_id = map_pharma_groups.get(aktion_name_group);
+									tree_map.put(gln[0], group_id+";"+gln[1]);	// gln[1] is fallback
 								} else {
 									// Standard A or B category
 									tree_map.put(gln[0], gln[1]+";");	// gln[1] is default
 								}
 							}
 						}
-					}	
+					}
 					glnCodesCsv.close();
 					br.close();
 				}
 			}
-			
+
 			if (cols==5)
 				writeMapToFile(tree_map, "ibsa_glns_csv.csv");
-			
+
 			// First serialize into a byte array output stream, then encrypt
 			Crypto crypto = new Crypto();
 			byte[] encrypted_msg = null;
@@ -290,18 +300,18 @@ public class FileOps {
 			FileOps.writeToFile(out_dir + out_filename +".ser", encrypted_msg);
 			System.out.println("Saved encrypted file " + out_filename +".ser");
 		} catch(IOException e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
 	}
-	
+
 	static private void writeMapToFile(Map<String, String> map, String file_name) {
 		String csv_file = "";
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			csv_file += entry.getKey() + " -> " + entry.getValue() + "\n";
 		}
 		FileOps.writeToFile(csv_file, Constants.DIR_OUTPUT, file_name);
-	}	
-	
+	}
+
 	static public byte[] serialize(Object obj) {
 		try {
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();	// new byte array
@@ -313,7 +323,7 @@ public class FileOps {
 		}
 		return null;
 	}
-	
+
 	static public Object deserialize(byte[] byteArray) {
 		try {
 			ByteArrayInputStream bin = new ByteArrayInputStream(byteArray);
@@ -324,15 +334,15 @@ public class FileOps {
 		}
 		return null;
 	}
-	
+
 	static public String changeExtension(String orig_name, String new_extension) {
 		int last_dot = orig_name.lastIndexOf(".");
 		if (last_dot != -1)
 			return orig_name.substring(0, last_dot) + "." + new_extension;
 		else
 			return orig_name + "." + new_extension;
-	}	
-	
+	}
+
 	static public File touchFile(String path_name) {
 		try {
 			File db_file = new File(path_name);
