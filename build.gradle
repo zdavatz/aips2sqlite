@@ -20,6 +20,7 @@ repositories {
     // You can declare any Maven/Ivy/file repository here.
     mavenCentral()
     maven { url "https://clojars.org/repo" }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -36,7 +37,10 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.2.3'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.2.3'
     implementation group: 'joda-time', name: 'joda-time', version: '2.4'
-    implementation group: 'org.jsoup', name: 'jsoup', version: '1.7.2'
+
+    // A forked version of: implementation group: 'org.jsoup', name: 'jsoup', version: '1.15.3'
+    implementation 'com.github.b123400:jsoup:master-SNAPSHOT'
+
     implementation group: 'junit', name: 'junit', version: '4.12'
     implementation group: 'com.aliasi', name: 'lingpipe', version: '4.0.1'
     implementation group: 'com.opencsv', name: 'opencsv', version: '3.4'

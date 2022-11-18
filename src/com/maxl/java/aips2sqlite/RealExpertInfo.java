@@ -1227,19 +1227,24 @@ public class RealExpertInfo {
 
 									// Add header to xml file
 									String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);
-									xml_str = html_utils.addHeaderToXml("singlefi", xml_str);
-									fi_complete_xml += (xml_str + "\n");
 
+									BufferedWriter writer = null;
 									// Write to html and xml files to disk
 									String name = m.getTitle();
 									// Replace all "Sonderzeichen"
 									name = name.replaceAll("[^a-zA-Z0-9]+", "_");
 									if (CmlOptions.DB_LANGUAGE.equals("de")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
-										FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
+										// FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
+										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
 									} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
-										FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+										// FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+									}
+									if (writer != null) {
+										html_utils.addHeaderToXml("singlefi", xml_str, writer);
+										writer.close();
 									}
 								}
 							}
@@ -1299,20 +1304,25 @@ public class RealExpertInfo {
 			System.out.println("--------------------------------------------");
 			System.out.println("Total number of pseudo Fachinfos: " + tot_pseudo_counter);
 			System.out.println("--------------------------------------------");
-			
-			if (CmlOptions.XML_FILE==true) {				
-				fi_complete_xml = html_utils.addHeaderToXml("kompendium", fi_complete_xml);
+
+			if (CmlOptions.XML_FILE==true) {
+				BufferedWriter writer = null;
 				// Write kompendium xml file to disk
 				if (CmlOptions.DB_LANGUAGE.equals("de")) {
-					FileOps.writeToFile(fi_complete_xml, Constants.FI_FILE_XML_BASE, "fi_de.xml");
+					writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE, "fi_de.xml");
 					if (CmlOptions.ZIP_BIG_FILES)
 						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_de.xml");
 				}
 				else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-					FileOps.writeToFile(fi_complete_xml, Constants.FI_FILE_XML_BASE, "fi_fr.xml");
+					writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");
 					if (CmlOptions.ZIP_BIG_FILES)
-						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");				
+						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");
 				}
+				if (writer != null) {
+					html_utils.addHeaderToXml("kompendium", fi_complete_xml, writer);
+					writer.close();
+				}
+
 				// Copy stylesheet file to ./fis/ folders
 				try {
 					File src = new File(Constants.FILE_STYLE_CSS_BASE + "v1.css");

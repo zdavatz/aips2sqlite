@@ -19,6 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package com.maxl.java.aips2sqlite;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -580,19 +581,29 @@ public class RealPatientInfo {
 							xml_str = html_utils.addHeaderToXml("singlepi", xml_str);
 							pi_complete_xml += (xml_str + "\n");
 							
+
+							BufferedWriter writer = null;
 							// Write to html and xml files to disk
 							String name = m.getTitle();
 							// Replace all "Sonderzeichen"
 							name = name.trim().replaceAll("[^a-zA-Z0-9]+", "_");									
 							if (CmlOptions.DB_LANGUAGE.equals("de")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_de_html/", name + "_pi_de.html");
-								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_de_xml/", name + "_pi_de.xml");
+								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_de_xml/", name + "_pi_de.xml");
 							} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_fr_html/", name + "_pi_fr.html");
-								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_fr_xml/", name + "_pi_fr.xml");
+								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_fr_xml/", name + "_pi_fr.xml");
 							} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_it_html/", name + "_pi_it.html");
-								FileOps.writeToFile(xml_str, Constants.PI_FILE_XML_BASE + "pi_it_xml/", name + "_pi_it.xml");
+								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_it_xml/", name + "_pi_it.xml");
+							}
+							if (writer != null) {
+								html_utils.addHeaderToXml("singlepi", xml_str, writer);
+								try {
+									writer.close();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
 							}
 						}
 						

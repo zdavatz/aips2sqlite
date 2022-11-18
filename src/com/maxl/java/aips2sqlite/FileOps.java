@@ -80,9 +80,19 @@ public class FileOps {
 		}
 
 		return file_str;
-	}	
-	
-	static public void writeToFile(String string_to_write, String dir_name,	String file_name) {
+	}
+
+	static public void writeToFile(String string_to_write, String dir_name, String file_name) {
+		try {
+			BufferedWriter bw = writerToFile(dir_name, file_name);
+			bw.write(string_to_write);
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	static public BufferedWriter writerToFile(String dir_name, String file_name) {
 		try {
 			File wdir = new File(dir_name);
 			if (!wdir.exists())
@@ -99,11 +109,11 @@ public class FileOps {
 			encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
 			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(wfile.getAbsoluteFile()), encoder);
 			BufferedWriter bw = new BufferedWriter(osw);
-			bw.write(string_to_write);
-			bw.close();
+			return bw;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 	
 	static public void zipToFile(String dir_name, String file_name) {

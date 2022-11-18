@@ -20,6 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package com.maxl.java.aips2sqlite;
 
 import java.io.UnsupportedEncodingException;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -976,9 +977,9 @@ public class HtmlUtils {
 		scanner.close();
 
 		return new_xml_str;
-	}	
-	
-	String addHeaderToXml(String header_str, String xml_str) {
+	}
+
+	void addHeaderToXml(String header_str, String xml_str, Appendable appendable) {
 		Document mDoc = Jsoup.parse("<" + header_str +">\n" + xml_str + "</" + header_str + ">");
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
 		mDoc.outputSettings().prettyPrint(true);
@@ -1006,8 +1007,8 @@ public class HtmlUtils {
 		else if (mLanguage.equals("it"))
 			mDoc.select("hash").first().after("<lang>IT</lang>");			
 		else
-			return "";
-		
+			return;
+
 		// Fool jsoup.parse which seems to have its own "life"
 		mDoc.select("tbody").unwrap();
 		Elements img_elems = mDoc.select("img");
@@ -1017,11 +1018,14 @@ public class HtmlUtils {
 		}
 		mDoc.select("img").tagName("image");
 
-		String final_xml_str = mDoc.select(header_str).first().outerHtml();
+		mDoc.select(header_str).first().outerHtml(appendable);
+		try {
+			appendable.append("\n");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-		return final_xml_str;
-	}	
-	
 	String calcHashCode(String xml_str) {
 		String hash_code = "";
 		try {
