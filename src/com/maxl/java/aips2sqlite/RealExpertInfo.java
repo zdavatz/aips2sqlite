@@ -1227,6 +1227,7 @@ public class RealExpertInfo {
 
 									// Add header to xml file
 									String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);
+									fi_complete_xml += (xml_str + "\n");
 
 									BufferedWriter writer = null;
 									// Write to html and xml files to disk
@@ -1235,11 +1236,9 @@ public class RealExpertInfo {
 									name = name.replaceAll("[^a-zA-Z0-9]+", "_");
 									if (CmlOptions.DB_LANGUAGE.equals("de")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
-										// FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
 										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
 									} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
-										// FileOps.writeToFile(xml_str, Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
 										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
 									}
 									if (writer != null) {
