@@ -983,6 +983,7 @@ public class HtmlUtils {
 
 	void addHeaderToXml(String header_str, String xml_str, Appendable appendable) {
 		Document mDoc = Jsoup.parse("<" + header_str +">\n" + xml_str + "</" + header_str + ">");
+		mDoc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
 		mDoc.outputSettings().prettyPrint(true);
 		mDoc.outputSettings().indentAmount(4);
