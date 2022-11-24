@@ -26,6 +26,9 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -818,6 +821,12 @@ public class RealExpertInfo {
 			int missing_atc_code = 0;
 			int errors = 0;
 			String fi_complete_xml = "";
+			MessageDigest complete_xml_hash_code_digest = null;
+			try {
+				complete_xml_hash_code_digest = MessageDigest.getInstance("SHA-256");
+			} catch(NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			}
 
 			// First pass is always with DB_LANGUAGE set to German! (most complete information)
 			// The file dumped in ./reports is fed to AllDown.java to generate a multilingual ATC code / ATC class file, e.g. German - French
@@ -1241,10 +1250,12 @@ public class RealExpertInfo {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
 										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
 									}
+									String xml_for_hash_code = "";
 									if (writer != null) {
-										html_utils.addHeaderToXml("singlefi", xml_str, writer);
+										xml_for_hash_code = html_utils.addHeaderToXml("singlefi", xml_str, writer);
 										writer.close();
 									}
+									complete_xml_hash_code_digest.update(xml_for_hash_code.getBytes("UTF-8"));
 								}
 							}
 
@@ -1318,7 +1329,10 @@ public class RealExpertInfo {
 						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");
 				}
 				if (writer != null) {
-					html_utils.addHeaderToXml("kompendium", fi_complete_xml, writer);
+					byte[] digest = complete_xml_hash_code_digest.digest();
+					BigInteger bigInt = new BigInteger(1, digest);
+					String hash_code = bigInt.toString(16);
+					html_utils.addHeaderToXml("kompendium", fi_complete_xml, writer, hash_code);
 					writer.close();
 				}
 
