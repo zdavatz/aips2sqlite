@@ -395,10 +395,12 @@ public class Aips2Sqlite {
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
 			a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
+			a.downSwissDRGXlsx("IT", Constants.FILE_SWISS_DRG_IT_XLSX);
 			a.downEPhaInteractionsCsv("DE", Constants.FILE_EPHA_INTERACTIONS_DE_CSV);
 			a.downEPhaInteractionsCsv("FR", Constants.FILE_EPHA_INTERACTIONS_FR_CSV);
 			a.downEPhaProductsJson("DE", Constants.FILE_EPHA_PRODUCTS_DE_JSON);
 			a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);	
+			a.downEPhaProductsJson("IT", Constants.FILE_EPHA_PRODUCTS_IT_JSON);	
 			a.downEphaATCCodesCsv(Constants.FILE_EPHA_ATC_CODES_CSV);
 			a.downGLNCodesXlsx(Constants.FILE_GLN_CODES_PEOPLE, Constants.FILE_GLN_CODES_COMPANIES);
 		}

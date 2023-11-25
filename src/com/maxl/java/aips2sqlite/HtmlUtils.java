@@ -401,6 +401,148 @@ public class HtmlUtils {
 		return regnr_str;
 	}
 
+	/**
+	 * Extracts Swissmedic registration number(s) for given Italian med title
+	 * @param med title
+	 * @return comma-separated list of registration numbers
+	 */
+	public String extractRegNrIt(String title) {
+		mDoc = Jsoup.parse(mHtmlStr);
+		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
+
+		// Five digit pattern
+		Pattern d5_pattern = Pattern.compile("\\b\\d{5}\\b");
+
+		// Extract registration numbers (use JSoup)
+		String regnr_str = "";
+		Element elem_first = mDoc.select("[id=Section7750]").select("p[class=noSpacing]").first();
+		if (elem_first!=null) {
+			regnr_str = elem_first.ownText();
+		} else {
+			// Find section 17
+			elem_first = mDoc.select("[id=section17]").first();
+			if (elem_first!=null) {
+				String h = "";
+				// Better solution (01/05/2013)!
+				Element pe = elem_first;
+				Element elem_last = mDoc.select("[id=section18]").first();
+				while (pe!=elem_last) {
+					h = h + pe.toString() + " ";
+					pe = pe.nextElementSibling();
+				}
+				/* Seemingly less power solution (17/04/2013)
+				Elements elems = mDoc.select("p:contains(Swissmedic)");
+				for (Element e : elems) {
+					h = h + e.toString();
+				}
+				*/
+				// Element elem = elem_first.nextElementSibling();
+				if (h!=null) {
+					h = h.replaceAll("\\<p.*?\\>", "");
+					h = h.replaceAll("<\\/p\\>", "");
+					// Remove anything after "Packungen"
+					h = h.replaceAll("(?<=Confezioni).*", "");
+					// Remove all parenthesized stuff, e.g. Vistagan ... !
+					h = h.replaceAll("\\(.*?\\)","");
+					// Special character found in some files
+					h = h.replaceAll("&apos;", "");
+					// This is a special - character ...
+					h = h.replaceAll("[–-]",",");
+					h = h.replaceAll("‘", "");
+					h = h.replaceAll("’", "");
+					h = h.replaceAll("`", "");
+					Matcher m = d5_pattern.matcher(h);
+					h = "";
+					while (m.find())
+						h += (m.group(0) + ",");
+
+					regnr_str = h;
+					if (regnr_str.length()>0)
+						regnr_str = regnr_str.substring(0, regnr_str.length()-1);
+				}
+
+				if (h.isEmpty()) {
+					while (h.isEmpty()) {
+						elem_first = elem_first.nextElementSibling();
+						h = elem_first.toString();
+						h = h.replaceAll("\\<p.*?\\>", "");
+						h = h.replaceAll("<\\/p\\>", "");
+						// This is a special - character ...
+						regnr_str = regnr_str.replaceAll("[–-]",",");
+						// Remove all parenthesized stuff, e.g. Vistagan ... !
+						h = h.replaceAll("\\(.+\\)","");
+						// Special character found in some files
+						h = h.replaceAll("&apos;", "");
+						// Keep numbers and possible separators between numbers
+						h = h.replaceAll("[^;0-9,]", "");
+					}
+					regnr_str = h;
+				}
+			} else {
+				// Find "Packungen" und "Zulassungsnummer"
+				Element start_elem = mDoc.select("p:contains(Numero dell\\\'omologazione)").first();
+				String h = "";
+				if (start_elem!=null) {
+					h = "";
+					// Parse everything until "Swissmedic";
+					String a = start_elem.toString().replaceAll("(?<=Confezioni).*", "");
+					a = a.replaceAll("\\<table.*?\\>", "");
+					a = a.replaceAll("<\\/table\\>", "");
+					// Remove all parenthesized stuff, e.g. Vistagan ... !
+					a = a.replaceAll("\\(.*?\\)","");
+					// Special character found in some files
+					a = a.replaceAll("[–-]",",");
+					a = a.replaceAll("&apos;", "");
+					a = a.replaceAll("‘", "");
+					a = a.replaceAll("’", "");
+					a = a.replaceAll("`", "");
+
+					Element stop_elem = mDoc.select("p:contains(Confezioni)").first();
+					if (start_elem==stop_elem) {
+						Matcher m = d5_pattern.matcher(a);
+						while (m.find())
+							h += (m.group(0) + ",");
+					} else {
+						Element pe = start_elem;
+						while (pe!=stop_elem) {
+							Matcher m = d5_pattern.matcher(start_elem.toString());
+							while (m.find())
+								h += (m.group(0) + ",");
+							pe = pe.nextElementSibling();
+						}
+					}
+					regnr_str = h;
+					if (regnr_str.length()>0)
+						regnr_str = regnr_str.substring(0, regnr_str.length()-1);
+				}
+
+				if (h.isEmpty()) {
+					elem_first = mDoc.select("[id=Section7860]").select("p[class=noSpacing]").first();
+					if (elem_first!=null) {
+						regnr_str = elem_first.ownText();
+					} else {
+						// System.err.println(">> ERROR: None of the sections 17, 7750, 7860 exist: " + title);
+					}
+				}
+			}
+		}
+
+		// Get rid of all "(Swissmedic)." instances
+		regnr_str = regnr_str.replaceAll("\\(Swissmedic\\).","");
+		// This is a special - character ...
+		regnr_str = regnr_str.replaceAll("[–-]",",");
+		// Remove all parenthesized stuff, e.g. Vistagan ... !
+		regnr_str = regnr_str.replaceAll("\\(.+\\)","");
+		// Replace all semicolons with commas
+		regnr_str = regnr_str.replaceAll(";", ",");
+		// Get rid of all non-numeric characters, keep "," and "-"
+		regnr_str = regnr_str.replaceAll("[^0-9,]", "");
+		// Add comma with SPACE after number
+		regnr_str = regnr_str.replaceAll(",",", ");
+
+		return regnr_str;
+	}
+
 	public String extractPackSection() {
 		mDoc = Jsoup.parse(mHtmlStr);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);

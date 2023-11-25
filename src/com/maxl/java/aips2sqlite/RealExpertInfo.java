@@ -159,6 +159,8 @@ public class RealExpertInfo {
 			stopWords_str = FileOps.readFromFile(Constants.FILE_STOP_WORDS_DE);
 		else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 			stopWords_str = FileOps.readFromFile(Constants.FILE_STOP_WORDS_FR);
+		else if (CmlOptions.DB_LANGUAGE.equals("it"))
+			stopWords_str = FileOps.readFromFile(Constants.FILE_STOP_WORDS_IT);
 		// Create stop word hash set!
 		if (stopWords_str!=null) {
 			List<String> sw = Arrays.asList(stopWords_str.split("\n"));
@@ -270,6 +272,8 @@ public class RealExpertInfo {
 							withdrawn_str = "a.H.";	// ausser Handel
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 							withdrawn_str = "p.c.";	//
+						else if (CmlOptions.DB_LANGUAGE.equals("it"))
+							withdrawn_str = "f.c.";	// fuori commercio
 						pack.add(withdrawn_str); 	// 10
 						pack.add(speciality_str); 	// 11
 						pack.add(plimitation_str); 	// 12
@@ -338,7 +342,7 @@ public class RealExpertInfo {
 					}
 				}
 				reader.close();
-			} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
+			} else if (CmlOptions.DB_LANGUAGE.equals("fr") || CmlOptions.DB_LANGUAGE.equals("it")) {
 				// Load ATC classes xls file
 				FileInputStream atc_classes_file = new FileInputStream(Constants.FILE_WHO_ATC_CLASSES_XLS);
 				// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
@@ -421,6 +425,11 @@ public class RealExpertInfo {
 							pi_row.set(1, pharma.getNameDE());
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 							pi_row.set(1, pharma.getNameFR());
+						else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+							// Take FR for Italian
+							// https://github.com/zdavatz/aips2sqlite/issues/56
+							pi_row.set(1, pharma.getNameFR());
+						}
 						// If med is in refdata file, then it is "in Handel!!" ;)
 						pi_row.set(10, "");	// By default this is set to a.H. or p.C.
 						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
@@ -477,11 +486,15 @@ public class RealExpertInfo {
 								flagSB20_str = "SB 20%";
 							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 								flagSB20_str = "QP 20%";
+							else if (CmlOptions.DB_LANGUAGE.equals("it"))
+								flagSB20_str = "QP 20%";
 						} else if (flagSB20_str.equals("N")) {
 							if (CmlOptions.DB_LANGUAGE.equals("de"))
 								flagSB20_str = "SB 10%";
 							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 								flagSB20_str = "QP 10%";
+							else if (CmlOptions.DB_LANGUAGE.equals("it"))
+								flagSB20_str = "QP 20%";
 						} else
 							flagSB20_str = "";
 					}
@@ -503,11 +516,15 @@ public class RealExpertInfo {
 									therapeutic_code = code.getDescriptionDe();
 								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 									therapeutic_code = code.getDescriptionFr();
+								else if (CmlOptions.DB_LANGUAGE.equals("it"))
+									therapeutic_code = code.getDescriptionIt();
 							} else {
 								if (CmlOptions.DB_LANGUAGE.equals("de"))
 									bag_application = code.getDescriptionDe();
 								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 									bag_application = code.getDescriptionFr();
+								else if (CmlOptions.DB_LANGUAGE.equals("it"))
+									bag_application = code.getDescriptionIt();
 							}
 							index++;
 						}
@@ -560,6 +577,8 @@ public class RealExpertInfo {
 											pi_row.set(11, ", SL");
 										else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 											pi_row.set(11, ", LS");
+										else if (CmlOptions.DB_LANGUAGE.equals("it"))
+											pi_row.set(11, ", LS");
 									} catch (NullPointerException e) {
 										if (CmlOptions.SHOW_ERRORS)
 											System.err.println("Null pointer exception (public price): " + swissMedicNo8
@@ -608,6 +627,8 @@ public class RealExpertInfo {
 				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_DE_XLSX);
 			else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_FR_XLSX);
+			else if (CmlOptions.DB_LANGUAGE.equals("it"))
+				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_IT_XLSX);
 			else
 				swiss_drg_file = new FileInputStream(Constants.FILE_SWISS_DRG_DE_XLSX);
 
@@ -650,6 +671,8 @@ public class RealExpertInfo {
 									swiss_drg_str = zusatz_entgelt + ", Dosierung " + dosage_class + ", CHF " + price;
 								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 									swiss_drg_str = zusatz_entgelt + ", dosage " + dosage_class + ", CHF " + price;
+								else if (CmlOptions.DB_LANGUAGE.equals("it"))
+									swiss_drg_str = zusatz_entgelt + ", dosaggio " + dosage_class + ", CHF " + price;
 							}
 							else if (a==5)
 								swiss_drg_str = zusatz_entgelt + ", " + price;
@@ -714,6 +737,17 @@ public class RealExpertInfo {
 				ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
 				TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
 				Map<String,Object> ephaProductData = mapper.readValue(new File(Constants.FILE_EPHA_PRODUCTS_FR_JSON), typeRef);
+				@SuppressWarnings("unchecked")
+				ArrayList<HashMap<String,String>> medList = (ArrayList<HashMap<String,String>>)ephaProductData.get("documents");
+				for (HashMap<String,String> med : medList) {
+					String s[] = med.get("zulassung").split(" ");
+					for (String smno5 : s)
+						m_smn5_atc_map.put(smno5, med.get("atc"));
+				}
+			} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+				ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
+				TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+				Map<String,Object> ephaProductData = mapper.readValue(new File(Constants.FILE_EPHA_PRODUCTS_IT_JSON), typeRef);
 				@SuppressWarnings("unchecked")
 				ArrayList<HashMap<String,String>> medList = (ArrayList<HashMap<String,String>>)ephaProductData.get("documents");
 				for (HashMap<String,String> med : medList) {
@@ -789,6 +823,8 @@ public class RealExpertInfo {
 					parse_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", Constants.FI_DB_VERSION);
 				else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 					parse_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
+				else if (CmlOptions.DB_LANGUAGE.equals("it"))
+					parse_errors.addHtmlHeader("Compendio svizzero dei farmaci", Constants.FI_DB_VERSION);
 			}
 
 			// Create indications report file
@@ -870,6 +906,9 @@ public class RealExpertInfo {
 							regnr_str = html_utils.extractRegNrDE(m.getTitle());
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 							regnr_str = html_utils.extractRegNrFR(m.getTitle());
+						else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+							regnr_str = html_utils.extractRegNrIt(m.getTitle());
+						}
 
 						// Pattern matcher for regnr command line option, (?s) searches across multiple lines
 						Pattern regnr_pattern = Pattern.compile("(?s).*\\b" + CmlOptions.OPT_MED_REGNR);
@@ -1017,6 +1056,8 @@ public class RealExpertInfo {
 											atc_description_str = "k.A.";
 										else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 											atc_description_str = "n.s.";
+										else if (CmlOptions.DB_LANGUAGE.equals("it"))
+											atc_description_str = "n.d.";
 									}
 								}
 
@@ -1124,6 +1165,21 @@ public class RealExpertInfo {
 									try {
 										if (idx1 >= 0 && idx2 >= 0 && idx1 < (idx1 + idx2))
 											section_indications = html_sanitized.substring(idx1, idx1 + idx2);
+									} catch (StringIndexOutOfBoundsException e) {
+										e.printStackTrace();
+									}
+								}
+							} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+								String sstr1 = "Indicazioni/Possibilità d'impiego";
+								String sstr2 = "Posologia/Impiego";
+
+								html_sanitized = html_sanitized.replaceAll("Indicazioni/Possibilit&agrave; d'impiego", sstr1);
+
+								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
+									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
+									int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
+									try {
+										section_indications = html_sanitized.substring(idx1, idx1 + idx2);
 									} catch (StringIndexOutOfBoundsException e) {
 										e.printStackTrace();
 									}
@@ -1249,6 +1305,9 @@ public class RealExpertInfo {
 									} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
 										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+									} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_it.html");
+										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_it_xml/", name + "_fi_it.xml");
 									}
 									String xml_for_hash_code = "";
 									if (writer != null) {
@@ -1327,7 +1386,12 @@ public class RealExpertInfo {
 					writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");
 					if (CmlOptions.ZIP_BIG_FILES)
 						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_fr.xml");
+				} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+					FileOps.writeToFile(fi_complete_xml, Constants.FI_FILE_XML_BASE, "fi_it.xml");
+					if (CmlOptions.ZIP_BIG_FILES)
+						FileOps.zipToFile(Constants.FI_FILE_XML_BASE, "fi_it.xml");
 				}
+
 				if (writer != null) {
 					byte[] digest = complete_xml_hash_code_digest.digest();
 					BigInteger bigInt = new BigInteger(1, digest);
@@ -1341,11 +1405,14 @@ public class RealExpertInfo {
 					File src = new File(Constants.FILE_STYLE_CSS_BASE + "v1.css");
 					File dst_de = new File(Constants.FI_FILE_XML_BASE + "fi_de_html/");
 					File dst_fr = new File(Constants.FI_FILE_XML_BASE + "fi_fr_html/");
+					File dst_it = new File(Constants.FI_FILE_XML_BASE + "fi_it_html/");
 					if (src.exists() ) {
 						if (dst_de.exists())
 							FileUtils.copyFileToDirectory(src, dst_de);
 						if (dst_fr.exists())
 							FileUtils.copyFileToDirectory(src, dst_fr);
+						if (dst_it.exists())
+							FileUtils.copyFileToDirectory(src, dst_it);
 					}
 				} catch(IOException e) {
 					// TODO: Unhandled!
@@ -1373,6 +1440,9 @@ public class RealExpertInfo {
 					owner_errors.addHtmlHeader("Schweizer Arzneimittel-Kompendium", Constants.FI_DB_VERSION);
 				else if (CmlOptions.DB_LANGUAGE.equals("fr"))
 					owner_errors.addHtmlHeader("Compendium des Médicaments Suisse", Constants.FI_DB_VERSION);
+				else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+					owner_errors.addHtmlHeader("Compendio svizzero dei farmaci", Constants.FI_DB_VERSION);
+				}
 				owner_errors.append(owner_errors.treemapToHtmlTable(tm_owner_error));
 				owner_errors.writeHtmlToFile();
 				owner_errors.getBWriter().close();
@@ -1747,6 +1817,13 @@ public class RealExpertInfo {
 						section_html += "<p class=\"spacing1\"><sup>4</sup> Cette rémunération supplémentaire n'est facturable que pour les patients âgés de moins de 15 ans.</p>";
 						section_html += "<p class=\"spacing1\"><sup>5</sup> Cette rémunération supplémentaire ne peut pas être facturée en plus du DRG A91Z, la prestation principale de ce DRG étant l'aphérèse. " +
 								"Les coûts du traitement par aphérèse sont déjà intégralement compris dans le DRG.</p>";
+					} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+						section_html += "<p class=\"spacing1\"><sup>1</sup>Tutti gli ospedali devono comunicare a SwissDRG SA l'importo dei costi aggiuntivi fatturati nell'ambito della raccolta annuale dei dati (consegna dettagliata).</p>";
+						section_html += "<p class=\"spacing1\"><sup>1</sup>La fatturazione supplementare non è possibile in relazione al forfait per caso dei DRG di base L60 o L71.</p>";
+						section_html += "<p class=\"spacing1\"><sup>1</sup>La fatturazione del costo aggiuntivo è possibile solo attraverso le classi di dose elencate nell'allegato al catalogo dei costi forfettari per caso.</p>";
+						section_html += "<p class=\"spacing1\"><sup>1</sup>Questo costo aggiuntivo può essere fatturato solo per i pazienti di età inferiore ai 15 anni.</p>";
+						section_html += "<p class=\"spacing1\"><sup>1</sup>Questo costo aggiuntivo non può essere fatturato in aggiunta al DRG A91Z, poiché l'aferesi è il servizio principale di questo DRG. " +
+							"I costi procedurali dell'aferesi sono già interamente inclusi in questo DRG.</p>";
 					}
 				}
 			}
