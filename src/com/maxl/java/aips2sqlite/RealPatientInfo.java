@@ -584,6 +584,17 @@ public class RealPatientInfo {
 							// Write to html and xml files to disk
 							String name = m.getTitle();
 							// Replace all "Sonderzeichen"
+							name = name.replaceAll("é","e");
+							name = name.replaceAll("à","a");
+							name = name.replaceAll("è","e");
+							name = name.replaceAll("ê","e");
+							name = name.replaceAll("É","E");
+							name = name.replaceAll("î","i");
+							name = name.replaceAll("ç","c");
+							name = name.replaceAll("ä","a");
+							name = name.replaceAll("ö","o");
+							name = name.replaceAll("Ä","A");
+							name = name.replaceAll("ü","u");
 							name = name.trim().replaceAll("[^a-zA-Z0-9]+", "_");
 							if (CmlOptions.DB_LANGUAGE.equals("de")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_de_html/", name + "_pi_de.html");
