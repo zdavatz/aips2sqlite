@@ -44,11 +44,13 @@ public class Constants {
 	// Swiss DRG xlsx file to be parsed (DE != FR)
 	public static final String FILE_SWISS_DRG_DE_XLSX = "./downloads/swiss_drg_de_xlsx.xlsx";
 	public static final String FILE_SWISS_DRG_FR_XLSX = "./downloads/swiss_drg_fr_xlsx.xlsx";
+	public static final String FILE_SWISS_DRG_IT_XLSX = "./downloads/swiss_drg_it_xlsx.xlsx";
 	// EPha interactions file to be parsed (DE != FR)
 	public static final String FILE_EPHA_INTERACTIONS_DE_CSV = "./downloads/epha_interactions_de_csv.csv";
 	public static final String FILE_EPHA_INTERACTIONS_FR_CSV = "./downloads/epha_interactions_fr_csv.csv";
 	public static final String FILE_EPHA_PRODUCTS_DE_JSON = "./downloads/epha_products_de_json.json";
 	public static final String FILE_EPHA_PRODUCTS_FR_JSON = "./downloads/epha_products_fr_json.json";	
+	public static final String FILE_EPHA_PRODUCTS_IT_JSON = "./downloads/epha_products_it_json.json";
 	// EPha ATC codes file
 	public static final String FILE_EPHA_ATC_CODES_CSV = "./downloads/epha_atc_codes_csv.csv";
 	// GLN Codes (Personen + Betriebe)
@@ -105,6 +107,7 @@ public class Constants {
 	// ****** Stop words (DE != FR) ******
 	public static final String FILE_STOP_WORDS_DE = "./input/german_stop_words.txt";
 	public static final String FILE_STOP_WORDS_FR = "./input/french_stop_words.txt";
+	public static final String FILE_STOP_WORDS_IT = "./input/italian_stop_words.txt";
 	
 	// Version of the generated database 
 	public static final String FI_DB_VERSION = "1.4.0";	

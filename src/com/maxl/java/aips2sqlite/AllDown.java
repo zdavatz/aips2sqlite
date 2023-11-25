@@ -462,7 +462,8 @@ public class AllDown {
 				url = new URL("https://www.swissdrg.org/download_file/view/1195/268");
 			else if (language.equals("FR"))
 				url = new URL("https://www.swissdrg.org/download_file/view/1361/447");
-
+			else if (language.equals("IT"))
+				url = new URL("https://www.swissdrg.org/download_file/view/1199/1031");
 			if (url!=null) {
 				File destination = new File(file_swiss_drg_xlsx);
 				FileUtils.copyURLToFile(url, destination, 60000, 60000);
@@ -539,6 +540,8 @@ public class AllDown {
 			if (language.equals("DE"))
 				url = new URL("https://raw.githubusercontent.com/zdavatz/oddb2xml_files/master/products_de.json");
 			else if (language.equals("FR"))
+				url = new URL("https://raw.githubusercontent.com/zdavatz/oddb2xml_files/master/products_de.json");
+			else if (language.equals("IT"))
 				url = new URL("https://raw.githubusercontent.com/zdavatz/oddb2xml_files/master/products_de.json");
 			if (url!=null) {
 				File destination = new File(file_products_json);
