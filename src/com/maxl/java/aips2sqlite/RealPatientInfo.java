@@ -595,6 +595,7 @@ public class RealPatientInfo {
 							name = name.replaceAll("ö","o");
 							name = name.replaceAll("Ä","A");
 							name = name.replaceAll("ü","u");
+							name = m.getAuthNrs().substring(0, 5) + name;
 							name = name.trim().replaceAll("[^a-zA-Z0-9]+", "_");
 							if (CmlOptions.DB_LANGUAGE.equals("de")) {
 								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_de_html/", name + "_pi_de.html");
