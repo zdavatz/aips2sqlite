@@ -1310,7 +1310,7 @@ public class RealExpertInfo {
 									name = name.replaceAll("Ä","A");
 									name = name.replaceAll("ü","u");
 									name = name.replaceAll("[^a-zA-Z0-9]+", "_");
-									name = regnr_str.substring(0, 5) + name;
+									name = regnr_str.substring(0, 5) + "_" + name;
 									if (CmlOptions.DB_LANGUAGE.equals("de")) {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
 										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
