@@ -1318,7 +1318,7 @@ public class RealExpertInfo {
 										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
 										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
 									} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
-										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_it.html");
+										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_it_html/", name + "_fi_it.html");
 										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_it_xml/", name + "_fi_it.xml");
 									}
 									String xml_for_hash_code = "";
