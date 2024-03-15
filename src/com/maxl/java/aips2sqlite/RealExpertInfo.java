@@ -1344,7 +1344,7 @@ public class RealExpertInfo {
 							if (add_info_str != null) {
 								List<String> ai_list = Arrays.asList(add_info_str.split("\\s*;\\s*"));
 								if (ai_list != null) {
-									if (!ai_list.get(0).isEmpty())
+									if (ai_list.size() >= 1 && !ai_list.get(0).isEmpty())
 										orggen_str = ai_list.get(0);
 								}
 							}
@@ -1543,9 +1543,9 @@ public class RealExpertInfo {
 			if (addinfo_str != null) {
 				List<String> ai_list = Arrays.asList(addinfo_str.split("\\s*;\\s*"));
 				if (ai_list != null) {
-					if (!ai_list.get(0).isEmpty())
+					if (ai_list.size() >= 1 && !ai_list.get(0).isEmpty())
 						orggen_str = ", " + ai_list.get(0);		// O + G
-					if (!ai_list.get(1).isEmpty())
+					if (ai_list.size() >= 2 && !ai_list.get(1).isEmpty())
 						flagsb_str = ", " + ai_list.get(1);		// SB
 				}
 			}
