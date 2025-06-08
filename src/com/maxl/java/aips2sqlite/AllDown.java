@@ -34,6 +34,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -146,7 +148,7 @@ public class AllDown {
 			}
 
 			// Delete folder ./tmp
-			FileUtils.deleteDirectory(new File("./xml/tmp"));
+			FileUtils.deleteDirectory(new File("./downloads/tmp"));
 		} catch(Exception e) {
 			if (!disp)
 				pb.stopp();
@@ -268,44 +270,47 @@ public class AllDown {
 				pb.start();
 			}
 
-			// Create soaprequest
-			SOAPMessage soapRequest = MessageFactory.newInstance().createMessage();
-			// Set SOAPAction header line
-			MimeHeaders headers = soapRequest.getMimeHeaders();
-			headers.addHeader("SOAPAction", "http://refdatabase.refdata.ch/Pharma/Download");
-			// Set SOAP main request part
-			SOAPPart soapPart = soapRequest.getSOAPPart();
-			SOAPEnvelope envelope = soapPart.getEnvelope();
-			SOAPBody soapBody = envelope.getBody();
-			// Construct SOAP request message
-			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadArticleInput", "", "http://refdatabase.refdata.ch/");
-			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("ATYPE", "", "http://refdatabase.refdata.ch/Article_in");
-			soapBodyElement2.addTextNode("ALL");
-			soapRequest.saveChanges();
-			// If needed print out soapRequest in a pretty format
-			// System.out.println(prettyFormatSoapXml(soapRequest));
-			// Create connection to SOAP server
-			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
-			SOAPConnection connection = soapConnectionFactory.createConnection();
-			// wsURL contains service end point
-			String wsURL = "https://refdatabase.refdata.ch/Service/Article.asmx?WSDL";
-			SOAPMessage soapResponse = connection.call(soapRequest, wsURL);
-			// Extract response
-			Document doc = soapResponse.getSOAPBody().extractContentAsDocument();
-			String strBody = getStringFromDoc(doc);
-			String xmlBody = prettyFormat(strBody);
-			// Note: parsing the Document tree and using the removeAttribute function is hopeless!
-			xmlBody = RegExUtils.removeAll(xmlBody, "xmlns.*?\".*?\" ");
+			File destination = new File("./downloads/tmp/refdata.zip");
+			URL url = new URL("https://files.refdata.ch/simis-public-prod/Articles/1.0/Refdata.Articles.zip");
+			FileUtils.copyURLToFile(url, destination, 60000, 60000);
 
+			unzipToTemp(destination);
+
+			File folder = new File("./downloads/tmp/unzipped_tmp");
+			File[] listOfFiles = folder.listFiles();
+			File dst = null;
+			for (int i=0; i<listOfFiles.length; ++i) {
+				if (listOfFiles[i].isFile()) {
+					String file = listOfFiles[i].getName();
+					if (file.endsWith("Refdata.Articles.xml")) {
+						File src = new File("./downloads/tmp/unzipped_tmp/" + file);
+						dst = new File(file_refdata_pharma_xml);
+						FileUtils.copyFile(src, dst);
+						break;
+					}
+				}
+			}
+			if (dst == null) {
+				System.err.println(" Error in downRefdataPharmaXml: Cannot find Refdata.Articles.xml");
+			}
+
+			// Delete folder ./tmp
+			FileUtils.deleteDirectory(new File("./downloads/tmp"));
+
+			String xmlBody = Files.readString(Paths.get(file_refdata_pharma_xml));
+
+			if (xmlBody.startsWith("\uFEFF")) {
+				xmlBody = xmlBody.substring(1);
+			}
+			// Note: parsing the Document tree and using the removeAttribute function is hopeless!
+			xmlBody = RegExUtils.removeAll(xmlBody, "xmlns.*?\".*?\"");
+			xmlBody = RegExUtils.removeAll(xmlBody, "xsi.*?\".*?\" ");
 			long len = writeToFile(xmlBody, file_refdata_pharma_xml);
 
 			if (!disp)
 				pb.stopp();
 			long stopTime = System.currentTimeMillis();
-			System.out.println("\r- Downloading Refdata pharma file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
-
-			connection.close();
-
+			System.out.println("\r- Downloading Refdata pharma file... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 		} catch (Exception e) {
 			if (!disp)
 				pb.stopp();
