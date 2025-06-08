@@ -21,6 +21,7 @@ package com.maxl.java.aips2sqlite;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.maxl.java.aips2sqlite.refdata.Articles;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -213,18 +214,34 @@ public class BaseDataParser {
             InputStream refdata_is = new FileInputStream(refdata_xml_file);
             Reader reader = new InputStreamReader(refdata_is, "UTF-8");
 
-            JAXBContext jcontext = JAXBContext.newInstance(Refdata.class);
+            JAXBContext jcontext = JAXBContext.newInstance(Articles.class);
             Unmarshaller um = jcontext.createUnmarshaller();
-            Refdata refdataPharma = (Refdata) um.unmarshal(reader);
-            List<Refdata.ITEM> pharma_list = refdataPharma.getItem();
+            Articles refdataArticles = (Articles) um.unmarshal(reader);
+            List<Articles.Article> article_list = refdataArticles.getArticle();
 
             int num_rows = 0;
-            for (Refdata.ITEM pharma : pharma_list) {
-                String ean_code = pharma.getGtin();
+            for (Articles.Article article : article_list) {
+                String product_class = article.getMedicinalProduct().getProductClassification().getProductClass();
+                String ean_code;
+                if (product_class.equals("PHARMA")) {
+                    ean_code = article.getPackagedProduct().getDataCarrierIdentifier();
+                } else if (product_class.equals("NONPHARMA")) {
+                    ean_code = article.getMedicinalProduct().getIdentifier();
+                } else {
+                    continue;
+                }
+                String nameDe = null;
+                List<Articles.Article.PackagedProduct.Name> name_list = article.getPackagedProduct().getName();
+                for (Articles.Article.PackagedProduct.Name name: name_list) {
+                    if (name.getLanguage().equals("DE")) {
+                        nameDe = name.getFullName();
+                        break;
+                    }
+                }
+                if (nameDe == null) continue;
                 if (ean_code.length() == 13) {
-                    String name = pharma.getNameDE();
                     // Clean name, we need only dosage
-                    gtin_to_name_map.put(ean_code, name);
+                    gtin_to_name_map.put(ean_code, nameDe);
                     System.out.print("\rProcessing refdata pharma xml file... " + num_rows++);
                 }
             }

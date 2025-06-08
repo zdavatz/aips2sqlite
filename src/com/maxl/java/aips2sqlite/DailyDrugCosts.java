@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.maxl.java.aips2sqlite.refdata.Articles;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
@@ -40,10 +41,10 @@ public class DailyDrugCosts {
 	ArrayList<Preparation> m_list_of_preparations = new ArrayList<Preparation>();
 	TreeMap<String, Substance> m_atc_map = null;
 	TreeMap<String, Substance> m_atc_to_substance_map = null;
-	TreeMap<String, RefdataInfo> m_gtin_to_refdata_map = null;	
+	TreeMap<String, RefdataInfo> m_gtin_to_refdata_map = null;
 	TreeMap<String, Dosage> m_dosages_map = null;
 	TreeMap<String, IQPrices> m_pharma_to_iqprices_map = null;
-	
+
 	private class DDD {
 		public DDD(float quantity, String unit, String admroute) {
 			this.quantity = quantity;
@@ -55,7 +56,7 @@ public class DailyDrugCosts {
 		String admroute;
 		String notes;
 	}
-	
+
 	private class Dosage {
 		String name_short;
 		String name_full;
@@ -63,12 +64,12 @@ public class DailyDrugCosts {
 		String route_adm_full;
 		String units;
 	}
-	
+
 	private class Substance {
 		public String description_la;
 		public List<DDD> list_of_ddds;
 	}
-	
+
 	private class Preparation {
 		public String name_de;
 		public String description_de;
@@ -88,7 +89,7 @@ public class DailyDrugCosts {
 		public float exfactory_price;
 		public float public_price;
 	}
-	
+
 	private class RefdataInfo {
 		public String gtin;
 		public String pharma_code;
@@ -97,7 +98,7 @@ public class DailyDrugCosts {
 		public String atc_code;
 		public String auth_holder;
 	}
-	
+
 	private class IQPrices {
 		public String pharma_code;
 		public String atc_code;
@@ -105,20 +106,20 @@ public class DailyDrugCosts {
 		public String price_public;
 		public String quantity;
 	}
-	
+
 	DailyDrugCosts() {
-		
+
 	}
-	
+
 	private void adjustUnits(DDD ddd) {
 		if (ddd.unit.equals("g")) {
 			ddd.quantity *= 1000.0;
 			ddd.unit = "mg";
-		} 
+		}
 		if (ddd.unit.equals("mcg")) {
 			ddd.quantity /= 1000.0;
-			ddd.unit = "mg";		
-		} 
+			ddd.unit = "mg";
+		}
 		if (ddd.unit.equals("TU")) {
 			ddd.quantity *= 1000.0;
 			ddd.unit = "U";
@@ -128,19 +129,19 @@ public class DailyDrugCosts {
 			ddd.unit = "U";
 		}
 		if (ddd.unit.equals("U.I. hCG") || ddd.unit.equals("UI")) {
-			ddd.unit = "U";			
+			ddd.unit = "U";
 		}
 	}
-	
+
 	private DDD extractDddFromName(String name) {
-		DDD ddd = new DDD(0.0f, "", "");		
+		DDD ddd = new DDD(0.0f, "", "");
 		Pattern regx = Pattern.compile("\\d+(\\.\\d+)?\\s\\w+\\/\\d+h");
 		Matcher match = regx.matcher(name);
 		if (match.find()) {
 			String a[] = match.group(0).split(" ");
 			ddd.quantity = Float.valueOf(a[0]);
 			ddd.unit = a[1].split("/")[0];
-		}	
+		}
 		regx = Pattern.compile("(\\d+)(\\.\\d+)?\\s*(\\w+)\\s*\\/Dosis");
 		match = regx.matcher(name);
 		if (match.find()) {
@@ -148,14 +149,14 @@ public class DailyDrugCosts {
 			String m = match.group(2);
 			if (n!=null && !n.isEmpty()) {
 				if (m!=null && !m.isEmpty()) {
-					ddd.quantity = Float.valueOf(n + m); 
+					ddd.quantity = Float.valueOf(n + m);
 					ddd.unit = match.group(3);
 				} else {
 					ddd.quantity = Float.valueOf(n);
 					ddd.unit = match.group(3);
 				}
 			}
-		}	
+		}
 		// e.g. 1 mg/ml 20 ml or 100 mg/5ml 200ml or 100 mg/5ml 5 Amp 2ml
 		regx = Pattern.compile("(\\d+)(\\.\\d+)?\\s*mg\\/(\\d+)?ml\\s*(\\d+)?\\s*\\D*\\s*(\\d+)\\s*ml");
 		match = regx.matcher(name);
@@ -170,11 +171,11 @@ public class DailyDrugCosts {
 			float f = 1.0f;
 			if (l!=null && !l.isEmpty())
 				f = Float.valueOf(l);
-			if (n1!=null && !n1.isEmpty()) {				
+			if (n1!=null && !n1.isEmpty()) {
 				if (m!=null && !m.isEmpty()) {
 					if (d!=null && !d.isEmpty()) {
 						ddd.quantity = f*Integer.valueOf(m)/Integer.valueOf(d)*Float.valueOf(n1 + n2);
-						ddd.unit = "mg";						
+						ddd.unit = "mg";
 					} else {
 						ddd.quantity = f*Integer.valueOf(m)*Float.valueOf(n1 + n2);
 						ddd.unit = "mg";
@@ -192,11 +193,11 @@ public class DailyDrugCosts {
 			String m = match.group(4);
 			if (n2==null)
 				n2 = "";
-			if (n1!=null && !n1.isEmpty()) {				
+			if (n1!=null && !n1.isEmpty()) {
 				if (m!=null && !m.isEmpty()) {
 					if (d!=null && !d.isEmpty()) {
 						ddd.quantity = Integer.valueOf(m)/Integer.valueOf(d)*Float.valueOf(n1 + n2);
-						ddd.unit = "mg";						
+						ddd.unit = "mg";
 					} else {
 						ddd.quantity = Integer.valueOf(m)*Float.valueOf(n1 + n2);
 						ddd.unit = "mg";
@@ -204,10 +205,10 @@ public class DailyDrugCosts {
 				}
 			}
 		}
-				
+
 		return ddd;
 	}
-	
+
 	private int extractQuantityFromDescription(String description) {
 		// First identify more complex patterns, e.g. 6x 10 Stk or 3x 60 Dosen
 		Pattern regx = Pattern.compile("(\\d+)\\s*x\\s*(\\d+)\\s*(Stk|Dosen)\\b");
@@ -217,7 +218,7 @@ public class DailyDrugCosts {
 			String m = match.group(2);
 			if (n!=null && m!=null && !n.isEmpty() && !m.isEmpty())
 				return Integer.valueOf(n) * Integer.valueOf(m);
-		}	
+		}
 		// Identify less complex, but more common patterns
 		regx = Pattern.compile("(\\d+)\\s*((S|s)tk|(D|d)os|(A|a)mp|x|Minibag|Durchstf|Fert(ig)*spr|Monodos|Fert(ig*)pen|Btl)\\b");
 		match = regx.matcher(description);
@@ -225,7 +226,7 @@ public class DailyDrugCosts {
 			String n = match.group(1);	// group(0) -> whole regular expression
 			if (n!=null && !n.isEmpty())
 				return Integer.valueOf(n);
-		}	
+		}
 		// Tubes and dispensers are special, e.g. 3 Disp 80 g
 		regx = Pattern.compile("(\\d+)*\\s*(Disp|Tb)\\s*(\\d+)\\s*g\\b");
 		match = regx.matcher(description);
@@ -238,10 +239,10 @@ public class DailyDrugCosts {
 				else
 					return Integer.valueOf(m);
 			}
-		}			
+		}
 		return 1;
 	}
-	
+
 	private String removeDDDFromName(String name) {
 		name = name.toLowerCase();
 		name = name.replaceAll("\\d+\\s\\w+\\/\\d+h", "");
@@ -249,33 +250,33 @@ public class DailyDrugCosts {
 		name = name.replaceAll("\\d+\\s\\w+\\/(\\d+\\.\\d+)?ml", "");
 		return name;
 	}
-	
+
 	private String removeAllDigitsFromName(String name) {
 		// name = name.replaceAll("(^| ).%?( |$)", "").trim();
-		name = name.replaceAll("\\d+\\b", "").trim();	
+		name = name.replaceAll("\\d+\\b", "").trim();
 		return name;
 	}
-	
+
 	private String removeStringFromName(String name, String str) {
 		name = name.toLowerCase();
 		str = str.toLowerCase();
-		return name.replaceAll("\\b"+str+"\\b", "");		
+		return name.replaceAll("\\b"+str+"\\b", "");
 	}
-	
+
 	private String removeSingleChars(String name) {
-		name = name.toLowerCase();		
+		name = name.toLowerCase();
 		return name.replaceAll("(^| ).( |$)", "");
 	}
-	
+
 	public void process() {
 		try {
 			int missing_atc_codes = 0;
 			String missing_atc_codes_str = "";
 			int missing_articles = 0;
-			String missing_articles_str = "";			
+			String missing_articles_str = "";
 			int unknown_galens = 0;
 			String quantity_zero_str = "";
-			
+
 			// Read core info from files
 			parseDosageFormsJson();
 			parseBagPreparationsFile();		
@@ -283,7 +284,7 @@ public class DailyDrugCosts {
 			parseWidoATCIndexFile();
 			parse2015ATCwithDDDsFile();
 			parseIQPharmaFile();
-			
+
 			// Enhance WIDO map
 			for (Map.Entry<String, Substance> entry : m_atc_to_substance_map.entrySet()) {
 				String atc = entry.getKey();
@@ -293,7 +294,7 @@ public class DailyDrugCosts {
 				}
 			}
 			System.out.println("ATC codes which are missing in the WIDO file -> " + missing_articles);
-			
+
 			// Loop through all preparations and packs
 			String csv_str = "GTIN;Pharma;Name;Author;ATC;Galen;Amount;Stk;Dosage;Unit;DosageREF;UnitREF;EFP;PUP;WHODosage;WHOUnit;RoA;WHONotes;Mult;EFPDaily;PUPDaily;IG;iqPGR;iqPUP;iqAmount\n";
 			for (Preparation p : m_list_of_preparations) {
@@ -301,11 +302,11 @@ public class DailyDrugCosts {
 				String atc_code = p.atc_code;
 				float quantity = 0;
 				String unit = "";
-	
+
 				if (p.substance!=null) {
 					// Only one DDD per preparation exists!
 					DDD ddd = new DDD(p.substance.list_of_ddds.get(0).quantity, p.substance.list_of_ddds.get(0).unit, "");
-					adjustUnits(ddd);					
+					adjustUnits(ddd);
 					quantity = ddd.quantity;
 					unit = ddd.unit;
 				}
@@ -314,14 +315,14 @@ public class DailyDrugCosts {
 						for (Pack pack : p.list_of_packs) {
 							pack.name_de = name_de;
 							pack.atc_code = atc_code;
-							pack.list_of_ddds = m_atc_map.get(atc_code).list_of_ddds;	
+							pack.list_of_ddds = m_atc_map.get(atc_code).list_of_ddds;
 
 							// Pre-parse all ddds listed in the WHO file - notes is relevant for the selection
 							boolean skip_next_one = false;
 							// Parse ddd_unit and adjust accordingly
-							for (DDD ddd : pack.list_of_ddds) {								
-								adjustUnits(ddd);								
-								if (quantity > 0.0f && ddd.quantity > 0.0f && skip_next_one==false) {									
+							for (DDD ddd : pack.list_of_ddds) {
+								adjustUnits(ddd);
+								if (quantity > 0.0f && ddd.quantity > 0.0f && skip_next_one==false) {
 									String refdata_name_de = "";
 									String refdata_pharma_code = "";
 									String refdata_author_holder = "";
@@ -333,32 +334,32 @@ public class DailyDrugCosts {
 										ddd_refdata = extractDddFromName(refdata_name_de);
 										adjustUnits(ddd_refdata);
 									}
-																		
+
 									float factor = 0.0f;
 									if (ddd_refdata.quantity>0.0f) {
 										if (ddd.unit.toLowerCase().equals(ddd_refdata.unit.toLowerCase())) {
 											factor = ddd_refdata.quantity / ddd.quantity;
 										}
-									} 
+									}
 									if (factor<=0.0f) {
 										if (unit.toLowerCase().equals(ddd.unit.toLowerCase())) {
 											factor = quantity / ddd.quantity;
 										} else if (ddd.unit.toLowerCase().equals("tablet")) {
 											factor = 1;
 										}
-									}			
-									
-									String clean_pack_name = removeAllDigitsFromName(pack.name_de);																	
-									String galen_form = removeStringFromName(refdata_name_de, pack.name_de);								
+									}
+
+									String clean_pack_name = removeAllDigitsFromName(pack.name_de);
+									String galen_form = removeStringFromName(refdata_name_de, pack.name_de);
 									galen_form = removeStringFromName(galen_form, clean_pack_name);
-									galen_form = removeDDDFromName(galen_form);									
+									galen_form = removeDDDFromName(galen_form);
 									galen_form = removeStringFromName(galen_form, pack.description_de);
 									galen_form = removeStringFromName(galen_form, String.valueOf(quantity));
 									galen_form = removeStringFromName(galen_form, unit);
 									galen_form = removeAllDigitsFromName(galen_form);
 									galen_form = removeSingleChars(galen_form);
-									galen_form = galen_form.trim();					
-									
+									galen_form = galen_form.trim();
+
 									String route_adm = "";
 									// Note: the dosage map has been sorted!
 									boolean name_found = false;
@@ -366,19 +367,19 @@ public class DailyDrugCosts {
 									for (Map.Entry<String, Dosage> entry : m_dosages_map.entrySet()) {
 										String name_short = entry.getKey();
 										Dosage dosage = entry.getValue();
-										String name_full = dosage.name_full;										
+										String name_full = dosage.name_full;
 										if (galen_form.contains(name_short) && name_short.length()>curr_name_short_len) {
 											galen_form = name_full;
 											route_adm = dosage.route_adm_short;
 											curr_name_short_len = name_short.length();
-											name_found = true;											
+											name_found = true;
 										}
-										if (refdata_name_de.toLowerCase().contains(name_full) 
+										if (refdata_name_de.toLowerCase().contains(name_full)
 												|| (refdata_name_de.toLowerCase().contains(name_short) && name_short.length()>curr_name_short_len)) {
 											galen_form = name_full;
 											route_adm = dosage.route_adm_short;
 											curr_name_short_len = name_short.length();
-											name_found = true;						
+											name_found = true;
 										}
 									}
 									if (name_found==false) {
@@ -393,7 +394,7 @@ public class DailyDrugCosts {
 											name_found = true;
 										} else if (refdata_name_de.toLowerCase().contains("inj kit")) {
 											galen_form = "injektionsl�sung";
-											route_adm = "P";											
+											route_adm = "P";
 											name_found = true;
 										} else if (refdata_name_de.toLowerCase().contains("durchstf")) {
 											galen_form = "durchstechflasche";
@@ -411,28 +412,28 @@ public class DailyDrugCosts {
 											galen_form = "unbekannt";
 											unknown_galens++;
 										}
-									}							
+									}
 									// Cross-check information extracted from refdata name with the one from WHO
 									if (route_adm.equals(ddd.admroute)) {
-										
+
 										int N = extractQuantityFromDescription(pack.description_de);
 										String f = "";
 										String efp_daily = "";
 										String pup_daily = "";
-										if (factor > 0.0f) {											
+										if (factor > 0.0f) {
 											if (N>0)
-												factor *= N;											
+												factor *= N;
 											f =  String.format("%.4f", factor);
 											efp_daily = String.format("%.2f", pack.exfactory_price / factor);
 											pup_daily = String.format("%.2f", pack.public_price / factor);
-										}				
-										
-										boolean mismatch = false;	
+										}
+
+										boolean mismatch = false;
 										if (ddd.notes!=null && !ddd.notes.isEmpty()) {
 											// Specify here all exceptions to the WHO rule!
 											if (galen_form.equals("gel") && !ddd.notes.contains("gel"))
 												mismatch = true;
-											if (galen_form.contains("pflaster") && !ddd.notes.contains("patch")) 
+											if (galen_form.contains("pflaster") && !ddd.notes.contains("patch"))
 												mismatch = true;
 											if (galen_form.contains("vagina") && !ddd.notes.contains("vaginal"))
 												mismatch = true;
@@ -441,7 +442,7 @@ public class DailyDrugCosts {
 											if (galen_form.contains("tablette") && ddd.notes.contains("ring"))
 												mismatch = true;
 										}
-										
+
 										if (!mismatch) {
 											String iq_atc_code = "";
 											String iq_price_grosso = "";
@@ -452,24 +453,24 @@ public class DailyDrugCosts {
 												iq_price_grosso = String.format("%,.2f", Float.valueOf(m_pharma_to_iqprices_map.get(refdata_pharma_code).price_grosso));
 												iq_price_public = String.format("%,.2f", Float.valueOf(m_pharma_to_iqprices_map.get(refdata_pharma_code).price_public));
 												iq_quantity = m_pharma_to_iqprices_map.get(refdata_pharma_code).quantity;
-											}				
-											
+											}
+
 											skip_next_one = true;
-											csv_str += pack.gtin + ";" 
+											csv_str += pack.gtin + ";"
 													+ refdata_pharma_code + ";"
 													+ refdata_name_de + ";"
 													+ refdata_author_holder + ";"
-													+ pack.name_de + ";" 
+													+ pack.name_de + ";"
 													+ clean_pack_name + ";"
 													+ pack.atc_code + ";"
-													+ galen_form + ";" 
-													+ pack.description_de + ";" 
+													+ galen_form + ";"
+													+ pack.description_de + ";"
 													+ N + ";"
-													+ quantity + ";" 
+													+ quantity + ";"
 													+ unit + ";"
-													+ ddd_refdata.quantity + ";" 
+													+ ddd_refdata.quantity + ";"
 													+ ddd_refdata.unit + ";"
-													+ pack.exfactory_price + ";" 
+													+ pack.exfactory_price + ";"
 													+ pack.public_price + ";"
 													+ ddd.quantity + ";" + ddd.unit + ";" + ddd.admroute + ";" + ddd.notes + ";"
 													+ f + ";"
@@ -479,11 +480,11 @@ public class DailyDrugCosts {
 													+ iq_price_grosso + ";"
 													+ iq_price_public + ";"
 													+ iq_quantity
-													+ "\n";											
+													+ "\n";
 										}
 									}
 								} else {
-									quantity_zero_str += p.name_de + " -> " + quantity + " / " + ddd.quantity + " / " + skip_next_one + "\n"; 
+									quantity_zero_str += p.name_de + " -> " + quantity + " / " + ddd.quantity + " / " + skip_next_one + "\n";
 								}
 							}
 						}
@@ -494,8 +495,8 @@ public class DailyDrugCosts {
 					}
 				} else {
 					missing_atc_codes += p.list_of_packs.size();
-					missing_atc_codes_str += p.name_de + " (" + p.atc_code + ")\n";					
-					System.out.print("\rPacks (articles) that have no ATC code -> " + missing_atc_codes);					
+					missing_atc_codes_str += p.name_de + " (" + p.atc_code + ")\n";
+					System.out.print("\rPacks (articles) that have no ATC code -> " + missing_atc_codes);
 				}
 			}
 			System.out.println("");
@@ -515,7 +516,7 @@ public class DailyDrugCosts {
 
 	@SuppressWarnings("unchecked")
 	private void parseDosageFormsJson() throws IOException {
-		ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally				
+		ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
 		TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
 
 		File json_file = Paths.get(System.getProperty("user.dir"), Constants.DIR_INPUT, Constants.FILE_DOSAGE_FORMS_JSON).toFile();
@@ -531,7 +532,7 @@ public class DailyDrugCosts {
 			dose.name_full = dosage.get("galenic_full");
 			dose.name_short = dosage.get("galenic_short");
 			dose.route_adm_full = dosage.get("route_adm_full");
-			dose.route_adm_short = dosage.get("route_adm_short");			
+			dose.route_adm_short = dosage.get("route_adm_short");
 			dose.units = dosage.get("units");
 			String[] short_names = dose.name_short.split(",", -1);
 			for (String sn : short_names) {
@@ -540,7 +541,7 @@ public class DailyDrugCosts {
 					m_dosages_map.put(sn, dose);
 			}
 		}
-		
+
 		// Sort according to length of short name (larger comes first)
 		// This will ensure that when the abbreviations are replaced we will get the correct one!
 		/*
@@ -556,27 +557,27 @@ public class DailyDrugCosts {
 			}
 		});
 		m_dosages_map.clear();
-		for (Entry<String, Dosage> e : list_of_entries) 
+		for (Entry<String, Dosage> e : list_of_entries)
 			m_dosages_map.put(e.getKey(), e.getValue());
 		*/
-		
+
 		System.out.println("Number of dosage forms in database: " + m_dosages_map.size());
 	}
-	
+
 	private void parseBagPreparationsFile() throws XMLStreamException, FileNotFoundException {
-		String tag_content = null;		
+		String tag_content = null;
 		Preparation preparation = null;
 		ArrayList<Pack> list_of_packs = null;
 		ArrayList<Substance> list_of_substances = null;
 		Pack pack = null;
 		Substance substance = null;
 		DDD ddd = null;
-		
+
 		System.out.print("Processing BAG preparations file...");
 
 		XMLInputFactory xml_factory = XMLInputFactory.newInstance();
 		// Next instruction allows to read "escape characters", e.g. &amp;
-		xml_factory.setProperty("javax.xml.stream.isCoalescing", true);  // Decodes entities into one string		
+		xml_factory.setProperty("javax.xml.stream.isCoalescing", true);  // Decodes entities into one string
 		InputStream in = new FileInputStream(Constants.FILE_PREPARATIONS_XML);
 		XMLStreamReader reader = xml_factory.createXMLStreamReader(in, "UTF-8");
 
@@ -634,7 +635,7 @@ public class DailyDrugCosts {
 					break;
 				case "pack":
 					pack.description_de = description;
-					list_of_packs.add(pack);					
+					list_of_packs.add(pack);
 					break;
 				case "packs":
 					preparation.list_of_packs = list_of_packs;
@@ -697,46 +698,68 @@ public class DailyDrugCosts {
 			}
 		}
 		System.out.println("");
-	}	
-	
+	}
+
 	void parseRefdataPharmaFile() throws FileNotFoundException, JAXBException {
 		m_gtin_to_refdata_map = new TreeMap<String, RefdataInfo>();
 
 		System.out.print("Processing Refdata Pharma file...");
-		
+
 		// Load Refdata xml file
 		File refdata_xml_file = new File(Constants.FILE_REFDATA_PHARMA_XML);
 		FileInputStream refdata_fis = new FileInputStream(refdata_xml_file);
 
-		JAXBContext context = JAXBContext.newInstance(Refdata.class);
+		JAXBContext context = JAXBContext.newInstance(Articles.class);
 		Unmarshaller um = context.createUnmarshaller();
-		Refdata refdataPharma = (Refdata) um.unmarshal(refdata_fis);
-		List<Refdata.ITEM> pharma_list = refdataPharma.getItem();
+		Articles refdata_articles = (Articles) um.unmarshal(refdata_fis);
+		List<Articles.Article> article_list = refdata_articles.getArticle();
 
 		int num_rows = 0;
-		for (Refdata.ITEM pharma : pharma_list) {
-			String ean_code = pharma.getGtin();
+		for (Articles.Article article : article_list) {
+			String product_class = article.getMedicinalProduct().getProductClassification().getProductClass();
+			String ean_code;
+			if (product_class.equals("PHARMA")) {
+				ean_code = article.getPackagedProduct().getDataCarrierIdentifier();
+			} else if (product_class.equals("NONPHARMA")) {
+				ean_code = article.getMedicinalProduct().getIdentifier();
+			} else {
+				continue;
+			}
+			String nameDe = "";
+			String nameFr = "";
+			List<Articles.Article.PackagedProduct.Name> name_list = article.getPackagedProduct().getName();
+			for (Articles.Article.PackagedProduct.Name name: name_list) {
+				if (name.getLanguage().equals("DE")) {
+					nameDe = name.getFullName();
+				} else if (name.getLanguage().equals("FR")) {
+					nameFr = name.getFullName();
+				}
+			}
+			String atc = article.getMedicinalProduct().getProductClassification().getAtc();
+
 			if (ean_code.length() == 13) {
 				RefdataInfo refdata = new RefdataInfo();
-				refdata.gtin = pharma.getGtin();
-				refdata.pharma_code = pharma.getPhar();
-				refdata.name_de = pharma.getNameDE();
-				refdata.name_fr = pharma.getNameFR();
-				refdata.atc_code = pharma.getATC();
-				refdata.auth_holder = pharma.getAUTHHOLDERNAME();
+				refdata.gtin = ean_code;
+				// No pharma code in the new XML format
+				// https://github.com/zdavatz/aips2sqlite/issues/70
+				refdata.pharma_code = "";
+				refdata.name_de = nameDe;
+				refdata.name_fr = nameFr;
+				refdata.atc_code = atc == null ? "" : atc;
+				refdata.auth_holder = article.getPackagedProduct().getHolder().getName();
 				m_gtin_to_refdata_map.put(ean_code, refdata);
 				System.out.print("\rProcessing BAG preparations file... " + num_rows++);
 			} else if (ean_code.length() < 13) {
 				if (CmlOptions.SHOW_ERRORS)
-					System.err.println(">> EAN code too short: " + ean_code + ": " + pharma.getNameDE());
+					System.err.println(">> EAN code too short: " + ean_code + ": " + nameDe);
 			} else if (ean_code.length() > 13) {
 				if (CmlOptions.SHOW_ERRORS)
-					System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getNameDE());
+					System.err.println(">> EAN code too long: " + ean_code + ": " + nameFr);
 			}
 		}
 		System.out.println("");
 	}
-	
+
 	void parseWidoATCIndexFile() throws FileNotFoundException, IOException {
 		// Code -> ATC class
 		m_atc_map = new TreeMap<String, Substance>();
@@ -775,7 +798,7 @@ public class DailyDrugCosts {
 				// Build a full map atc code to atc class
 				if (atc_code.length()==7 && !atc_code.equals("BLANK")) {
 					List<DDD> list_of_ddds = new ArrayList<DDD>();
-					if (m_atc_map.containsKey(atc_code)) {						
+					if (m_atc_map.containsKey(atc_code)) {
 						list_of_ddds = m_atc_map.get(atc_code).list_of_ddds;
 					}
 					DDD ddd = new DDD(daily_dose, unit, admr);
@@ -791,18 +814,18 @@ public class DailyDrugCosts {
 			num_rows++;
 		}
 	}
-	
+
 	void parse2015ATCwithDDDsFile() throws FileNotFoundException, XMLStreamException {
 		m_atc_to_substance_map = new TreeMap<String, Substance>();
-		
+
 		System.out.print("Processing 2015 ATC with DDDs file...");
-		
+
 		XMLInputFactory xml_factory = XMLInputFactory.newInstance();
 		// Next instruction allows to read "escape characters", e.g. &amp;
-		xml_factory.setProperty("javax.xml.stream.isCoalescing", true);  // Decodes entities into one string		
+		xml_factory.setProperty("javax.xml.stream.isCoalescing", true);  // Decodes entities into one string
 		InputStream in = new FileInputStream(Constants.FILE_ATC_WITH_DDDS_XML);
-		XMLStreamReader reader = xml_factory.createXMLStreamReader(in, "UTF-8");		
-		
+		XMLStreamReader reader = xml_factory.createXMLStreamReader(in, "UTF-8");
+
 		// Keep moving the cursor forward
 		while (reader.hasNext()) {
 			int event = reader.next();
@@ -837,7 +860,7 @@ public class DailyDrugCosts {
 						}
 						if (atc!=null && !atc.isEmpty()) {
 							List<DDD> list_of_ddds = new ArrayList<DDD>();
-							if (m_atc_to_substance_map.containsKey(atc)) {						
+							if (m_atc_to_substance_map.containsKey(atc)) {
 								list_of_ddds = m_atc_to_substance_map.get(atc).list_of_ddds;
 							}
 							DDD ddd = new DDD(daily_dose, unit, admr);
@@ -847,7 +870,7 @@ public class DailyDrugCosts {
 								substance.list_of_ddds = list_of_ddds;
 								m_atc_to_substance_map.put(atc, substance);
 							}
-						}							
+						}
 					}
 				}
 				break;
@@ -859,15 +882,15 @@ public class DailyDrugCosts {
 		}
 		System.out.println("");
 	}
-	
+
 	void parseIQPharmaFile() throws FileNotFoundException, IOException {
 		// Pharma code -> IQPrices class
 		m_pharma_to_iqprices_map = new TreeMap<String, IQPrices>();
 
 		System.out.println("Processing iQPharma file... ");
-		XSSFSheet iqpharma_excel = ExcelOps.getSheetsFromFile(Constants.DIR_IBSA + "iq_pharma_data_dec_2015.xlsx", 3);		
+		XSSFSheet iqpharma_excel = ExcelOps.getSheetsFromFile(Constants.DIR_IBSA + "iq_pharma_data_dec_2015.xlsx", 3);
 		Iterator<Row> rowIterator = iqpharma_excel.iterator();
-		
+
 		int num_rows = 0;
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
@@ -886,11 +909,11 @@ public class DailyDrugCosts {
 					if (row.getCell(4)!=null)
 						iqp.price_public = ExcelOps.getCellValue(row.getCell(4));
 					if (row.getCell(5)!=null)
-						iqp.quantity = ExcelOps.getCellValue(row.getCell(5));					
+						iqp.quantity = ExcelOps.getCellValue(row.getCell(5));
 					m_pharma_to_iqprices_map.put(pharma_code, iqp);
-				}				
+				}
 			}
 			num_rows++;
-		}		
+		}
 	}
 }
