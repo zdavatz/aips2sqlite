@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
+import com.maxl.java.aips2sqlite.refdata.Articles;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
@@ -297,14 +298,32 @@ public class RealPatientInfo {
 			if (CmlOptions.SHOW_LOGS)
 				System.out.print("- Unmarshalling Refdatabase for " + CmlOptions.DB_LANGUAGE + "... ");
 
-			JAXBContext context = JAXBContext.newInstance(Refdata.class);
+			JAXBContext context = JAXBContext.newInstance(Articles.class);
 			Unmarshaller um = context.createUnmarshaller();
-			Refdata refdataPharma = (Refdata) um.unmarshal(refdata_fis);
-			List<Refdata.ITEM> pharma_list = refdataPharma.getItem();
+			Articles refdataArticles = (Articles) um.unmarshal(refdata_fis);
+			List<Articles.Article> article_list = refdataArticles.getArticle();
 
 			String smno8;
-			for (Refdata.ITEM pharma : pharma_list) {
-				String ean_code = pharma.getGtin();
+			for (Articles.Article article : article_list) {
+				String product_class = article.getMedicinalProduct().getProductClassification().getProductClass();
+				String ean_code;
+				if (product_class.equals("PHARMA")) {
+					ean_code = article.getPackagedProduct().getDataCarrierIdentifier();
+				} else if (product_class.equals("NONPHARMA")) {
+					ean_code = article.getMedicinalProduct().getIdentifier();
+				} else {
+					continue;
+				}
+				String nameDe = "";
+				String nameFr = "";
+				List<Articles.Article.PackagedProduct.Name> name_list = article.getPackagedProduct().getName();
+				for (Articles.Article.PackagedProduct.Name name: name_list) {
+					if (name.getLanguage().equals("DE")) {
+						nameDe = name.getFullName();
+					} else if (name.getLanguage().equals("FR")) {
+						nameFr = name.getFullName();
+					}
+				}
 				if (ean_code.length() == 13) {
 					smno8 = ean_code.substring(4, 12);
 					// Extract pharma corresponding to swissmedicno8 (source: swissmedic package file)
@@ -313,9 +332,9 @@ public class RealPatientInfo {
 					if (pi_row != null) {
 						// Pr�paratname + galenische Form
 						if (CmlOptions.DB_LANGUAGE.equals("de"))
-							pi_row.set(1, pharma.getNameDE());
+							pi_row.set(1, nameDe);
 						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-							pi_row.set(1, pharma.getNameFR());
+							pi_row.set(1, nameFr);
 						// If med is in refdata file, then it is "in Handel!!" ;)
 						pi_row.set(10, "");
 						// 22.03.2014: EAN-13 barcodes - replace with refdata if package exists
@@ -323,21 +342,21 @@ public class RealPatientInfo {
 					} else {
 						if (CmlOptions.SHOW_ERRORS) {
 							System.err.println(">> Does not exist in BAG xls: " + smno8
-									+ " (" + pharma.getNameDE() + ")");
+									+ " (" + nameDe + ")");
 						}
 					}
 				} else if (ean_code.length() < 13) {
 					if (CmlOptions.SHOW_ERRORS)
-						System.err.println(">> EAN code too short: " + ean_code + ": " + pharma.getNameDE());
+						System.err.println(">> EAN code too short: " + ean_code + ": " + nameDe);
 				} else if (ean_code.length() > 13) {
 					if (CmlOptions.SHOW_ERRORS)
-						System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getNameDE());
+						System.err.println(">> EAN code too long: " + ean_code + ": " + nameDe);
 				}
 			}
 
 			stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)
-				System.out.println(pharma_list.size() + " medis in " + (stopTime - startTime) / 1000.0f + " sec");
+				System.out.println(article_list.size() + " medis in " + (stopTime - startTime) / 1000.0f + " sec");
 
 			// Load BAG xml file
 			File bag_xml_file = new File(Constants.FILE_PREPARATIONS_XML);
