@@ -392,6 +392,7 @@ public class Aips2Sqlite {
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
 			a.downRefdataPharmaXml(Constants.FILE_REFDATA_PHARMA_XML);
 			a.downRefdataPartnerXml(Constants.FILE_REFDATA_PARTNER_XML);			
+			a.downRefdataAllHtml(Constants.FILE_REFDATA_ALL_HTML_DIR);
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
 			a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
