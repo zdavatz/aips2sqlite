@@ -27,6 +27,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.file.Paths;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -50,6 +52,8 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import com.maxl.java.aips2sqlite.refdata.Articles;
+import com.maxl.java.aips2sqlite.refdata.ArticalDocument;
+import com.maxl.java.aips2sqlite.refdata.MedicinalDocumentsBundles;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
@@ -78,7 +82,7 @@ public class RealExpertInfo {
 	// Main sqlite database
 	SqlDatabase m_sql_db;
 
-	List<MedicalInformations.MedicalInformation> m_med_list = null;
+	List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> m_med_list = null;
 
 	// Map to list with all the relevant information
 	// HashMap is faster, but TreeMap is sort by the key :)
@@ -121,7 +125,7 @@ public class RealExpertInfo {
 	 * Constructors
 	 */
 	public RealExpertInfo(SqlDatabase sql_db,
-			List<MedicalInformations.MedicalInformation> med_list,
+			List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> med_list,
 			Map<String, Product> map_products) {
 		m_sql_db = sql_db;
 		m_med_list = med_list;
@@ -142,11 +146,11 @@ public class RealExpertInfo {
 	/*
 	 * Getters / setters
 	 */
-	public void setMedList(List<MedicalInformations.MedicalInformation> med_list) {
+	public void setMedList(List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> med_list) {
 		m_med_list = med_list;
 	}
 
-	public List<MedicalInformations.MedicalInformation> getMedList() {
+	public List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> getMedList() {
 		return m_med_list;
 	}
 
@@ -798,11 +802,21 @@ public class RealExpertInfo {
 	private void extractReg5noNamesMapping() {
 		m_smn5_to_list_of_names = new HashMap<String, ArrayList<String>>();
 
-		for (MedicalInformations.MedicalInformation m : m_med_list) {
+		for (MedicinalDocumentsBundles.MedicinalDocumentsBundle m : m_med_list) {
 			// --> Read from aips.xml file
-			if (m.getLang().equals(CmlOptions.DB_LANGUAGE) && m.getType().equals("fi")) {
-				String title_aips = m.getTitle();
-				String regnr_str = m.getAuthNrs();
+			if (m.getType().value().equals("SmPC")) {
+				String title_aips = "";
+
+				List<MedicinalDocumentsBundles.MedicinalDocumentsBundle.AttachedDocument> attached_documents = m.getAttachedDocument();
+				for (MedicinalDocumentsBundles.MedicinalDocumentsBundle.AttachedDocument attached_document : attached_documents) {
+					if (attached_document.getLanguage().value().equals(CmlOptions.DB_LANGUAGE)) {
+						title_aips = attached_document.getDescription();
+					}
+				}
+
+				List<String> regnrs_list = m.getRegulatedAuthorization().getIdentifier();
+
+				String regnr_str = String.join(",", regnrs_list);
 
 				ArrayList<String> list_of_names = new ArrayList<String>();
 				if (m_smn5_to_list_of_names.containsKey(regnr_str)) {
@@ -900,503 +914,482 @@ public class RealExpertInfo {
 			System.out.println("Processing real Fachinfos...");
 
 			// --> Read FACHINFOS! <--
-			for (MedicalInformations.MedicalInformation m : m_med_list)
-				if (m.getLang().equals(CmlOptions.DB_LANGUAGE) && m.getType().equals("fi")
-						/* && m.getAuthHolder().toLowerCase().contains("ibsa") */) {
-					// Database contains less than 5000 medis - this is a safe upperbound!
-					if (tot_med_counter < 5000) {
-						// Trim titles of leading and trailing spaces
-						m.setTitle(m.getTitle().trim());
-						// Extract section titles and section ids
-						MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
-						List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
-						String ids_str = "";
-						String titles_str = "";
-						for (MedicalInformations.MedicalInformation.Sections.Section s : med_section_list) {
-							ids_str += (s.getId() + ",");
-							titles_str += (s.getTitle() + ";");
-						}
+			for (MedicinalDocumentsBundles.MedicinalDocumentsBundle m : m_med_list) {
+				tot_med_counter++;
+				MedicinalDocumentsBundles.MedicinalDocumentsBundle.AttachedDocument attached_document = null;
+				for (MedicinalDocumentsBundles.MedicinalDocumentsBundle.AttachedDocument ma: m.getAttachedDocument()) {
+					if (CmlOptions.DB_LANGUAGE.equals(ma.getLanguage().value())) {
+						attached_document = ma;
+						break;
+					}
+				}
+				if (!m.getLanguage().value().equals(CmlOptions.DB_LANGUAGE)
+					|| !m.getType().value().equals("SmPC")
+					|| !m.getDomain().equals("Human")
+					|| attached_document == null) {
+					continue;
+				}
+				String med_title = attached_document.getDescription();
+				// Database contains less than 5000 medis - this is a safe upperbound!
+				String document_path = null;
+				for (MedicinalDocumentsBundles.MedicinalDocumentsBundle.AttachedDocument.DocumentReference doc_ref : attached_document.getDocumentReference()) {
+					if (doc_ref.getContentType().equals("text/html")) {
+						URL url = new URL(doc_ref.getUrl());
+						String filename = Paths.get(url.getPath()).getFileName().toString();
+						document_path = Constants.FILE_REFDATA_ALL_HTML_DIR + "/" + filename;
+						break;
+					}
+				}
+				System.out.println("document_path: " + document_path);
+				if (!new File(document_path).exists()) {
+					System.out.println("HTML file not found: " + document_path);
+					continue;
+				}
+				ArticalDocument artDoc = new ArticalDocument(document_path);
+				if (artDoc.sections.get(0).title.isEmpty()) {
+					throw new IOException();
+				}
+				if (tot_med_counter >= 5000) {
+					break;
+				}
+				// Extract section titles and section ids
+				// MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
+				// List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
+				String ids_str = "";
+				String titles_str = "";
+				for (ArticalDocument.Section s : artDoc.sections) {
+					ids_str += s.id + ",";
+					titles_str += s.title + ";";
+				}
 
-						Document doc = Jsoup.parse(m.getContent());
-						doc.outputSettings().escapeMode(EscapeMode.xhtml);
+				Document doc = new Document("");
+				doc.outputSettings().escapeMode(EscapeMode.xhtml);
 
-						html_utils = new HtmlUtils(m.getContent());
-						html_utils.setLanguage(CmlOptions.DB_LANGUAGE);
-						html_utils.clean();
+				// html_utils = new HtmlUtils(m.getContent());
+				// html_utils.setLanguage(CmlOptions.DB_LANGUAGE);
+				// html_utils.clean();
 
-						// Extract registration number (swissmedic no5)
-						String regnr_str = "";
-						if (CmlOptions.DB_LANGUAGE.equals("de"))
-							regnr_str = html_utils.extractRegNrDE(m.getTitle());
-						else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-							regnr_str = html_utils.extractRegNrFR(m.getTitle());
-						else if (CmlOptions.DB_LANGUAGE.equals("it")) {
-							regnr_str = html_utils.extractRegNrIt(m.getTitle());
-						}
+				List<String> regnrs_list = m.getRegulatedAuthorization().getIdentifier();
+				String regnr_str = String.join(",", regnrs_list);
 
-						// Pattern matcher for regnr command line option, (?s) searches across multiple lines
-						Pattern regnr_pattern = Pattern.compile("(?s).*\\b" + CmlOptions.OPT_MED_REGNR);
+				// Pattern matcher for regnr command line option, (?s) searches across multiple lines
+				Pattern regnr_pattern = Pattern.compile("(?s).*\\b" + CmlOptions.OPT_MED_REGNR);
 
-						if (m.getTitle().toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())
-								&& regnr_pattern.matcher(regnr_str).find()
-								&& m.getAuthHolder().toLowerCase().startsWith(CmlOptions.OPT_MED_OWNER.toLowerCase())) {
+				if (!med_title.toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())
+						|| !regnr_pattern.matcher(regnr_str).find()
+						|| !m.getHolder().getName().toLowerCase().startsWith(CmlOptions.OPT_MED_OWNER.toLowerCase())) {
+					continue;
+				}
 
-							System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + regnr_str);
+				System.out.println(tot_med_counter + " - " + med_title + ": " + regnr_str);
 
-							if (regnr_str.isEmpty()) {
-								errors++;
-								if (CmlOptions.GENERATE_REPORTS == true) {
-									parse_errors.append("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
-									// Add to owner errors
-									ArrayList<String> error = tm_owner_error.get(m.getAuthHolder());
-									if (error == null)
-										error = new ArrayList<>();
-									error.add(m.getTitle() + ";regnr");
-									tm_owner_error.put(m.getAuthHolder(), error);
-								}
-								missing_regnr_str++;
-								regnr_str = "";
-							}
+				if (regnr_str.isEmpty()) {
+					errors++;
+					if (CmlOptions.GENERATE_REPORTS == true) {
+						parse_errors.append("<p style=\"color:#ff0099\">ERROR " + errors + ": reg. nr. could not be parsed in AIPS.xml (swissmedic) - " + med_title + " (" + regnr_str + ")</p>");
+						// Add to owner errors
+						ArrayList<String> error = tm_owner_error.get(m.getHolder().getName());
+						if (error == null)
+							error = new ArrayList<>();
+						error.add(med_title + ";regnr");
+						tm_owner_error.put(m.getHolder().getName(), error);
+					}
+					missing_regnr_str++;
+				}
 
-							// Associate ATC classes and subclasses (atc_map)
-							String atc_class_str = "";
-							String atc_description_str = "";
-							// This bit is necessary because the ATC Code in the AIPS DB is broken sometimes
-							String atc_code_str = "";
+				// Associate ATC classes and subclasses (atc_map)
+				String atc_class_str = "";
+				String atc_description_str = "";
+				// This bit is necessary because the ATC Code in the AIPS DB is broken sometimes
+				String atc_code_str = "";
 
-							boolean atc_error_found = false;
+				boolean atc_error_found = false;
 
-							// Use EPha ATC Codes, AIPS is fallback solution
-							String authNrs = m.getAuthNrs();
-							if (authNrs != null) {
-								// Deal with multi-swissmedic no5 case
-								String regnrs[] = authNrs.split(",");
-								// Use set to avoid duplicate ATC codes
-								Set<String> regnrs_set = new LinkedHashSet<>();
-								// Loop through EPha ATC codes
-								for (String r : regnrs) {
-									regnrs_set.add(m_smn5_atc_map.get(r.trim()));
-								}
-								// Iterate through set and format nicely
-								for (String r : regnrs_set) {
-									if (atc_code_str == null || atc_code_str.isEmpty())
-										atc_code_str = r;
-									else
-										atc_code_str += "," + r;
-								}
-							} else
-								atc_error_found = true;
-
-							// Notify any other problem with the EPha ATC codes
-							if (atc_code_str == null || atc_code_str.isEmpty())
-								atc_error_found = true;
-
-							// Fallback solution
-							if (atc_error_found == true) {
-								if (m.getAtcCode() != null && !m.getAtcCode().equals("n.a.") && m.getAtcCode().length() > 1) {
-									atc_code_str = m.getAtcCode();
-									atc_code_str = atc_code_str.replaceAll("&ndash;", "(");
-									atc_code_str = atc_code_str.replaceAll("Code", "").replaceAll("ATC", "")
-											.replaceAll("&nbsp", "").replaceAll("\\(.*", "").replaceAll("/", ",")
-											.replaceAll("[^A-Za-z0-9äöü,]", "");
-									if (atc_code_str.charAt(1) == 'O') {
-										// E.g. Ascosal Brausetabletten
-										atc_code_str = atc_code_str.substring(0, 1) + '0' + atc_code_str.substring(2);
-									}
-									if (atc_code_str.length() > 7) {
-										if (atc_code_str.charAt(7) != ',' || atc_code_str.length() != 15)
-											atc_code_str = atc_code_str.substring(0, 7);
-									}
-								} else {
-									// Work backwards using m_atc_map and m.getSubstances()
-									String substances = m.getSubstances();
-									if (substances != null) {
-										if (m_atc_map.containsValue(substances)) {
-											for (Map.Entry<String, String> entry : m_atc_map.entrySet()) {
-												if (entry.getValue().equals(substances)) {
-													atc_code_str = entry.getKey();
-												}
-											}
-										}
-									}
-								}
-								atc_error_found = false;
-							}
-
-							// Now let's clean the m.getSubstances()
-							String substances = m.getSubstances();
-							if ((substances == null || substances.length() < 3) && atc_code_str != null) {
-								substances = m_atc_map.get(atc_code_str);
-							}
-
-							// Set clean substances
-							m.setSubstances(substances);
-							// Set clean ATC Code
-							m.setAtcCode(atc_code_str);
-
-							// System.out.println("ATC -> " + atc_code_str + ": " + substances);
-
-							if (atc_code_str != null) {
-								// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
-								// atc_code_str = atc_code_str.replaceAll("\\s","");
-								// Take "leave" of the tree (most precise classification)
-								String a = m_atc_map.get(atc_code_str);
-								if (a != null) {
-									atc_description_str = a;
-									atccode_set.add(atc_code_str + ": " + a);
-								} else {
-									// Case: ATC1,ATC2
-									if (atc_code_str.length() == 15) {
-										String[] codes = atc_code_str.split(",");
-										if (codes.length > 1) {
-											String a1 = m_atc_map.get(codes[0]);
-											if (a1 == null) {
-												atc_error_found = true;
-												a1 = "k.A.";
-											}
-											String a2 = m_atc_map.get(codes[1]);
-											if (a2 == null) {
-												atc_error_found = true;
-												a2 = "k.A.";
-											}
-											atc_description_str = a1 + "," + a2;
-										}
-									} else if (m.getSubstances() != null) {
-										// Fallback in case nothing else works
-										atc_description_str = m.getSubstances();
-										// Work backwards using m_atc_map and m.getSubstances(), change ATC code
-										if (atc_description_str != null) {
-											if (m_atc_map.containsValue(atc_description_str)) {
-												for (Map.Entry<String, String> entry : m_atc_map.entrySet()) {
-													if (entry.getValue().equals(atc_description_str)) {
-														m.setAtcCode(entry.getKey());
-													}
-												}
-											}
-										}
-									} else {
-										atc_error_found = true;
-										if (CmlOptions.DB_LANGUAGE.equals("de"))
-											atc_description_str = "k.A.";
-										else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-											atc_description_str = "n.s.";
-										else if (CmlOptions.DB_LANGUAGE.equals("it"))
-											atc_description_str = "n.d.";
-									}
-								}
-
-								// Read out only two levels (L1, L3, L4, L5)
-								for (int i = 1; i < 6; i++) {
-									if (i != 2) {
-										String atc_key = "";
-										if (i <= atc_code_str.length())
-											atc_key = atc_code_str.substring(0, i);
-										char sep = (i >= 4) ? '#' : ';';    // #-separator between L4 and L5
-										if (atc_key != null) {
-											String c = m_atc_map.get(atc_key);
-											if (c != null) {
-												atccode_set.add(atc_key + ": " + c);
-												atc_class_str += (c + sep);
-											} else {
-												atc_class_str += sep;
-											}
-										} else {
-											atc_class_str += sep;
-										}
-									}
-								}
-
-								// System.out.println("atc class = " + atc_class_str);
-
-								// If DRG medication, add to atc_description_str
-								ArrayList<String> drg = m_swiss_drg_info.get(atc_code_str);
-								if (drg != null) {
-									atc_description_str += (";DRG");
-								}
-							}
-
-							if (atc_error_found) {
-								errors++;
-								if (CmlOptions.GENERATE_REPORTS) {
-									parse_errors.append("<p style=\"color:#0000bb\">ERROR " + errors + ": Broken or missing ATC-Code-Tag in AIPS.xml (Swissmedic) or ATC index (Wido) - " + m.getTitle() + " (" + regnr_str + ")</p>");
-									// Add to owner errors
-									ArrayList<String> error = tm_owner_error.get(m.getAuthHolder());
-									if (error == null)
-										error = new ArrayList<>();
-									error.add(m.getTitle() + ";atccode");
-									tm_owner_error.put(m.getAuthHolder(), error);
-								}
-								System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + m.getTitle());
-								missing_atc_code++;
-							}
-
-							// Additional info stored in add_info_map
-							String add_info_str = ";";
-							List<String> rnr_list = Arrays.asList(regnr_str.split("\\s*, \\s*"));
-							if (rnr_list.size() > 0)
-								add_info_str = m_add_info_map.get(rnr_list.get(0));
-
-							// Sanitize html
-							String html_sanitized = "";
-							// First check for bad boys (version=1! but actually version>1!)
-							if (!m.getVersion().equals("1") || m.getContent().substring(0, 20).contains("xml")) {
-								for (int i = 1; i < 22; ++i) {
-									html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), m.getAuthHolder(), CmlOptions.DB_LANGUAGE);
-								}
-								html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>";
-							} else {
-								html_sanitized = m.getContent();
-							}
-
-							// Add author number
-							html_sanitized = html_sanitized.replaceAll("<div id=\"monographie\">", "<div id=\"monographie\" name=\"" + m.getAuthNrs() + "\">");
-
-							// Add Footer, timestamp in RFC822 format
-							DateFormat dateFormat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.getDefault());
-							Date date = new Date();
-							String footer_str = "<p class=\"footer\">Auto-generated by <a href=\"https://github.com/zdavatz/aips2sqlite\">aips2sqlite</a> on "
-									+ dateFormat.format(date) + "</p>";
-
-							// html_sanitized += footer_str;
-							html_sanitized = html_sanitized.replaceAll("</div>$", footer_str + "</div>");
-
-							// Extract section indications
-							String section_indications = "";
-							if (CmlOptions.DB_LANGUAGE.equals("de")) {
-								String sstr1 = "Indikationen/Anwendungsmöglichkeiten";
-								String sstr2 = "Dosierung/Anwendung";
-								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
-									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
-									int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
-									try {
-										section_indications = html_sanitized.substring(idx1, idx1 + idx2);
-									} catch (StringIndexOutOfBoundsException e) {
-										e.printStackTrace();
-									}
-								}
-							} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-								String sstr1 = "Indications/Possibilités demploi";
-								String sstr2 = "Posologie/Mode demploi";
-
-								html_sanitized = html_sanitized.replaceAll("Indications/Possibilités d&apos;emploi", sstr1);
-								html_sanitized = html_sanitized.replaceAll("Posologie/Mode d&apos;emploi", sstr2);
-								html_sanitized = html_sanitized.replaceAll("Indications/possibilités demploi", sstr1);
-								html_sanitized = html_sanitized.replaceAll("Posologie/mode demploi", sstr2);
-
-								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
-									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
-									int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
-									try {
-										if (idx1 >= 0 && idx2 >= 0 && idx1 < (idx1 + idx2))
-											section_indications = html_sanitized.substring(idx1, idx1 + idx2);
-									} catch (StringIndexOutOfBoundsException e) {
-										e.printStackTrace();
-									}
-								}
-							} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
-								String sstr1 = "Indicazioni/Possibilità d'impiego";
-								String sstr2 = "Posologia/Impiego";
-
-								html_sanitized = html_sanitized.replaceAll("Indicazioni/Possibilit&agrave; d'impiego", sstr1);
-
-								if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
-									int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
-									int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
-									try {
-										section_indications = html_sanitized.substring(idx1, idx1 + idx2);
-									} catch (StringIndexOutOfBoundsException e) {
-										e.printStackTrace();
-									}
-								}
-							}
-
-							// Remove all p's, div's, span's and sup's
-							section_indications = section_indications.replaceAll("\\<p.*?\\>", "").replaceAll("</p>", "");
-							section_indications = section_indications.replaceAll("\\<div.*?\\>", "").replaceAll("</div>", "");
-							section_indications = section_indications.replaceAll("\\<span.*?\\>", "").replaceAll("</span>", "");
-							section_indications = section_indications.replaceAll("\\<sup.*?\\>", "").replaceAll("</sup>", "");
-
-							// System.out.println(section_indications);
-
-							if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-								// Remove apostrophes
-								section_indications = section_indications.replaceAll("l&apos;", "").replaceAll("d&apos;", "");
-								section_indications = section_indications.replaceAll("l", "").replaceAll("d", "");
-							}
-							// Remove all URLs
-							section_indications = section_indications.replaceAll("\\b(http|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "");
-							// Remove list of type a) b) c) ... 1) 2) ...
-							section_indications = section_indications.replaceAll("^\\w\\)", "");
-							// Remove numbers, commas, semicolons, parentheses, etc.
-							section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
-							// Generate long list of keywords
-							LinkedList<String> wordsAsList = new LinkedList<>(
-									Arrays.asList(section_indications.split("\\s+")));
-							// Remove stop words
-							Iterator<String> wordIterator = wordsAsList.iterator();
-							while (wordIterator.hasNext()) {
-								// Note: This assumes there are no null entries in the list and all stopwords are stored in lower case
-								String word = wordIterator.next().trim().toLowerCase();
-								if (word.length() < 3 || m.getTitle().toLowerCase().contains(word) || m_stop_words_hash.contains(word))
-									wordIterator.remove();
-							}
-							section_indications = "";
-							for (String w : wordsAsList) {
-								// Remove any leading dash or hyphen
-								if (w.startsWith("-"))
-									w = w.substring(1);
-								section_indications += (w + ";");
-								if (CmlOptions.INDICATIONS_REPORT == true) {
-									// Add to map (key->value), word = key, value = how many times used
-									// Is word w already stored in treemap?
-									String t_str = tm_indications.get(w);
-									if (t_str == null) {
-										t_str = m.getTitle();
-										tm_indications.put(w, t_str);
-									} else {
-										t_str += (", " + m.getTitle());
-										tm_indications.put(w, t_str);
-									}
-								}
-							}
-
-							/**
-							 * Update section "Packungen", generate packungen string for shopping cart, and extract therapeutisches index
-							 */
-							List<String> mTyIndex_list = new ArrayList<>();
-							m_list_of_packages.clear();
-							m_list_of_eancodes.clear();
-							String mContent_str = updateSectionPackungen(m.getTitle(), m.authHolder, m.getAtcCode(), m_package_info, regnr_str, html_sanitized, mTyIndex_list);
-
-							m.setContent(mContent_str);
-
-							// Check if mPackSection_str is empty AND command line option PLAIN is not active
-							if (CmlOptions.PLAIN == false && m_pack_info_str.isEmpty()) {
-								errors++;
-								if (CmlOptions.GENERATE_REPORTS) {
-									parse_errors.append("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
-									// Add to owner errors
-									ArrayList<String> error = tm_owner_error.get(m.getAuthHolder());
-									if (error == null)
-										error = new ArrayList<>();
-									error.add(m.getTitle() + ";swissmedic5");
-									tm_owner_error.put(m.getAuthHolder(), error);
-								}
-								System.err.println(">> ERROR: " + tot_med_counter + " - SwissmedicNo5 not found in Swissmedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
-								missing_pack_info++;
-							}
-
-							// Fix problem with wrong div class in original Swissmedic file
-							if (CmlOptions.DB_LANGUAGE.equals("de")) {
-								m.setStyle(m.getStyle().replaceAll("untertitel", "untertitle"));
-								m.setStyle(m.getStyle().replaceAll("untertitel1", "untertitle1"));
-							}
-
-							// Correct formatting error introduced by Swissmedic
-							m.setAuthHolder(m.getAuthHolder().replaceAll("&#038;", "&"));
-
-							// Check if substances str has a '$a' and change it to '&alpha'
-							if (m.getSubstances() != null)
-								m.setSubstances(m.getSubstances().replaceAll("\\$a", "&alpha;"));
-
-							if (CmlOptions.XML_FILE == true) {
-								if (!regnr_str.isEmpty()) {
-
-									// Generate and add hash code
-									String html_str_no_timestamp = mContent_str.replaceAll("<p class=\"footer\">.*?</p>", "");
-									String hash_code = html_utils.calcHashCode(html_str_no_timestamp);
-
-									// Add header to html file
-									mContent_str = mContent_str.replaceAll("<head>", "<head>" +
-											"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" name=\"fi_" + hash_code + "\"/>" +
-											"<style>" + amiko_style_v1_str + "</style>");
-
-									// Note: the following line is not necessary!
-									// m.setContent(mContent_str);
-
-									// Add header to xml file
-									String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);
-									fi_complete_xml += (xml_str + "\n");
-
-									BufferedWriter writer = null;
-									// Write to html and xml files to disk
-									String name = m.getTitle();
-									// Replace all "Sonderzeichen"
-									name = name.replaceAll("é","e");
-									name = name.replaceAll("à","a");
-									name = name.replaceAll("è","e");
-									name = name.replaceAll("ê","e");
-									name = name.replaceAll("É","E");
-									name = name.replaceAll("î","i");
-									name = name.replaceAll("ç","c");
-									name = name.replaceAll("ä","a");
-									name = name.replaceAll("ö","o");
-									name = name.replaceAll("Ä","A");
-									name = name.replaceAll("ü","u");
-									name = name.replaceAll("[^a-zA-Z0-9]+", "_");
-									name = regnr_str.substring(0, 5) + "_" + name;
-									if (CmlOptions.DB_LANGUAGE.equals("de")) {
-										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
-										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
-									} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
-										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
-									} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
-										FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_it_html/", name + "_fi_it.html");
-										writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_it_xml/", name + "_fi_it.xml");
-									}
-									String xml_for_hash_code = "";
-									if (writer != null) {
-										xml_for_hash_code = html_utils.addHeaderToXml("singlefi", xml_str, writer);
-										writer.close();
-									}
-									complete_xml_hash_code_digest.update(xml_for_hash_code.getBytes("UTF-8"));
-								}
-							}
-
-							int customer_id = 0;
-							// Is the customer paying? If yes add customer id
-							// str1.toLowerCase().contains(str2.toLowerCase())
-							if (m.getAuthHolder().toLowerCase().contains("desitin"))
-								customer_id = 1;
-							/*
-							/ HERE GO THE OTHER PAYING CUSTOMERS (increment customer_id respectively)
-							*/
-
-							// Extract (O)riginal / (G)enerika info
-							String orggen_str = "";
-							if (add_info_str != null) {
-								List<String> ai_list = Arrays.asList(add_info_str.split("\\s*;\\s*"));
-								if (ai_list != null) {
-									if (ai_list.size() >= 1 && !ai_list.get(0).isEmpty())
-										orggen_str = ai_list.get(0);
-								}
-							}
-
-							// @maxl: 25.04.2015 -> set orggen_str to nil (we are using add_info_str for group names now...)
-							orggen_str = "";
-
-							/*
-							 * Add medis, titles and ids to database
-							 */
-							String packages_str = "";
-							for (String s : m_list_of_packages)
-								packages_str += s;
-							String eancodes_str = "";
-							for (String e : m_list_of_eancodes)
-								eancodes_str += (e + ", ");
-							if (!eancodes_str.isEmpty() && eancodes_str.length() > 2)
-								eancodes_str = eancodes_str.substring(0, eancodes_str.length() - 2);
-
-							m_sql_db.addExpertDB(m, packages_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, m_pack_info_str,
-									orggen_str, customer_id, mTyIndex_list, section_indications);
-							m_sql_db.addProductDB(m, packages_str, eancodes_str, m_pack_info_str);
-
-							med_counter++;
+				// Use EPha ATC Codes, AIPS is fallback solution
+				if (!regnrs_list.isEmpty()) {
+					// Use set to avoid duplicate ATC codes
+					Set<String> regnrs_set = new LinkedHashSet<>();
+					// Loop through EPha ATC codes
+					for (String r : regnrs_list) {
+						regnrs_set.add(m_smn5_atc_map.get(r.trim()));
+					}
+					// Iterate through set and format nicely
+					for (String r : regnrs_set) {
+						if (atc_code_str == null || atc_code_str.isEmpty()) {
+							atc_code_str = r;
+						} else {
+							atc_code_str += "," + r;
 						}
 					}
-					tot_med_counter++;
+				} else {
+					atc_error_found = true;
 				}
+
+				// Notify any other problem with the EPha ATC codes
+				if (atc_code_str == null || atc_code_str.isEmpty()) {
+					atc_error_found = true;
+				}
+
+				// Now let's clean the m.getSubstances()
+				// String substances = m.getSubstances();
+				// if ((substances == null || substances.length() < 3) && atc_code_str != null) {
+				// 	substances = m_atc_map.get(atc_code_str);
+				// }
+
+				// // Set clean substances
+				// m.setSubstances(substances);
+				// // Set clean ATC Code
+				// m.setAtcCode(atc_code_str);
+
+				// System.out.println("ATC -> " + atc_code_str + ": " + substances);
+
+				if (atc_code_str != null) {
+					// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
+					// atc_code_str = atc_code_str.replaceAll("\\s","");
+					// Take "leave" of the tree (most precise classification)
+					String a = m_atc_map.get(atc_code_str);
+					if (a != null) {
+						atc_description_str = a;
+						atccode_set.add(atc_code_str + ": " + a);
+					} else {
+						// Case: ATC1,ATC2
+						if (atc_code_str.length() == 15) {
+							String[] codes = atc_code_str.split(",");
+							if (codes.length > 1) {
+								String a1 = m_atc_map.get(codes[0]);
+								if (a1 == null) {
+									atc_error_found = true;
+									a1 = "k.A.";
+								}
+								String a2 = m_atc_map.get(codes[1]);
+								if (a2 == null) {
+									atc_error_found = true;
+									a2 = "k.A.";
+								}
+								atc_description_str = a1 + "," + a2;
+							}
+						} else {
+							atc_error_found = true;
+							if (CmlOptions.DB_LANGUAGE.equals("de"))
+								atc_description_str = "k.A.";
+							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+								atc_description_str = "n.s.";
+							else if (CmlOptions.DB_LANGUAGE.equals("it"))
+								atc_description_str = "n.d.";
+						}
+					}
+
+					// Read out only two levels (L1, L3, L4, L5)
+					for (int i = 1; i < 6; i++) {
+						if (i != 2) {
+							String atc_key = "";
+							if (i <= atc_code_str.length())
+								atc_key = atc_code_str.substring(0, i);
+							char sep = (i >= 4) ? '#' : ';';    // #-separator between L4 and L5
+							if (atc_key != null) {
+								String c = m_atc_map.get(atc_key);
+								if (c != null) {
+									atccode_set.add(atc_key + ": " + c);
+									atc_class_str += (c + sep);
+								} else {
+									atc_class_str += sep;
+								}
+							} else {
+								atc_class_str += sep;
+							}
+						}
+					}
+
+					System.out.println("atc class = " + atc_class_str);
+
+					// If DRG medication, add to atc_description_str
+					ArrayList<String> drg = m_swiss_drg_info.get(atc_code_str);
+					if (drg != null) {
+						atc_description_str += (";DRG");
+					}
+				}
+
+				if (atc_error_found) {
+					errors++;
+					if (CmlOptions.GENERATE_REPORTS) {
+						parse_errors.append("<p style=\"color:#0000bb\">ERROR " + errors + ": Broken or missing ATC-Code-Tag in AIPS.xml (Swissmedic) or ATC index (Wido) - " + med_title + " (" + regnr_str + ")</p>");
+						// Add to owner errors
+						ArrayList<String> error = tm_owner_error.get(m.getHolder().getName());
+						if (error == null)
+							error = new ArrayList<>();
+						error.add(med_title + ";atccode");
+						tm_owner_error.put(m.getHolder().getName(), error);
+					}
+					System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + med_title);
+					missing_atc_code++;
+				}
+
+				// Additional info stored in add_info_map
+				String add_info_str = ";";
+				if (regnrs_list.size() > 0)
+					add_info_str = m_add_info_map.get(regnrs_list.get(0));
+
+				Document newOutDoc = generateHtmlWithArticalDocument(artDoc, regnrs_list, m.getHolder().getName());
+				System.out.println("outer html: " + newOutDoc.outerHtml());
+
+				// Sanitize html
+				// String html_sanitized = "";
+				// First check for bad boys (version=1! but actually version>1!)
+				// if (!m.getVersion().equals("1") || m.getContent().substring(0, 20).contains("xml")) {
+				// 	for (int i = 1; i < 22; ++i) {
+				// 		html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), m.getAuthHolder(), CmlOptions.DB_LANGUAGE);
+				// 	}
+				// 	html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>";
+				// } else {
+				// 	html_sanitized = m.getContent();
+				// }
+
+				// 	// Add author number
+				// 	html_sanitized = html_sanitized.replaceAll("<div id=\"monographie\">", "<div id=\"monographie\" name=\"" + m.getAuthNrs() + "\">");
+
+				// 	// Add Footer, timestamp in RFC822 format
+				// 	DateFormat dateFormat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.getDefault());
+				// 	Date date = new Date();
+				// 	String footer_str = "<p class=\"footer\">Auto-generated by <a href=\"https://github.com/zdavatz/aips2sqlite\">aips2sqlite</a> on "
+				// 			+ dateFormat.format(date) + "</p>";
+
+				// 	// html_sanitized += footer_str;
+				// 	html_sanitized = html_sanitized.replaceAll("</div>$", footer_str + "</div>");
+
+				// 	// Extract section indications
+				// 	String section_indications = "";
+				// 	if (CmlOptions.DB_LANGUAGE.equals("de")) {
+				// 		String sstr1 = "Indikationen/Anwendungsmöglichkeiten";
+				// 		String sstr2 = "Dosierung/Anwendung";
+				// 		if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
+				// 			int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
+				// 			int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
+				// 			try {
+				// 				section_indications = html_sanitized.substring(idx1, idx1 + idx2);
+				// 			} catch (StringIndexOutOfBoundsException e) {
+				// 				e.printStackTrace();
+				// 			}
+				// 		}
+				// 	} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
+				// 		String sstr1 = "Indications/Possibilités demploi";
+				// 		String sstr2 = "Posologie/Mode demploi";
+
+				// 		html_sanitized = html_sanitized.replaceAll("Indications/Possibilités d&apos;emploi", sstr1);
+				// 		html_sanitized = html_sanitized.replaceAll("Posologie/Mode d&apos;emploi", sstr2);
+				// 		html_sanitized = html_sanitized.replaceAll("Indications/possibilités demploi", sstr1);
+				// 		html_sanitized = html_sanitized.replaceAll("Posologie/mode demploi", sstr2);
+
+				// 		if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
+				// 			int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
+				// 			int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
+				// 			try {
+				// 				if (idx1 >= 0 && idx2 >= 0 && idx1 < (idx1 + idx2))
+				// 					section_indications = html_sanitized.substring(idx1, idx1 + idx2);
+				// 			} catch (StringIndexOutOfBoundsException e) {
+				// 				e.printStackTrace();
+				// 			}
+				// 		}
+				// 	} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+				// 		String sstr1 = "Indicazioni/Possibilità d'impiego";
+				// 		String sstr2 = "Posologia/Impiego";
+
+				// 		html_sanitized = html_sanitized.replaceAll("Indicazioni/Possibilit&agrave; d'impiego", sstr1);
+
+				// 		if (html_sanitized.contains(sstr1) && html_sanitized.contains(sstr2)) {
+				// 			int idx1 = html_sanitized.indexOf(sstr1) + sstr1.length();
+				// 			int idx2 = html_sanitized.substring(idx1, html_sanitized.length()).indexOf(sstr2);
+				// 			try {
+				// 				section_indications = html_sanitized.substring(idx1, idx1 + idx2);
+				// 			} catch (StringIndexOutOfBoundsException e) {
+				// 				e.printStackTrace();
+				// 			}
+				// 		}
+				// 	}
+
+				// 	// Remove all p's, div's, span's and sup's
+				// 	section_indications = section_indications.replaceAll("\\<p.*?\\>", "").replaceAll("</p>", "");
+				// 	section_indications = section_indications.replaceAll("\\<div.*?\\>", "").replaceAll("</div>", "");
+				// 	section_indications = section_indications.replaceAll("\\<span.*?\\>", "").replaceAll("</span>", "");
+				// 	section_indications = section_indications.replaceAll("\\<sup.*?\\>", "").replaceAll("</sup>", "");
+
+				// 	// System.out.println(section_indications);
+
+				// 	if (CmlOptions.DB_LANGUAGE.equals("fr")) {
+				// 		// Remove apostrophes
+				// 		section_indications = section_indications.replaceAll("l&apos;", "").replaceAll("d&apos;", "");
+				// 		section_indications = section_indications.replaceAll("l", "").replaceAll("d", "");
+				// 	}
+				// 	// Remove all URLs
+				// 	section_indications = section_indications.replaceAll("\\b(http|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "");
+				// 	// Remove list of type a) b) c) ... 1) 2) ...
+				// 	section_indications = section_indications.replaceAll("^\\w\\)", "");
+				// 	// Remove numbers, commas, semicolons, parentheses, etc.
+				// 	section_indications = section_indications.replaceAll("[^A-Za-z\\xC0-\\xFF- ]", "");
+				// 	// Generate long list of keywords
+				// 	LinkedList<String> wordsAsList = new LinkedList<>(
+				// 			Arrays.asList(section_indications.split("\\s+")));
+				// 	// Remove stop words
+				// 	Iterator<String> wordIterator = wordsAsList.iterator();
+				// 	while (wordIterator.hasNext()) {
+				// 		// Note: This assumes there are no null entries in the list and all stopwords are stored in lower case
+				// 		String word = wordIterator.next().trim().toLowerCase();
+				// 		if (word.length() < 3 || m.getTitle().toLowerCase().contains(word) || m_stop_words_hash.contains(word))
+				// 			wordIterator.remove();
+				// 	}
+				// 	section_indications = "";
+				// 	for (String w : wordsAsList) {
+				// 		// Remove any leading dash or hyphen
+				// 		if (w.startsWith("-"))
+				// 			w = w.substring(1);
+				// 		section_indications += (w + ";");
+				// 		if (CmlOptions.INDICATIONS_REPORT == true) {
+				// 			// Add to map (key->value), word = key, value = how many times used
+				// 			// Is word w already stored in treemap?
+				// 			String t_str = tm_indications.get(w);
+				// 			if (t_str == null) {
+				// 				t_str = m.getTitle();
+				// 				tm_indications.put(w, t_str);
+				// 			} else {
+				// 				t_str += (", " + m.getTitle());
+				// 				tm_indications.put(w, t_str);
+				// 			}
+				// 		}
+				// 	}
+
+				// 	/**
+				// 	 * Update section "Packungen", generate packungen string for shopping cart, and extract therapeutisches index
+				// 	 */
+				// 	List<String> mTyIndex_list = new ArrayList<>();
+				// 	m_list_of_packages.clear();
+				// 	m_list_of_eancodes.clear();
+				// 	String mContent_str = updateSectionPackungen(m.getTitle(), m.authHolder, m.getAtcCode(), m_package_info, regnr_str, html_sanitized, mTyIndex_list);
+
+				// 	m.setContent(mContent_str);
+
+				// 	// Check if mPackSection_str is empty AND command line option PLAIN is not active
+				// 	if (CmlOptions.PLAIN == false && m_pack_info_str.isEmpty()) {
+				// 		errors++;
+				// 		if (CmlOptions.GENERATE_REPORTS) {
+				// 			parse_errors.append("<p style=\"color:#bb0000\">ERROR " + errors + ": SwissmedicNo5 not found in Packungen.xls (Swissmedic) - " + m.getTitle() + " (" + regnr_str + ")</p>");
+				// 			// Add to owner errors
+				// 			ArrayList<String> error = tm_owner_error.get(m.getAuthHolder());
+				// 			if (error == null)
+				// 				error = new ArrayList<>();
+				// 			error.add(m.getTitle() + ";swissmedic5");
+				// 			tm_owner_error.put(m.getAuthHolder(), error);
+				// 		}
+				// 		System.err.println(">> ERROR: " + tot_med_counter + " - SwissmedicNo5 not found in Swissmedic Packungen.xls - (" + regnr_str + ") " + m.getTitle());
+				// 		missing_pack_info++;
+				// 	}
+
+				// 	// Fix problem with wrong div class in original Swissmedic file
+				// 	if (CmlOptions.DB_LANGUAGE.equals("de")) {
+				// 		m.setStyle(m.getStyle().replaceAll("untertitel", "untertitle"));
+				// 		m.setStyle(m.getStyle().replaceAll("untertitel1", "untertitle1"));
+				// 	}
+
+				// 	// Correct formatting error introduced by Swissmedic
+				// 	m.setAuthHolder(m.getAuthHolder().replaceAll("&#038;", "&"));
+
+				// 	// Check if substances str has a '$a' and change it to '&alpha'
+				// 	if (m.getSubstances() != null)
+				// 		m.setSubstances(m.getSubstances().replaceAll("\\$a", "&alpha;"));
+
+				// 	if (CmlOptions.XML_FILE == true) {
+				// 		if (!regnr_str.isEmpty()) {
+
+				// 			// Generate and add hash code
+				// 			String html_str_no_timestamp = mContent_str.replaceAll("<p class=\"footer\">.*?</p>", "");
+				// 			String hash_code = html_utils.calcHashCode(html_str_no_timestamp);
+
+				// 			// Add header to html file
+				// 			mContent_str = mContent_str.replaceAll("<head>", "<head>" +
+				// 					"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" name=\"fi_" + hash_code + "\"/>" +
+				// 					"<style>" + amiko_style_v1_str + "</style>");
+
+				// 			// Note: the following line is not necessary!
+				// 			// m.setContent(mContent_str);
+
+				// 			// Add header to xml file
+				// 			String xml_str = html_utils.convertHtmlToXml("fi", m.getTitle(), mContent_str, regnr_str);
+				// 			fi_complete_xml += (xml_str + "\n");
+
+				// 			BufferedWriter writer = null;
+				// 			// Write to html and xml files to disk
+				// 			String name = m.getTitle();
+				// 			// Replace all "Sonderzeichen"
+				// 			name = name.replaceAll("é","e");
+				// 			name = name.replaceAll("à","a");
+				// 			name = name.replaceAll("è","e");
+				// 			name = name.replaceAll("ê","e");
+				// 			name = name.replaceAll("É","E");
+				// 			name = name.replaceAll("î","i");
+				// 			name = name.replaceAll("ç","c");
+				// 			name = name.replaceAll("ä","a");
+				// 			name = name.replaceAll("ö","o");
+				// 			name = name.replaceAll("Ä","A");
+				// 			name = name.replaceAll("ü","u");
+				// 			name = name.replaceAll("[^a-zA-Z0-9]+", "_");
+				// 			name = regnr_str.substring(0, 5) + "_" + name;
+				// 			if (CmlOptions.DB_LANGUAGE.equals("de")) {
+				// 				FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_de_html/", name + "_fi_de.html");
+				// 				writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_de_xml/", name + "_fi_de.xml");
+				// 			} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
+				// 				FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_fr_html/", name + "_fi_fr.html");
+				// 				writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_fr_xml/", name + "_fi_fr.xml");
+				// 			} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+				// 				FileOps.writeToFile(mContent_str, Constants.FI_FILE_XML_BASE + "fi_it_html/", name + "_fi_it.html");
+				// 				writer = FileOps.writerToFile(Constants.FI_FILE_XML_BASE + "fi_it_xml/", name + "_fi_it.xml");
+				// 			}
+				// 			String xml_for_hash_code = "";
+				// 			if (writer != null) {
+				// 				xml_for_hash_code = html_utils.addHeaderToXml("singlefi", xml_str, writer);
+				// 				writer.close();
+				// 			}
+				// 			complete_xml_hash_code_digest.update(xml_for_hash_code.getBytes("UTF-8"));
+				// 		}
+				// 	}
+
+				// 	int customer_id = 0;
+				// 	// Is the customer paying? If yes add customer id
+				// 	// str1.toLowerCase().contains(str2.toLowerCase())
+				// 	if (m.getAuthHolder().toLowerCase().contains("desitin"))
+				// 		customer_id = 1;
+				// 	/*
+				// 	/ HERE GO THE OTHER PAYING CUSTOMERS (increment customer_id respectively)
+				// 	*/
+
+				// 	// Extract (O)riginal / (G)enerika info
+				// 	String orggen_str = "";
+				// 	if (add_info_str != null) {
+				// 		List<String> ai_list = Arrays.asList(add_info_str.split("\\s*;\\s*"));
+				// 		if (ai_list != null) {
+				// 			if (ai_list.size() >= 1 && !ai_list.get(0).isEmpty())
+				// 				orggen_str = ai_list.get(0);
+				// 		}
+				// 	}
+
+				// 	// @maxl: 25.04.2015 -> set orggen_str to nil (we are using add_info_str for group names now...)
+				// 	orggen_str = "";
+
+				// 	/*
+				// 	 * Add medis, titles and ids to database
+				// 	 */
+				// 	String packages_str = "";
+				// 	for (String s : m_list_of_packages)
+				// 		packages_str += s;
+				// 	String eancodes_str = "";
+				// 	for (String e : m_list_of_eancodes)
+				// 		eancodes_str += (e + ", ");
+				// 	if (!eancodes_str.isEmpty() && eancodes_str.length() > 2)
+				// 		eancodes_str = eancodes_str.substring(0, eancodes_str.length() - 2);
+
+				// 	m_sql_db.addExpertDB(m, packages_str, regnr_str, ids_str, titles_str, atc_description_str, atc_class_str, m_pack_info_str,
+				// 			orggen_str, customer_id, mTyIndex_list, section_indications);
+				// 	m_sql_db.addProductDB(m, packages_str, eancodes_str, m_pack_info_str);
+
+				// 	med_counter++;
+			}
 			System.out.println();
 			System.out.println("--------------------------------------------");
 			System.out.println("Total number of real Fachinfos: " + m_med_list.size());
@@ -1526,6 +1519,63 @@ public class RealExpertInfo {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private Document generateHtmlWithArticalDocument(ArticalDocument artDoc, List<String> regnrsList, String ownerCompany) {
+		String regnr_str = String.join(",", regnrsList);
+		Document doc = Jsoup.parse("<html><head></head><body></body></html>");
+		Element body = doc.body();
+		Element mainDiv = new Element("div")
+			.attr("id", "monographie")
+			.attr("name", regnr_str)
+			.appendTo(body);
+		for (ArticalDocument.Section section : artDoc.sections) {
+			if (section.id.equals("section1")) {
+				Element titleDiv = new Element("div")
+					.attr("class", "MonTitle")
+					.attr("id", section.id)
+					.appendText(section.title)
+					.appendTo(mainDiv);
+				Element ownerCompanyDiv = new Element("div")
+					.attr("style", "text-align: right")
+					.appendText(ownerCompany)
+					.appendTo(mainDiv);
+				continue;
+			}
+
+			Element thisDiv = new Element("div")
+				.attr("class", "paragraph")
+				.attr("id", section.id)
+				.appendTo(mainDiv);
+			Element thisTitleDiv = new Element("div")
+				.attr("class", "absTitle")
+				.appendText(section.title)
+				.appendTo(thisDiv);
+
+			for (ArticalDocument.Paragraph paragraph : section.paragraphs) {
+				if (paragraph.content != null && !paragraph.content.isEmpty()) {
+					Element paragraphP = new Element("p")
+						.attr("class", "spacing")
+						.appendText(paragraph.content)
+						.appendTo(thisDiv);
+					if (paragraph.is_italic) {
+						paragraphP.attr("style", "font-style: italic");
+					}
+				} else if (paragraph.element != null) {
+					thisDiv.appendChild(paragraph.element.clone());
+				}
+			}
+		}
+
+		// Add Footer, timestamp in RFC822 format
+		DateFormat dateFormat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.getDefault());
+		Date date = new Date();
+		Element footerP = new Element("p")
+			.attr("class", "footer")
+			.append("Auto-generated by <a href=\"https://github.com/zdavatz/aips2sqlite\">aips2sqlite</a> on "
+							+ dateFormat.format(date))
+			.appendTo(mainDiv);
+		return doc;
 	}
 
 	private String getSwissmedicNo8(String swissmedicNo5, int n) {
