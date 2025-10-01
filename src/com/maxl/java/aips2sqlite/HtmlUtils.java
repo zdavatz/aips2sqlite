@@ -104,14 +104,6 @@ public class HtmlUtils {
 	/**
 	 * Removes all <span> and </span> and other weird characters and symbols
 	 */
-	public void clean() {
-		// Remove all <span> and </span>
-		mHtmlStr = RegExUtils.removeAll(mHtmlStr, "\\<span.*?\\>");
-		// mHtmlStr = mHtmlStr.replaceAll("\\<span\\>", "");
-		mHtmlStr = StringUtils.remove(mHtmlStr, "</span>");
-		// &lt;[a-zA-z] -> &lt; [a-zA-Z]
-		mHtmlStr = mHtmlStr.replaceAll("&lt;", "&lt; ");
-	}
 
 	/**
 	 * Extracts Swissmedic registration number(s) for given German med title
