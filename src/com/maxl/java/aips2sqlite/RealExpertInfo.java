@@ -846,6 +846,17 @@ public class RealExpertInfo {
 		} catch (IOException e) {
 			System.err.println("Cannot read SwissmedicPackagesFile in RealExpertInfo " + e.getMessage());
 		}
+		try {
+			TreeMap<String, String> smn5_to_atc = bdp.parseRefdataPharmaFileAtcCode();
+			for (Map.Entry<String, String> entry : smn5_to_atc.entrySet()) {
+				String value = entry.getValue();
+				if (value != null && !value.isEmpty()) {
+					m_smn5_atc_map.put(entry.getKey(), value);
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Cannot run parseRefdataPharmaFileAtcCode in RealExpertInfo " + e.getMessage());
+		}
 
 		// Get stop words first
 		getStopWords();
