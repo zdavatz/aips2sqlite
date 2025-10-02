@@ -833,6 +833,19 @@ public class RealExpertInfo {
 	 * Main data processing happens here...
 	 */
 	public void process() {
+		BaseDataParser bdp = new BaseDataParser();
+		try {
+			TreeMap<String, ArrayList<SimpleArticle>> smn5_to_swissmedic_article_map = bdp.parseSwissmedicPackagesFile_Sequence();
+			for (ArrayList<SimpleArticle> arr : smn5_to_swissmedic_article_map.values()) {
+				for (SimpleArticle a : arr) {
+					if (a.atc_code != null && !a.atc_code.isEmpty()) {
+						m_smn5_atc_map.put(a.smn5, a.atc_code);
+					}
+				}
+			}
+		} catch (IOException e) {
+			System.err.println("Cannot read SwissmedicPackagesFile in RealExpertInfo " + e.getMessage());
+		}
 
 		// Get stop words first
 		getStopWords();
@@ -1018,8 +1031,6 @@ public class RealExpertInfo {
 							atc_code_str += "," + r;
 						}
 					}
-				} else {
-					atc_error_found = true;
 				}
 
 				// Notify any other problem with the EPha ATC codes
@@ -1027,20 +1038,9 @@ public class RealExpertInfo {
 					atc_error_found = true;
 				}
 
-				// Now let's clean the m.getSubstances()
-				// String substances = m.getSubstances();
-				// if ((substances == null || substances.length() < 3) && atc_code_str != null) {
-				// 	substances = m_atc_map.get(atc_code_str);
-				// }
-
-				// // Set clean substances
-				// m.setSubstances(substances);
-				// // Set clean ATC Code
-				// m.setAtcCode(atc_code_str);
-
 				// System.out.println("ATC -> " + atc_code_str + ": " + substances);
 
-				if (atc_code_str != null) {
+				if (atc_code_str != null && !atc_code_str.isEmpty()) {
 					// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
 					// atc_code_str = atc_code_str.replaceAll("\\s","");
 					// Take "leave" of the tree (most precise classification)
@@ -1097,7 +1097,7 @@ public class RealExpertInfo {
 						}
 					}
 
-					System.out.println("atc class = " + atc_class_str);
+					// System.out.println("atc class = " + atc_class_str);
 
 					// If DRG medication, add to atc_description_str
 					ArrayList<String> drg = m_swiss_drg_info.get(atc_code_str);

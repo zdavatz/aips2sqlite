@@ -34,4 +34,5 @@ public class SimpleArticle {
     String pack_unit;
     String pub_price_CHF;
     String exf_price_CHF;
+    String atc_code;
 }

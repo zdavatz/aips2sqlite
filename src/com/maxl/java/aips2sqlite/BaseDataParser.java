@@ -67,6 +67,7 @@ public class BaseDataParser {
                 String swissmedic_no8 = ""; // SwissmedicNo8 = SwissmedicNo5 + Package id (8 digits)
                 String quantity = "";
                 String unit = "";
+                String atc_code = "";
 
                 // 0: Zulassungsnummer, 1: Dosisstärkenummer, 2: Präparatebezeichnung, 3: Zulassunginhaberin, 4: Heilmittelcode, 5: IT-Nummer, 6: ATC-Code
                 // 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Packungscode, 11: Packungsgrösse
@@ -80,6 +81,9 @@ public class BaseDataParser {
                     dosage_id = String.format("%02d", (int) (row.getCell(1).getNumericCellValue()));    // Sequence name
                 if (row.getCell(2) != null)
                     name = row.getCell(2).getStringCellValue();
+                if (row.getCell(6) != null) {
+                    atc_code = row.getCell(6).getStringCellValue();
+                }
                 if (row.getCell(10) != null) {
                     package_id = String.format("%03d", (int) (row.getCell(10).getNumericCellValue()));    // Verpackungs ID
                     swissmedic_no8 = swissmedic_no5 + package_id;
@@ -112,6 +116,7 @@ public class BaseDataParser {
                     a.smn8 = swissmedic_no8;
                     a.quantity = quantity;
                     a.pack_unit = unit;
+                    a.atc_code = atc_code;
                     list_of_articles.add(a);
 
                     smn5plus_to_article_map.put(smn5_plus, list_of_articles);
