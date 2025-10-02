@@ -909,8 +909,6 @@ public class RealExpertInfo {
 			// Treemap for owner error report (sorted by key)
 			TreeMap<String, ArrayList<String>> tm_owner_error = new TreeMap<String, ArrayList<String>>();
 
-			HtmlUtils html_utils = null;
-
 			System.out.println("Processing real Fachinfos...");
 
 			// --> Read FACHINFOS! <--
@@ -940,7 +938,6 @@ public class RealExpertInfo {
 						break;
 					}
 				}
-				System.out.println("document_path: " + document_path);
 				if (!new File(document_path).exists()) {
 					System.out.println("HTML file not found: " + document_path);
 					continue;
@@ -1166,7 +1163,7 @@ public class RealExpertInfo {
 						// Generate and add hash code
 						String mContent_str = newOutDoc.html();
 						String html_str_no_timestamp = mContent_str.replaceAll("<p class=\"footer\">.*?</p>", "");
-						String hash_code = html_utils.calcHashCode(html_str_no_timestamp);
+						String hash_code = HtmlUtils.calcHashCode(html_str_no_timestamp);
 
 						// Add header to html file
 						mContent_str = mContent_str.replaceAll("<head>", "<head>" +
@@ -1177,7 +1174,7 @@ public class RealExpertInfo {
 						// m.setContent(mContent_str);
 
 						// Add header to xml file
-						String xml_str = html_utils.convertHtmlToXml("fi", med_title, mContent_str, regnr_str);
+						String xml_str = HtmlUtils.convertHtmlToXml(CmlOptions.DB_LANGUAGE, "fi", med_title, mContent_str, regnr_str);
 						fi_complete_xml += (xml_str + "\n");
 
 						BufferedWriter writer = null;
@@ -1209,7 +1206,7 @@ public class RealExpertInfo {
 						}
 						String xml_for_hash_code = "";
 						if (writer != null) {
-							xml_for_hash_code = html_utils.addHeaderToXml("singlefi", xml_str, writer);
+							xml_for_hash_code = HtmlUtils.addHeaderToXml(CmlOptions.DB_LANGUAGE, "singlefi", xml_str, writer);
 							writer.close();
 						}
 						complete_xml_hash_code_digest.update(xml_for_hash_code.getBytes("UTF-8"));
@@ -1293,7 +1290,7 @@ public class RealExpertInfo {
 					byte[] digest = complete_xml_hash_code_digest.digest();
 					BigInteger bigInt = new BigInteger(1, digest);
 					String hash_code = bigInt.toString(16);
-					html_utils.addHeaderToXml("kompendium", fi_complete_xml, writer, hash_code);
+					HtmlUtils.addHeaderToXml(CmlOptions.DB_LANGUAGE, "kompendium", fi_complete_xml, writer, hash_code);
 					writer.close();
 				}
 
