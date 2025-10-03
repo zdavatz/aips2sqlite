@@ -945,8 +945,7 @@ public class RealExpertInfo {
 						break;
 					}
 				}
-				if (!m.getLanguage().value().equals(CmlOptions.DB_LANGUAGE)
-					|| !m.getType().value().equals("SmPC")
+				if (!m.getType().value().equals("SmPC")
 					|| !m.getDomain().equals("Human")
 					|| attached_document == null) {
 					continue;
@@ -967,8 +966,9 @@ public class RealExpertInfo {
 					continue;
 				}
 				ArticalDocument artDoc = new ArticalDocument(document_path);
-				if (artDoc.sections.get(0).title.isEmpty()) {
-					throw new IOException();
+				if (artDoc.sections.isEmpty()) {
+					System.err.println("Cannot parse html file: " + document_path);
+					continue;
 				}
 				if (tot_med_counter >= 5000) {
 					break;
@@ -985,10 +985,6 @@ public class RealExpertInfo {
 
 				Document doc = new Document("");
 				doc.outputSettings().escapeMode(EscapeMode.xhtml);
-
-				// html_utils = new HtmlUtils(m.getContent());
-				// html_utils.setLanguage(CmlOptions.DB_LANGUAGE);
-				// html_utils.clean();
 
 				List<String> regnrs_list = m.getRegulatedAuthorization().getIdentifier();
 				String regnr_str = String.join(",", regnrs_list);
@@ -1032,7 +1028,10 @@ public class RealExpertInfo {
 					Set<String> regnrs_set = new LinkedHashSet<>();
 					// Loop through EPha ATC codes
 					for (String r : regnrs_list) {
-						regnrs_set.add(m_smn5_atc_map.get(r.trim()));
+						String atc = m_smn5_atc_map.get(r.trim());
+						if (atc != null) {
+							regnrs_set.add(atc);
+						}
 					}
 					// Iterate through set and format nicely
 					for (String r : regnrs_set) {
@@ -1047,11 +1046,7 @@ public class RealExpertInfo {
 				// Notify any other problem with the EPha ATC codes
 				if (atc_code_str.isEmpty()) {
 					atc_error_found = true;
-				}
-
-				// System.out.println("ATC -> " + atc_code_str + ": " + substances);
-
-				if (!atc_code_str.isEmpty()) {
+				} else {
 					// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
 					// atc_code_str = atc_code_str.replaceAll("\\s","");
 					// Take "leave" of the tree (most precise classification)
