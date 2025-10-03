@@ -1036,7 +1036,7 @@ public class RealExpertInfo {
 					}
 					// Iterate through set and format nicely
 					for (String r : regnrs_set) {
-						if (atc_code_str == null || atc_code_str.isEmpty()) {
+						if (atc_code_str.isEmpty()) {
 							atc_code_str = r;
 						} else {
 							atc_code_str += "," + r;
@@ -1045,13 +1045,13 @@ public class RealExpertInfo {
 				}
 
 				// Notify any other problem with the EPha ATC codes
-				if (atc_code_str == null || atc_code_str.isEmpty()) {
+				if (atc_code_str.isEmpty()) {
 					atc_error_found = true;
 				}
 
 				// System.out.println("ATC -> " + atc_code_str + ": " + substances);
 
-				if (atc_code_str != null && !atc_code_str.isEmpty()) {
+				if (!atc_code_str.isEmpty()) {
 					// \\s -> whitespace character, short for [ \t\n\x0b\r\f]
 					// atc_code_str = atc_code_str.replaceAll("\\s","");
 					// Take "leave" of the tree (most precise classification)
@@ -1128,7 +1128,7 @@ public class RealExpertInfo {
 						error.add(med_title + ";atccode");
 						tm_owner_error.put(m.getHolder().getName(), error);
 					}
-					System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Code found in the XML-Tag \"atcCode\" - (" + regnr_str + ") " + med_title);
+					System.err.println(">> ERROR: " + tot_med_counter + " - no ATC-Class found - (" + regnr_str + ") " + med_title);
 					missing_atc_code++;
 				}
 
