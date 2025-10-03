@@ -39,11 +39,6 @@ import org.jsoup.select.Elements;
 
 public class HtmlUtils {
 
-	private String mLanguage;
-	private String mHtmlStr;
-	private Document mDoc;
-	private MessageDigest mMessageDigest;
-
 	static String whitespace_chars =  ""       /* dummy empty string for homogeneity */
             + "\\u0009" // CHARACTER TABULATION
             + "\\u000A" // LINE FEED (LF)
@@ -84,19 +79,6 @@ public class HtmlUtils {
 		"Conservation","Patients âgés","Grossesse","Allaitement","Population spéciales","Absorption","Distribution","Métabolisme",
 		"Elimination"};
 
-	public HtmlUtils(String htmlStr) {
-		mHtmlStr = htmlStr;
-		try {
-			mMessageDigest = MessageDigest.getInstance("SHA-256");
-		} catch(NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void setLanguage(String lang) {
-		mLanguage = lang;
-	}
-
 	/**¨
 	 * Sanitizes all sections (in one go!)
 	 * @param med_title
@@ -104,12 +86,8 @@ public class HtmlUtils {
 	 * @param language
 	 * @return
 	 */
-	public String sanitizePatient(String med_title, String med_author, String med_regnrs, String language) {
-		if (mHtmlStr.isEmpty())
-			return "";
-
+	static public String sanitizePatient(Document mDoc, String med_title, String med_author, String med_regnrs, String language) {
 		// Original html string
-		mDoc = Jsoup.parse(mHtmlStr);
 		mDoc.outputSettings().escapeMode(EscapeMode.xhtml);
 		mDoc.outputSettings().charset("UTF-8");
 
