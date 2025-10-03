@@ -391,10 +391,10 @@ public class Aips2Sqlite {
 			if (CmlOptions.DESITIN_DB || CmlOptions.ONLY_DESITIN_DB)
 				a.downDesitin();
 			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
-			// a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
-			// a.downRefdataPharmaXml(Constants.FILE_REFDATA_PHARMA_XML);
-			// a.downRefdataAllHtml(Constants.FILE_REFDATA_ALL_HTML_DIR);
-			// a.downRefdataPartnerXml(Constants.FILE_REFDATA_PARTNER_XML);
+			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
+			a.downRefdataPharmaXml(Constants.FILE_REFDATA_PHARMA_XML);
+			a.downRefdataAllHtml(Constants.FILE_REFDATA_ALL_HTML_DIR);
+			a.downRefdataPartnerXml(Constants.FILE_REFDATA_PARTNER_XML);
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
 			a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
