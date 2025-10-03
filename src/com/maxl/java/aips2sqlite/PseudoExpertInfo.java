@@ -47,33 +47,33 @@ public class PseudoExpertInfo {
 	private static final String FILE_PSEUDO_INFO_DIR = "./input/pseudo/";
 
 	private SqlDatabase mSqlDB = null;
-	
-	private String mLanguage = "";
-	
-	private ArrayList<String> mSectionContent;
-	
-	private ArrayList<String> mSectionTitles;
-	
-	private ArrayList<String> mBarCodes = new ArrayList<String>();	
 
-	private Map<String, Product> m_map_products = null;	
-	// Packages string used for "shopping" purposes (will contain ean code, pharma codes, prices etc.) 
+	private String mLanguage = "";
+
+	private ArrayList<String> mSectionContent;
+
+	private ArrayList<String> mSectionTitles;
+
+	private ArrayList<String> mBarCodes = new ArrayList<String>();
+
+	private Map<String, Product> m_map_products = null;
+	// Packages string used for "shopping" purposes (will contain ean code, pharma codes, prices etc.)
 	private List<String> m_list_of_packages = null;
-	
+
 	private MedicalInformations.MedicalInformation mMedi;
 
 	private String mEanCodes_str = "";
-	
+
 	private String mSectionIds_str = "";
-	
+
 	private String mSectionTitles_str = "";
-	
+
 	// Package section string
 	private String m_pack_info_str = "";
-	
+
 	private int mCustomerId;
-	
-	public PseudoExpertInfo(SqlDatabase sqlDB, String language, Map<String, Product> map_products) {		
+
+	public PseudoExpertInfo(SqlDatabase sqlDB, String language, Map<String, Product> map_products) {
 		mSqlDB = sqlDB;
 		mLanguage = language;
 		m_map_products = map_products;
@@ -81,18 +81,18 @@ public class PseudoExpertInfo {
 		// This sets the customer id (as of yet unused)
 		mCustomerId = 2;
 	}
-	
+
 	public void download() {
 		// TODO: Life connection to OneDrive
 	}
-	
+
 	/*
 	 * 	Loads all filenames from directory into a list
 	 */
 	public int process() {
 		try {
 			File dir = new File(FILE_PSEUDO_INFO_DIR);
-			if (dir!=null && dir.isDirectory()) {				
+			if (dir!=null && dir.isDirectory()) {
 				Collection<File> files = FileUtils.listFiles(dir, FileFilterUtils.suffixFileFilter(".docx"), TrueFileFilter.INSTANCE);
 				if (files!=null) {
 					System.out.println("\nProcessing total of " + files.size() + " pseudo Fachinfos...");
@@ -115,14 +115,14 @@ public class PseudoExpertInfo {
 		}
 		return 0;
 	}
-	
+
 	/**
 	 * Extracts all the important information from the pseudo "Fachinfo" file
 	 * @param pseudo_info_file
 	 */
 	public boolean extractInfo(int idx, FileInputStream pseudo_info_file) {
 		mMedi = new MedicalInformations.MedicalInformation();
-		
+
 		mSectionContent = new ArrayList<>();
 		mSectionTitles = new ArrayList<>();
 		mBarCodes = new ArrayList<>();
@@ -132,7 +132,7 @@ public class PseudoExpertInfo {
 		String mediAuthor = "";
 		String mediPseudoTag = "";
 		String mediHtmlContent = "";
-		
+
 		StringBuilder content = new StringBuilder();
 
 		try {
@@ -143,7 +143,7 @@ public class PseudoExpertInfo {
 
 			// Pre-process input stream to extract paragraph titles
 			boolean goodToGo = false;
-			while (para.hasNext()) {				
+			while (para.hasNext()) {
 				List<XWPFRun> runs = para.next().getRuns();
 				if (!runs.isEmpty()) {
 					for (XWPFRun r : runs) {
@@ -161,24 +161,24 @@ public class PseudoExpertInfo {
 			}
 			// Add "nil" at the end
 			mSectionTitles.add("nil");
-			
+
 			if (mLanguage.equals("de") && !mSectionTitles.get(0).equals("Zusammensetzung"))
 				return false;
 			if (mLanguage.equals("fr") && !mSectionTitles.get(0).equals("Composition"))
 				return false;
-			
+
 			// Reset iterator
 			para = docx.getParagraphsIterator();
-			
-			// Init list for section content 
+
+			// Init list for section content
 			for (int i=0; i<mSectionTitles.size(); ++i)
 				mSectionContent.add(i, "");
-			
+
 			// Get title
 			if (para.hasNext())
 				mediTitle = para.next().getParagraphText();
 			// Get author while using "Medizinprodukt" as tag
-			String prevParaText = "";			
+			String prevParaText = "";
 			while (para.hasNext()) {
 				String paraText = para.next().getParagraphText();
 				// If this word is not found, then no pseudo FI will be produced
@@ -190,7 +190,7 @@ public class PseudoExpertInfo {
 				}
 				prevParaText = paraText;
 			}
-			
+
 			// Get section titles + sections + ean codes
 			boolean isSectionPackungen = false;
 			int numSection = 0;
@@ -202,11 +202,11 @@ public class PseudoExpertInfo {
 			mSectionTitles_str = mediTitle + ",";
 			m_pack_info_str = "";
 			// This is the EAN code pattern
-			Pattern pattern = Pattern.compile("^[0-9]{13}");			
+			Pattern pattern = Pattern.compile("^[0-9]{13}");
 			// Loop through it, identifying medication title, author, section titles and corresponding titles
 			while (para.hasNext()) {
-				String paraText = para.next().getParagraphText();			
-				if (paraText.equals(mSectionTitles.get(numSection))) {		
+				String paraText = para.next().getParagraphText();
+				if (paraText.equals(mSectionTitles.get(numSection))) {
 					// ->> Get section title
 					isSectionPackungen = false;
 					// Get section title
@@ -218,7 +218,7 @@ public class PseudoExpertInfo {
 					}
 					// Close previous div
 					if (numSection>1)
-						content.append("</div>");					
+						content.append("</div>");
 					// Create html
 					sectionId_str = "section" + (numSection+1);	// section1 is reserved for the MonTitle
 					sectionTitle_str = mSectionTitles.get(numSection-1);
@@ -242,7 +242,7 @@ public class PseudoExpertInfo {
 						if (!eanCode.isEmpty()) {
 							String pup = "";
 							String efp = "";
-							String fep = "";						
+							String fep = "";
 							String fap = "";
 							String vat = "";
 							String size = "";
@@ -254,7 +254,7 @@ public class PseudoExpertInfo {
 							// Exctract fep and fap pricing information
 							// FAP = Fabrikabgabepreis = EFP?
 							// FEP = Fachhandelseinkaufspreis
-							// EFP = FAP < FEP < PUP							
+							// EFP = FAP < FEP < PUP
 							if (m_map_products!=null && eanCode!=null && m_map_products.containsKey(eanCode)) {
 								Product product = m_map_products.get(eanCode);
 								if (product.efp>0.0f)
@@ -262,7 +262,7 @@ public class PseudoExpertInfo {
 								if (product.pp>0.0f)
 									pup = String.format("CHF %.2f", product.pp);
 								if (product.fap>0.0f)
-									fap = String.format("CHF %.2f", product.fap);							
+									fap = String.format("CHF %.2f", product.fap);
 								if (product.fep>0.0f)
 									fep = String.format("CHF %.2f", product.fep);
 								if (product.vat>0.0f)
@@ -277,13 +277,13 @@ public class PseudoExpertInfo {
 									pharma_code = product.pharmacode;
 								visible = product.visible;
 								has_free_samples = product.free_sample;
-							}						
-							m_list_of_packages.add(mediTitle.toUpperCase() + ", " + units + ", " + size + "|" 
-									+ size + "|" + units + "|" 
+							}
+							m_list_of_packages.add(mediTitle.toUpperCase() + ", " + units + ", " + size + "|"
+									+ size + "|" + units + "|"
 									+ efp + "|" + pup + "|" + fap + "|" + fep + "|" + vat + "|"
 									+ swissmedic_cat + ",,|" + eanCode + "|" + pharma_code + "|" + visible + "|" + has_free_samples + "\n");
 							// Generate bar codes
-							BarCode bc = new BarCode();								
+							BarCode bc = new BarCode();
 							String barcodeImg64 = bc.encode(eanCode);
 							mBarCodes.add("<p class=\"spacing1\">" + barcodeImg64 + "</p>");
 							content.append(barcodeImg64);
@@ -293,7 +293,7 @@ public class PseudoExpertInfo {
 					if (isSectionPackungen)
 						m_pack_info_str += (paraText + "\n");
 				}
-			}				
+			}
 			/*
 			// Add chapter "Barcodes"
 			content.append("<p class=\"paragraph\"></p><div class=\"absTitle\">" + "Barcodes" + "</div>");
@@ -302,60 +302,61 @@ public class PseudoExpertInfo {
 			*/
 			// Remove last comma from mEanCodes_str
 			if (!mEanCodes_str.isEmpty())
-				mEanCodes_str = mEanCodes_str.substring(0, mEanCodes_str.length()-2);	
+				mEanCodes_str = mEanCodes_str.substring(0, mEanCodes_str.length()-2);
 			// Remove last \n from mSectionPackungen_str
 			if (!m_pack_info_str.isEmpty())
 				m_pack_info_str = m_pack_info_str.substring(0, m_pack_info_str.length()-1);
-			
+
 			// Set title, autor
 			mMedi.setTitle(mediTitle);
 			mMedi.setAuthHolder(mediAuthor);
 			mMedi.setAtcCode("PSEUDO");
 			mMedi.setSubstances(mediTitle);
-			
+
 			System.out.println(idx + " - " + mediTitle + ": " + mEanCodes_str);
-			
+
 			// Close previous div + monographie div
 			content.append("</div></div>");
 			String title = "<div class=\"MonTitle\" id=\"section1\">" + mediTitle + "</div>";
 			String author = "<div class=\"ownerCompany\"><div style=\"text-align: right;\">" + mediAuthor + "</div></div>";
 			// Set "Medizinprodukt" label
 			String pseudo = "<p class=\"spacing1\">" + mediPseudoTag + "</p>";
-			// Set medi content			
+			// Set medi content
 			mediHtmlContent = "<html><head></head><body><div id=\"monographie\">" + title + author + pseudo + content.toString() + "</div></body></html>";
-			
+
 			// Generate clean html file
 			Document doc = Jsoup.parse(mediHtmlContent);
-			doc.outputSettings().escapeMode(EscapeMode.xhtml);		
+			doc.outputSettings().escapeMode(EscapeMode.xhtml);
 			doc.outputSettings().charset("UTF-8");
 			doc.outputSettings().prettyPrint(true);
 			doc.outputSettings().indentAmount(1);
 			mediHtmlContent = doc.html();
-			
+
 			// Set html content
-			mMedi.setContent(mediHtmlContent);				
+			mMedi.setContent(mediHtmlContent);
 
 			// Add to DB
 			addToDB();
-			
+
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
 	}
-	
+
 	private void addToDB() {
 		// orggen_str = "P" (=pseudo)
 		List<String> emptyList = new ArrayList<String>();
 		emptyList.add("PSEUDO");
 		emptyList.add("PSEUDO");
-		
+
 		String packages_str = "";
 		for (String s : m_list_of_packages)
 			packages_str += s;
-		
-		mSqlDB.addExpertDB(mMedi, packages_str, mEanCodes_str, mSectionIds_str, mSectionTitles_str, mEanCodes_str, "", m_pack_info_str, 
-				"", mCustomerId, emptyList, "");
+
+		mSqlDB.addExpertDB(mMedi.getTitle(), mMedi.getAuthHolder(), mMedi.getAtcCode(), packages_str,
+			mEanCodes_str, mSectionIds_str, mSectionTitles_str, mEanCodes_str, "", m_pack_info_str,
+				"", mCustomerId, emptyList, "", "");
 	}
 }

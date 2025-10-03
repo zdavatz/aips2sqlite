@@ -46,11 +46,13 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import com.maxl.java.aips2sqlite.refdata.MedicinalDocumentsBundles;
+
 public class Aips2Sqlite {
 
 	/**
 	 * Adds an option into the command line parser
-	 * 
+	 *
 	 * @param optionName - the option name
 	 * @param description - option descriptiuon
 	 * @param hasValue - if set to true, --option=value, otherwise, --option is a boolean
@@ -131,7 +133,7 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("onlyshop")) {
 				CmlOptions.ONLY_SHOPPING_CART = true;
 			}
-			if (cmd.hasOption("zurrose")) {				
+			if (cmd.hasOption("zurrose")) {
 				CmlOptions.ZUR_ROSE_DB = cmd.getOptionValue("zurrose");
 			}
 			if (cmd.hasOption("desitin")) {
@@ -162,7 +164,7 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("indications")) {
 				CmlOptions.INDICATIONS_REPORT = true;
 			}
-			if (cmd.hasOption("plain")) {				
+			if (cmd.hasOption("plain")) {
 				CmlOptions.PLAIN = true;
 			}
 			if (cmd.hasOption("test")) {
@@ -182,7 +184,7 @@ public class Aips2Sqlite {
 		addOption(options, "version", "print the version information and exit",	false, false);
 		addOption(options, "quiet", "be extra quiet", false, false);
 		addOption(options, "verbose", "be extra verbose", false, false);
-		addOption(options, "nodown", "no download, parse only", false, false);		
+		addOption(options, "nodown", "no download, parse only", false, false);
 		addOption(options, "lang", "use given language (de/fr)", true, false);
 		addOption(options, "alpha",	"only include titles which start with option value", true, false);
 		addOption(options, "regnr", "only include medications which start with option value", true, false);
@@ -190,7 +192,7 @@ public class Aips2Sqlite {
 		addOption(options, "pseudo", "adds pseudo expert infos to db", false, false);
 		addOption(options, "inter", "adds drug interactions to db", false, false);
 		addOption(options, "pinfo", "generate patient info htmls", false, false);
-		addOption(options, "xml", "generate xml file", false, false);	
+		addOption(options, "xml", "generate xml file", false, false);
 		addOption(options, "gln", "generate csv file with Swiss gln codes", false, false);
 		addOption(options, "shop", "generate encrypted files for shopping cart", false, false);
 		addOption(options, "onlyshop", "skip generation of sqlite database", false, false);
@@ -211,7 +213,7 @@ public class Aips2Sqlite {
 		// Parse command line options
 		commandLineParse(options, args);
 
-		// Generates statistics 
+		// Generates statistics
 		if (!CmlOptions.STATS.isEmpty()) {
 			System.out.println("processing " + CmlOptions.STATS + " stats");
 			String user = CmlOptions.STATS;
@@ -231,16 +233,16 @@ public class Aips2Sqlite {
 			// Encrypt zur Rose files
 			ShoppingCartRose sc_rose = new ShoppingCartRose();
 			sc_rose.encryptFiles();
-			// 
+			//
 			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_ZURROSE, "rose_access.ami", Constants.DIR_OUTPUT, 0, 4, null);
 			// Generate new rose sqlite db or stock files
 			DispoParse dp = new DispoParse();
 			String option = CmlOptions.ZUR_ROSE_DB.toLowerCase();
 			dp.process(option);
 		}
-		
+
 		boolean no_db = false;
-		
+
 		// Generate Takeda SAP/GLN matching file
 		if (CmlOptions.TAKEDA_SAP) {
 			TakedaParse tp = new TakedaParse();
@@ -257,14 +259,14 @@ public class Aips2Sqlite {
             // tp.diff(Constants.DIR_OUTPUT + takeda_2015, Constants.DIR_OUTPUT + takeda_2016);
 			tp.medreg_sd_diff(Constants.DIR_OUTPUT + takeda_2016);
 		}
-		
+
 		// Calculates the daily drug costs (Tagestherapiekosten)
 		if (CmlOptions.DAILY_DRUG_COSTS) {
 			DailyDrugCosts ddc = new DailyDrugCosts();
 			ddc.process();
 			no_db = true;
 		}
-		
+
 		// Generates csv file containing a mapping from swissmedic sequences to clean refdata title and gtins
 		if (CmlOptions.SWISS_MEDIC_SEQUENCE) {
 			SwissMedSequences sms = new SwissMedSequences();
@@ -278,12 +280,12 @@ public class Aips2Sqlite {
 			pp.process();
 			no_db = true;
 		}
-		
+
 		System.out.println("");
-		
+
 		// Pointer to product map, extraction order = insertion order
 		Map<String, Product> map_products = new LinkedHashMap<String, Product>();
-		
+
 		// Generate encrypted files for shopping cart (ibsa)
 		if (CmlOptions.SHOPPING_CART || CmlOptions.ONLY_SHOPPING_CART) {
 			ShoppingCartIbsa sc_ibsa = new ShoppingCartIbsa(map_products);
@@ -296,7 +298,7 @@ public class Aips2Sqlite {
 			FileOps.encryptFileToDir("authors.ami", Constants.DIR_CRYPTO);	// Same file for all customization
 			if (CmlOptions.ONLY_SHOPPING_CART)
 				no_db = true;
-		}			
+		}
 
 		// Generate encrypted files for shopping cart (desitin)
 		if (CmlOptions.DESITIN_DB || CmlOptions.ONLY_DESITIN_DB) {
@@ -304,18 +306,18 @@ public class Aips2Sqlite {
 			sc_desitin.listFiles(Constants.DIR_DESITIN);
 			sc_desitin.processConditionFile(Constants.DIR_DESITIN);
 			sc_desitin.encryptConditionsToDir(Constants.DIR_OUTPUT, "desitin_conditions");
-			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_DESITIN, "desitin_access.ami", Constants.DIR_OUTPUT, 0, 4, null);		
+			FileOps.encryptCsvToDir("access.ami", "", Constants.DIR_DESITIN, "desitin_access.ami", Constants.DIR_OUTPUT, 0, 4, null);
 			FileOps.encryptFileToDir("authors.ami", Constants.DIR_CRYPTO);	// Same file for all customization
 			if (CmlOptions.ONLY_DESITIN_DB)
 				no_db = true;
 		}
-		
+
 		// Generate a csv file with all the GLN codes pertinent information
 		if (CmlOptions.GLN_CODES) {
 			GlnCodes glns = new GlnCodes();
 			glns.generateCsvFile();
 		}
-		
+
 		if (!CmlOptions.DB_LANGUAGE.isEmpty() && CmlOptions.ZUR_ROSE_DB.isEmpty() && !no_db) {
 			// Extract drug interactions information
 			if (CmlOptions.ADD_INTERACTIONS) {
@@ -323,16 +325,16 @@ public class Aips2Sqlite {
 				// Generate in various data exchange files
 				inter.generateDataExchangeFiles();
 			}
-			
+
 			if (!CmlOptions.ONLY_SHOPPING_CART && !CmlOptions.ONLY_DESITIN_DB) {
 				if (CmlOptions.SHOW_LOGS) {
 					System.out.println("- Generating sqlite database... ");
-				}						
+				}
 				long startTime = System.currentTimeMillis();
-	
+
 				// Generates SQLite database - function should return the number of entries
 				generateSQLiteDB(map_products);
-				
+
 				if (CmlOptions.SHOW_LOGS) {
 					long stopTime = System.currentTimeMillis();
 					System.out.println("- Generated sqlite database in " + (stopTime - startTime) / 1000.0f + " sec");
@@ -346,10 +348,10 @@ public class Aips2Sqlite {
 	static void generateSQLiteDB(Map<String, Product> map_products) {
 		// Create sqlite main database
 		SqlDatabase sql_db = new SqlDatabase(CmlOptions.DB_LANGUAGE);
-		
-		// Read Aips file			
-		List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
-		
+
+		// Read Aips file
+		List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> med_list = readAipsFile();
+
 		if (!CmlOptions.GENERATE_PI) {
 			// Process Fachinfos (official and pseudo)
 			RealExpertInfo fi = new RealExpertInfo(sql_db, med_list, map_products);
@@ -359,25 +361,25 @@ public class Aips2Sqlite {
 			RealPatientInfo pi = new RealPatientInfo(med_list);
 			pi.process();
 		}
-	
+
 		if (CmlOptions.SHOPPING_CART || CmlOptions.DESITIN_DB) {
 			AddProductInfo api = new AddProductInfo(sql_db, map_products);
 			api.process();
 			api.complete(Arrays.asList("ibsa"));
 			// api.clean(Arrays.asList("ibsa"));
 		}
-		
+
 		// Finalize tables and close db
 		sql_db.finalize();
-		
+
 		// If requested zip the whole thing
 		if (CmlOptions.ZIP_BIG_FILES)
-			FileOps.zipToFile("./output/", "amiko_db_full_idx_" + CmlOptions.DB_LANGUAGE + ".db");		
-	}	
-		
+			FileOps.zipToFile("./output/", "amiko_db_full_idx_" + CmlOptions.DB_LANGUAGE + ".db");
+	}
+
 	static void allDown() {
 		AllDown a = new AllDown();
-		
+
 		if (!CmlOptions.ZUR_ROSE_DB.isEmpty()) {
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
@@ -389,9 +391,10 @@ public class Aips2Sqlite {
 			if (CmlOptions.DESITIN_DB || CmlOptions.ONLY_DESITIN_DB)
 				a.downDesitin();
 			a.downAipsXml(Constants.FILE_MEDICAL_INFOS_XSD, Constants.FILE_MEDICAL_INFOS_XML);
-			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
-			a.downRefdataPharmaXml(Constants.FILE_REFDATA_PHARMA_XML);
-			a.downRefdataPartnerXml(Constants.FILE_REFDATA_PARTNER_XML);			
+			// a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
+			// a.downRefdataPharmaXml(Constants.FILE_REFDATA_PHARMA_XML);
+			// a.downRefdataAllHtml(Constants.FILE_REFDATA_ALL_HTML_DIR);
+			// a.downRefdataPartnerXml(Constants.FILE_REFDATA_PARTNER_XML);
 			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
 			a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
@@ -399,16 +402,16 @@ public class Aips2Sqlite {
 			a.downEPhaInteractionsCsv("DE", Constants.FILE_EPHA_INTERACTIONS_DE_CSV);
 			a.downEPhaInteractionsCsv("FR", Constants.FILE_EPHA_INTERACTIONS_FR_CSV);
 			a.downEPhaProductsJson("DE", Constants.FILE_EPHA_PRODUCTS_DE_JSON);
-			a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);	
-			a.downEPhaProductsJson("IT", Constants.FILE_EPHA_PRODUCTS_IT_JSON);	
+			a.downEPhaProductsJson("FR", Constants.FILE_EPHA_PRODUCTS_FR_JSON);
+			a.downEPhaProductsJson("IT", Constants.FILE_EPHA_PRODUCTS_IT_JSON);
 			a.downEphaATCCodesCsv(Constants.FILE_EPHA_ATC_CODES_CSV);
 		}
 	}
-	
-	static List<MedicalInformations.MedicalInformation> readAipsFile() {
-		List<MedicalInformations.MedicalInformation> med_list = null;
+
+	static List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> readAipsFile() {
+		List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> med_list = null;
 		try {
-			JAXBContext context = JAXBContext.newInstance(MedicalInformations.class);
+			JAXBContext context = JAXBContext.newInstance(MedicinalDocumentsBundles.class);
 
 			// Validation
 			SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -420,7 +423,7 @@ public class Aips2Sqlite {
 			/*
 			 * Marshaller ma = context.createMarshaller();
 			 * ma.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			 * MedicalInformations medi_infos = new MedicalInformations();
+			 * MedicinalDocumentsBundles medi_infos = new MedicinalDocumentsBundles();
 			 * ma.marshal(medi_infos, System.out);
 			 */
 			// Unmarshaller
@@ -430,8 +433,8 @@ public class Aips2Sqlite {
 
 			FileInputStream fis = new FileInputStream(new File(Constants.FILE_MEDICAL_INFOS_XML));
 			Unmarshaller um = context.createUnmarshaller();
-			MedicalInformations med_infos = (MedicalInformations)um.unmarshal(fis);
-			med_list = med_infos.getMedicalInformation();
+			MedicinalDocumentsBundles med_infos = (MedicinalDocumentsBundles)um.unmarshal(fis);
+			med_list = med_infos.getMedicinalDocumentsBundle();
 
 			long stopTime = System.currentTimeMillis();
 			if (CmlOptions.SHOW_LOGS)

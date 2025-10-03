@@ -134,11 +134,18 @@ public class AllDown {
 					String file = listOfFiles[i].getName();
 					if (file.endsWith(".xml")) {
 						File src = new File("./downloads/tmp/unzipped_tmp/" + file);
-						File dst = new File(file_medical_infos_xml);
-						FileUtils.copyFile(src, dst);
+						String xmlBody = Files.readString(src.toPath());
+						if (xmlBody.startsWith("\uFEFF")) {
+							xmlBody = xmlBody.substring(1);
+						}
+						// Note: parsing the Document tree and using the removeAttribute function is hopeless!
+						xmlBody = RegExUtils.removeAll(xmlBody, "xmlns.*?\".*?\"");
+						xmlBody = RegExUtils.removeAll(xmlBody, "xsi.*?\".*?\" ");
+						long len = writeToFile(xmlBody, file_medical_infos_xml);
+
 						// Stop timer
 						long stopTime = System.currentTimeMillis();
-						System.out.println("\r- Downloading AIPS file... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+						System.out.println("\r- Downloading AIPS file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 					} else if (file.endsWith(".xsd")) {
 						File src = new File("./downloads/tmp/unzipped_tmp/" + file);
 						File dst = new File(file_medical_infos_xsd);
@@ -315,6 +322,61 @@ public class AllDown {
 			if (!disp)
 				pb.stopp();
 			System.err.println(" Exception: in 'downRefdataPharmaXml'");
+			e.printStackTrace();
+		}
+	}
+
+	public void downRefdataAllHtml(String dir_refdata_all_html) {
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+
+		try {
+			// Start timer
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading Refdata allhtml file... ");
+			else {
+				pb.init("- Downloading Refdata allhtml file... ");
+				pb.start();
+			}
+
+			File refdataDir = new File(dir_refdata_all_html);
+			if (refdataDir.exists() && refdataDir.isDirectory()) {
+				FileUtils.deleteDirectory(refdataDir);
+			}
+			// If the directory that this entry should be inflated under does not exist, create it
+			if (!refdataDir.exists() && !refdataDir.mkdir()) {
+				throw new ZipException("Could not create directory " + dir_refdata_all_html + "\n");
+			}
+
+			File destination = new File("./downloads/tmp/refdata-allhtml.zip");
+			URL url = new URL("https://files.refdata.ch/simis-public-prod/MedicinalDocuments/AllHtml.zip");
+			FileUtils.copyURLToFile(url, destination, 60000, 60000);
+
+			unzipToTemp(destination);
+
+			File folder = new File("./downloads/tmp/unzipped_tmp");
+			File[] listOfFiles = folder.listFiles();
+			for (int i=0; i<listOfFiles.length; ++i) {
+				if (listOfFiles[i].isFile()) {
+					String file = listOfFiles[i].getName();
+					File src = new File("./downloads/tmp/unzipped_tmp/" + file);
+					File dst = new File(dir_refdata_all_html + "/" + file);
+					FileUtils.copyFile(src, dst);
+				}
+			}
+
+			// Delete folder ./tmp
+			FileUtils.deleteDirectory(new File("./downloads/tmp"));
+
+			if (!disp)
+				pb.stopp();
+			long stopTime = System.currentTimeMillis();
+			System.out.println("\r- Downloading Refdata allhtml file... in " + (stopTime-startTime)/1000.0f + " sec");
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();
+			System.err.println(" Exception: in 'downRefdataAllHtml'");
 			e.printStackTrace();
 		}
 	}

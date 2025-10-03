@@ -26,16 +26,21 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 
 import com.maxl.java.aips2sqlite.refdata.Articles;
+import com.maxl.java.aips2sqlite.refdata.MedicinalDocumentsBundles;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
@@ -50,11 +55,12 @@ import org.jsoup.nodes.Entities.EscapeMode;
 import org.jsoup.select.Elements;
 
 import com.maxl.java.aips2sqlite.Preparations.Preparation;
+import com.maxl.java.aips2sqlite.refdata.ArticalDocument;
 import com.opencsv.CSVReader;
 
 public class RealPatientInfo {
 
-	List<MedicalInformations.MedicalInformation> m_med_list = null;
+	List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> m_med_list = null;
 
 	// Map to list with all the relevant information
 	// HashMap is faster, but TreeMap is sort by the key :)
@@ -69,7 +75,7 @@ public class RealPatientInfo {
 	/*
 	 * Constructors
 	 */
-	public RealPatientInfo(List<MedicalInformations.MedicalInformation> med_list) {
+	public RealPatientInfo(List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> med_list) {
 		m_med_list = med_list;
 
 		// Initialize maps
@@ -81,11 +87,11 @@ public class RealPatientInfo {
 	/*
 	 * Getters / setters
 	 */
-	public void setMedList(List<MedicalInformations.MedicalInformation> med_list) {
+	public void setMedList(List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> med_list) {
 		m_med_list = med_list;
 	}
 
-	public List<MedicalInformations.MedicalInformation> getMedList() {
+	public List<MedicinalDocumentsBundles.MedicinalDocumentsBundle> getMedList() {
 		return m_med_list;
 	}
 
@@ -528,119 +534,182 @@ public class RealPatientInfo {
 		// Load CSS file
 		String amiko_style_v1_str = FileOps.readCSSfromFile(Constants.FILE_STYLE_CSS_BASE + "v1.css");
 
+		TreeMap<String, String> m_smn5_atc_map = new TreeMap<>();
+		BaseDataParser bdp = new BaseDataParser();
+		try {
+			TreeMap<String, ArrayList<SimpleArticle>> smn5_to_swissmedic_article_map = bdp.parseSwissmedicPackagesFile_Sequence();
+			for (ArrayList<SimpleArticle> arr : smn5_to_swissmedic_article_map.values()) {
+				for (SimpleArticle a : arr) {
+					if (a.atc_code != null && !a.atc_code.isEmpty()) {
+						m_smn5_atc_map.put(a.smn5, a.atc_code);
+					}
+				}
+			}
+		} catch (IOException e) {
+			System.err.println("Cannot read SwissmedicPackagesFile in RealExpertInfo " + e.getMessage());
+		}
+		try {
+			TreeMap<String, String> smn5_to_atc = bdp.parseRefdataPharmaFileAtcCode();
+			for (Map.Entry<String, String> entry : smn5_to_atc.entrySet()) {
+				String value = entry.getValue();
+				if (value != null && !value.isEmpty()) {
+					m_smn5_atc_map.put(entry.getKey(), value);
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Cannot run parseRefdataPharmaFileAtcCode in RealExpertInfo " + e.getMessage());
+		}
+
 		// Initialize counters for different languages
 		int med_counter = 0;
 		int tot_med_counter = 0;
 		String pi_complete_xml = "";
 		String file_report = "";
 
-		HtmlUtils html_utils = null;
-
 		ArrayList<String> list_of_authnrs = new ArrayList<String>();
 
 		System.out.println("Processing Patient Infos...");
 
-		for( MedicalInformations.MedicalInformation m : m_med_list ) {
+		for( MedicinalDocumentsBundles.MedicinalDocumentsBundle m : m_med_list ) {
 			// --> Read PATIENTENINFOS! <--
-			if (m.getLang().equals(CmlOptions.DB_LANGUAGE) && m.getType().equals("pi")) {
-				if (tot_med_counter<5000) {
-					if (m.getTitle().trim().toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())
-							&& m.getAuthHolder().toLowerCase().startsWith(CmlOptions.OPT_MED_OWNER.toLowerCase())) {
+			MedicinalDocumentsBundles.MedicinalDocumentsBundle.AttachedDocument attached_document = null;
+			for (MedicinalDocumentsBundles.MedicinalDocumentsBundle.AttachedDocument ma: m.getAttachedDocument()) {
+				if (CmlOptions.DB_LANGUAGE.equals(ma.getLanguage().value())) {
+					attached_document = ma;
+					break;
+				}
+			}
+			if (!m.getType().value().equals("PIL")
+				|| !m.getDomain().equals("Human")
+				|| attached_document == null) {
+				continue;
+			}
+			tot_med_counter++;
+			if (tot_med_counter >= 5000) {
+				break;
+			}
 
-						// Extract section titles and section ids
-						/*
-						MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
-						List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
-						String ids_str = "";
-						String titles_str = "";
-						for( MedicalInformations.MedicalInformation.Sections.Section s : med_section_list ) {
-							ids_str += (s.getId() + ",");
-							titles_str += (s.getTitle() + ";");
-						}
-						*/
+			String med_title = attached_document.getDescription();
 
-						boolean exists = false;
-						if (list_of_authnrs.contains(m.getAuthNrs())) {
-							exists = true;
-						}
-						list_of_authnrs.add(m.getAuthNrs());
+			if (!med_title.trim().toLowerCase().startsWith(CmlOptions.OPT_MED_TITLE.toLowerCase())
+					|| !m.getHolder().getName().toLowerCase().startsWith(CmlOptions.OPT_MED_OWNER.toLowerCase())) {
+				continue;
+			}
 
-						System.out.println(tot_med_counter + " - " + m.getTitle() + ": " + m.getAuthNrs());// + " ver -> "+ m.getVersion());
-						if (!exists) {
-							file_report += "   " + m.getAuthNrs() + " -> " + m.getTitle() + "\n";
-						} else {
-							file_report += "***" + m.getAuthNrs() + " -> " + m.getTitle() + "\n";
-						}
+			List<String> regnrs_list = m.getRegulatedAuthorization().getIdentifier();
+			String regnr_str = String.join(",", regnrs_list);
+			boolean exists = false;
+			if (list_of_authnrs.contains(regnr_str)) {
+				exists = true;
+			}
+			list_of_authnrs.add(regnr_str);
 
-						// Clean html
-						html_utils = new HtmlUtils(m.getContent());
-						html_utils.setLanguage(CmlOptions.DB_LANGUAGE);
-						// Remove spans
-						html_utils.clean();
+			System.out.println(tot_med_counter + " - " + med_title + ": " + regnr_str);// + " ver -> "+ m.getVersion());
+			if (!exists) {
+				file_report += "   " + regnr_str + " -> " + med_title + "\n";
+			} else {
+				file_report += "***" + regnr_str + " -> " + med_title + "\n";
+			}
 
-						// Sanitize html, the function returns nicely formatted html
-						String html_sanitized = html_utils.sanitizePatient(m.getTitle(), m.getAuthHolder(), m.getAuthNrs(), CmlOptions.DB_LANGUAGE);
-						String mContent_str = html_sanitized;
+			String document_path = null;
+			for (MedicinalDocumentsBundles.MedicinalDocumentsBundle.AttachedDocument.DocumentReference doc_ref : attached_document.getDocumentReference()) {
+				if (doc_ref.getContentType().equals("text/html")) {
+					try {
+						URL url = new URL(doc_ref.getUrl());
+						String filename = Paths.get(url.getPath()).getFileName().toString();
+						document_path = Constants.FILE_REFDATA_ALL_HTML_DIR + "/" + filename;
+					} catch (Exception e) {
+						System.err.println("Cannot get document URL: " + e.getMessage());
+					}
+					break;
+				}
+			}
+			if (document_path == null || !new File(document_path).exists()) {
+				System.out.println("HTML file not found: " + document_path);
+				continue;
+			}
+			ArticalDocument artDoc = new ArticalDocument(document_path);
+			Document doc = artDoc.generateHtmlWithArticalDocument(regnrs_list, m.getHolder().getName());
 
-						/*
-						 * Update "Packungen" section and extract therapeutisches index
-						 */
-						mContent_str = updateSectionPackungen(m.getTitle(), m.getAtcCode(), m_package_info, m.getAuthNrs(), html_sanitized, new ArrayList<String>());
+			// Sanitize html, the function returns nicely formatted html
+			String html_sanitized = HtmlUtils.sanitizePatient(doc, med_title, m.getHolder().getName(), regnr_str, CmlOptions.DB_LANGUAGE);
+			String mContent_str = html_sanitized;
 
-						if (CmlOptions.XML_FILE==true) {
-							// Add header to html file
-							mContent_str = mContent_str.replaceAll("<head>",
-									"<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><style>" + amiko_style_v1_str + "</style>");
-
-							// --> Note: following line is not really necessary...
-							// m.setContent(mContent_str);
-
-							// Add header to xml file
-							String xml_str = html_utils.convertHtmlToXml("pi", m.getTitle(), mContent_str, m.getAuthNrs());
-							pi_complete_xml += (xml_str + "\n");
-
-							BufferedWriter writer = null;
-							// Write to html and xml files to disk
-							String name = m.getTitle();
-							// Replace all "Sonderzeichen"
-							name = name.replaceAll("é","e");
-							name = name.replaceAll("à","a");
-							name = name.replaceAll("è","e");
-							name = name.replaceAll("ê","e");
-							name = name.replaceAll("É","E");
-							name = name.replaceAll("î","i");
-							name = name.replaceAll("ç","c");
-							name = name.replaceAll("ä","a");
-							name = name.replaceAll("ö","o");
-							name = name.replaceAll("Ä","A");
-							name = name.replaceAll("ü","u");
-							name = m.getAuthNrs().substring(0, 5) + "_" + name;
-							name = name.trim().replaceAll("[^a-zA-Z0-9]+", "_");
-							if (CmlOptions.DB_LANGUAGE.equals("de")) {
-								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_de_html/", name + "_pi_de.html");
-								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_de_xml/", name + "_pi_de.xml");
-							} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
-								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_fr_html/", name + "_pi_fr.html");
-								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_fr_xml/", name + "_pi_fr.xml");
-							} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
-								FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_it_html/", name + "_pi_it.html");
-								writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_it_xml/", name + "_pi_it.xml");
-							}
-							if (writer != null) {
-								html_utils.addHeaderToXml("singlepi", xml_str, writer);
-								try {
-									writer.close();
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							}
-						}
-
-						med_counter++;
+			/*
+			 * Update "Packungen" section and extract therapeutisches index
+			 */
+			String atc_code_str = "";
+			if (!regnrs_list.isEmpty()) {
+				// Use set to avoid duplicate ATC codes
+				Set<String> regnrs_set = new LinkedHashSet<>();
+				// Loop through EPha ATC codes
+				for (String r : regnrs_list) {
+					String atc = m_smn5_atc_map.get(r.trim());
+					if (atc != null) {
+						regnrs_set.add(atc);
 					}
 				}
-				tot_med_counter++;
+				// Iterate through set and format nicely
+				for (String r : regnrs_set) {
+					if (atc_code_str.isEmpty()) {
+						atc_code_str = r;
+					} else {
+						atc_code_str += "," + r;
+					}
+				}
 			}
+			mContent_str = updateSectionPackungen(med_title, atc_code_str, m_package_info, regnr_str, html_sanitized, new ArrayList<String>());
+
+			if (CmlOptions.XML_FILE==true) {
+				// Add header to html file
+				mContent_str = mContent_str.replaceAll("<head>",
+						"<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><style>" + amiko_style_v1_str + "</style>");
+
+				// --> Note: following line is not really necessary...
+				// m.setContent(mContent_str);
+
+				// Add header to xml file
+				String xml_str = HtmlUtils.convertHtmlToXml(CmlOptions.DB_LANGUAGE, "pi", med_title, mContent_str, regnr_str);
+				pi_complete_xml += (xml_str + "\n");
+
+				BufferedWriter writer = null;
+				// Write to html and xml files to disk
+				String name = med_title;
+				// Replace all "Sonderzeichen"
+				name = name.replaceAll("é","e");
+				name = name.replaceAll("à","a");
+				name = name.replaceAll("è","e");
+				name = name.replaceAll("ê","e");
+				name = name.replaceAll("É","E");
+				name = name.replaceAll("î","i");
+				name = name.replaceAll("ç","c");
+				name = name.replaceAll("ä","a");
+				name = name.replaceAll("ö","o");
+				name = name.replaceAll("Ä","A");
+				name = name.replaceAll("ü","u");
+				name = regnr_str.substring(0, 5) + "_" + name;
+				name = name.trim().replaceAll("[^a-zA-Z0-9]+", "_");
+				if (CmlOptions.DB_LANGUAGE.equals("de")) {
+					FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_de_html/", name + "_pi_de.html");
+					writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_de_xml/", name + "_pi_de.xml");
+				} else if (CmlOptions.DB_LANGUAGE.equals("fr")) {
+					FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_fr_html/", name + "_pi_fr.html");
+					writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_fr_xml/", name + "_pi_fr.xml");
+				} else if (CmlOptions.DB_LANGUAGE.equals("it")) {
+					FileOps.writeToFile(mContent_str, Constants.PI_FILE_XML_BASE + "pi_it_html/", name + "_pi_it.html");
+					writer = FileOps.writerToFile(Constants.PI_FILE_XML_BASE + "pi_it_xml/", name + "_pi_it.xml");
+				}
+				if (writer != null) {
+					HtmlUtils.addHeaderToXml(CmlOptions.DB_LANGUAGE, "singlepi", xml_str, writer);
+					try {
+						writer.close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+			med_counter++;
 		}
 
 		if (!file_report.isEmpty()) {
