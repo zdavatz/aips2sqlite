@@ -970,9 +970,6 @@ public class RealExpertInfo {
 					System.err.println("Cannot parse html file: " + document_path);
 					continue;
 				}
-				if (tot_med_counter >= 5000) {
-					break;
-				}
 				// Extract section titles and section ids
 				// MedicalInformations.MedicalInformation.Sections med_sections = m.getSections();
 				// List<MedicalInformations.MedicalInformation.Sections.Section> med_section_list = med_sections.getSection();
