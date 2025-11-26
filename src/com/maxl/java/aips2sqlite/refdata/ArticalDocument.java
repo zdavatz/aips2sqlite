@@ -90,13 +90,13 @@ public class ArticalDocument {
 
 				if (needNewSection) {
 					currentSection.id = "section" + sectionNumber;
-					currentSection.title = elementInBody.text();
+					currentSection.title = elementInBody.wholeText();
 				} else {
 					HashSet<String> selfClasses = allClassesOfElement(elementInBody);
 					selfClasses.retainAll(italicClasses);
 
 					Paragraph paragraph = new Paragraph();
-					paragraph.content = elementInBody.text();
+					paragraph.content = elementInBody.wholeText();
 					paragraph.is_italic = !selfClasses.isEmpty();
 					currentSection.paragraphs.add(paragraph);
 				}
@@ -204,7 +204,7 @@ public class ArticalDocument {
 			if ((child.tagName().equals("span") || child.tagName().equals("p") || child.tagName().equals("div")) && child.text().trim().isEmpty()) {
 				child.remove();
 			} else if (child.tagName().equals("span") && child.attributesSize() == 0) {
-				child.replaceWith(new TextNode(child.text()));
+				child.replaceWith(new TextNode(child.wholeText()));
 			}
 		}
 	}
