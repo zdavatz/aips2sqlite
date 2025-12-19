@@ -201,7 +201,7 @@ public class ArticalDocument {
 		}
 		ArrayList<Element> copied = element.children();
 		for (Element child : copied) {
-			if ((child.tagName().equals("span") || child.tagName().equals("p") || child.tagName().equals("div")) && child.text().trim().isEmpty()) {
+			if ((child.tagName().equals("span") || child.tagName().equals("p") || child.tagName().equals("div")) && child.wholeText().isEmpty()) {
 				child.remove();
 			} else if (child.tagName().equals("span") && child.attributesSize() == 0) {
 				child.replaceWith(new TextNode(child.wholeText()));
