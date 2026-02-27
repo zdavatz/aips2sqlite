@@ -7,7 +7,9 @@ aips2sqlite - creates an SQLite DB from AIPS, Swissmedic, BAG and Refdata
 
 ## Requirements
 
-java version "1.8.0_92" (tested on Windows, Linux, Mac OS X)
+Java 21+ (tested on Windows, Linux, Mac OS X)
+
+Gradle 8.12 (included via wrapper)
 
 ## Build aips2sqlite.jar from commandline
 

@@ -47,7 +47,7 @@ Key flags: `--lang=<de|fr|it|en>`, `--nodown` (skip downloads), `--verbose`, `--
 
 ## Key Technical Details
 
-- Java 1.8+, Gradle build, fat JAR with all dependencies
+- Java 21+, Gradle 8.12 (via wrapper), fat JAR with all dependencies
 - Uses JAXB for XML parsing, Apache POI for Excel, jsoup (forked) for HTML, Jackson for JSON
 - SQLite via `org.xerial:sqlite-jdbc`
 - Input files downloaded to `downloads/`, outputs written to `output/`
