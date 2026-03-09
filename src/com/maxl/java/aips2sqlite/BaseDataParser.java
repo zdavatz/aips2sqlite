@@ -290,6 +290,44 @@ public class BaseDataParser {
         return refdata_regnrs_to_atc_map;
     }
 
+    public TreeMap<String, SimpleArticle> parseBAGFile() throws FileNotFoundException {
+        if (CmlOptions.USE_FHIR)
+            return parseBAGFhirFile();
+        else
+            return parseBAGXmlFile();
+    }
+
+    public TreeMap<String, SimpleArticle> parseBAGFhirFile() {
+        TreeMap<String, SimpleArticle> gtin_to_simple_article_map = new TreeMap<>();
+
+        System.out.print("Processing BAG FHIR NDJSON file...");
+
+        BagFhirParser fhirParser = new BagFhirParser();
+        fhirParser.parse(Constants.FILE_FHIR_SL_NDJSON);
+
+        int num_rows = 0;
+        for (BagFhirParser.FhirPreparation prep : fhirParser.getPrepList()) {
+            for (BagFhirParser.FhirPack fhirPack : prep.packs) {
+                SimpleArticle sa = new SimpleArticle();
+                sa.gtin = fhirPack.gtin;
+                sa.name = prep.name;
+                sa.exf_price_CHF = fhirPack.exFactoryPrice;
+                sa.pub_price_CHF = fhirPack.publicPrice;
+                sa.pack_size = fhirPack.description;
+                sa.smn5 = prep.swissmedicNo5;
+                if (sa.smn5.length() < 5 && !sa.smn5.isEmpty())
+                    sa.smn5 = String.format("%05d", Integer.valueOf(sa.smn5));
+
+                gtin_to_simple_article_map.put(sa.gtin, sa);
+                num_rows++;
+                if (num_rows % 500 == 0)
+                    System.out.print("\rProcessing BAG FHIR NDJSON file... " + num_rows);
+            }
+        }
+        System.out.println("\rProcessing BAG FHIR NDJSON file... " + num_rows + " packs");
+        return gtin_to_simple_article_map;
+    }
+
     public TreeMap<String, SimpleArticle> parseBAGXmlFile() throws FileNotFoundException {
         TreeMap<String, SimpleArticle> gtin_to_simple_article_map = new TreeMap<>();
 

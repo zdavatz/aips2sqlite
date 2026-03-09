@@ -21,7 +21,7 @@ java -jar build/libs/aips2sqlite.jar --lang=de --verbose --reports
 java -jar -Xmx2048m build/libs/aips2sqlite.jar --lang=de --verbose  # increased heap
 ```
 
-Key flags: `--lang=<de|fr|it|en>`, `--nodown` (skip downloads), `--verbose`, `--quiet`, `--xml`, `--zip`, `--reports`, `--inter` (drug interactions), `--pinfo` (patient info instead of Fachinfo).
+Key flags: `--lang=<de|fr|it|en>`, `--nodown` (skip downloads), `--verbose`, `--quiet`, `--xml`, `--zip`, `--reports`, `--inter` (drug interactions), `--pinfo` (patient info instead of Fachinfo), `--fhir` (use BAG FHIR NDJSON instead of BAG Preparations XML).
 
 ## Architecture
 
@@ -36,6 +36,8 @@ Key flags: `--lang=<de|fr|it|en>`, `--nodown` (skip downloads), `--verbose`, `--
 **Data models:** `Medication` (id, title, auth, atccode, content HTML, pack_info), `Article` (ean_code, pharma_code, pricing, stock), `Product` (shopping cart data).
 
 **Partner-specific generators:** `ShoppingCartIbsa`, `ShoppingCartDesitin`, `ShoppingCartRose`, `TakedaParse` — each produces encrypted/specialized output for specific pharmacy partners.
+
+**FHIR support:** `BagFhirParser.java` — Parses BAG FHIR NDJSON file (alternative to Preparations XML). Downloads from `epl.bag.admin.ch`, extracts prices, SL flags, GTIN, Swissmedic numbers from FHIR Bundle resources (MedicinalProductDefinition, RegulatedAuthorization, PackagedProductDefinition).
 
 **Supporting classes:** `Constants.java` (all file paths), `CmlOptions.java` (global config flags), `HtmlUtils.java` (HTML sanitization), `FileOps.java` (I/O + AES encryption), `ExcelOps.java` (POI-based Excel parsing), `BaseDataParser.java` (XML/Excel parsing base).
 

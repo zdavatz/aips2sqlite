@@ -119,8 +119,11 @@ public class DispoParse {
 				return;
 			// Process atc map
 			getAtcMap();
-			// Get SL map
-			getSLMap();
+			// Get SL map (from FHIR NDJSON or BAG XML)
+			if (CmlOptions.USE_FHIR)
+				getSLMapFromFhir();
+			else
+				getSLMap();
 			// Enhance SL map with information on"Abgabekategorie"
 			enhanceFlags();
 			// Get galenic form to galenic code map
@@ -822,6 +825,14 @@ public class DispoParse {
 			e.printStackTrace();
 		}
 		System.out.println("");
+	}
+
+	private void getSLMapFromFhir() {
+		BagFhirParser fhirParser = new BagFhirParser();
+		fhirParser.parse(Constants.FILE_FHIR_SL_NDJSON);
+		m_flags_map = fhirParser.buildFlagsMap();
+		m_bag_exfacto_price_map = fhirParser.buildExfactoryPriceMap();
+		m_bag_public_price_map = fhirParser.buildPublicPriceMap();
 	}
 
 	private void enhanceFlags() {

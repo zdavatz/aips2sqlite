@@ -279,7 +279,10 @@ public class DailyDrugCosts {
 
 			// Read core info from files
 			parseDosageFormsJson();
-			parseBagPreparationsFile();		
+			if (CmlOptions.USE_FHIR)
+				parseBagFhirFile();
+			else
+				parseBagPreparationsFile();
 			parseRefdataPharmaFile();
 			parseWidoATCIndexFile();
 			parse2015ATCwithDDDsFile();
@@ -562,6 +565,39 @@ public class DailyDrugCosts {
 		*/
 
 		System.out.println("Number of dosage forms in database: " + m_dosages_map.size());
+	}
+
+	private void parseBagFhirFile() {
+		System.out.print("Processing BAG FHIR NDJSON file...");
+
+		BagFhirParser fhirParser = new BagFhirParser();
+		fhirParser.parse(Constants.FILE_FHIR_SL_NDJSON);
+
+		for (BagFhirParser.FhirPreparation fhirPrep : fhirParser.getPrepList()) {
+			Preparation preparation = new Preparation();
+			preparation.name_de = fhirPrep.name;
+			preparation.atc_code = fhirPrep.atcCode;
+			preparation.swissmedic_no5 = fhirPrep.swissmedicNo5;
+			preparation.list_of_packs = new ArrayList<Pack>();
+
+			for (BagFhirParser.FhirPack fhirPack : fhirPrep.packs) {
+				Pack pack = new Pack();
+				pack.gtin = fhirPack.gtin;
+				pack.swissmedic_no8 = fhirPack.swissmedicNo8;
+				pack.description_de = fhirPack.description;
+				try {
+					if (!fhirPack.exFactoryPrice.isEmpty())
+						pack.exfactory_price = Float.valueOf(fhirPack.exFactoryPrice);
+					if (!fhirPack.publicPrice.isEmpty())
+						pack.public_price = Float.valueOf(fhirPack.publicPrice);
+				} catch (NumberFormatException e) {
+					// skip
+				}
+				preparation.list_of_packs.add(pack);
+			}
+			m_list_of_preparations.add(preparation);
+		}
+		System.out.println(" " + m_list_of_preparations.size() + " preparations");
 	}
 
 	private void parseBagPreparationsFile() throws XMLStreamException, FileNotFoundException {

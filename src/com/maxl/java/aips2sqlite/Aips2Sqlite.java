@@ -173,6 +173,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("stats")) {
 				CmlOptions.STATS = cmd.getOptionValue("stats");
 			}
+			if (cmd.hasOption("fhir")) {
+				CmlOptions.USE_FHIR = true;
+			}
 		} catch (ParseException e) {
 			System.err.println("Parsing failed: " + e.getMessage());
 		}
@@ -209,6 +212,7 @@ public class Aips2Sqlite {
 		addOption(options, "plain", "does not update the package section", false, false);
 		addOption(options, "test", "starts aips2sqlite in test mode", false, false);
 		addOption(options, "stats", "generates statistics for given user", true, false);
+		addOption(options, "fhir", "use BAG FHIR NDJSON instead of BAG Preparations XML", false, false);
 
 		// Parse command line options
 		commandLineParse(options, args);
@@ -381,7 +385,10 @@ public class Aips2Sqlite {
 		AllDown a = new AllDown();
 
 		if (!CmlOptions.ZUR_ROSE_DB.isEmpty()) {
-			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
+			if (CmlOptions.USE_FHIR)
+				a.downFhirNdjson(Constants.FILE_FHIR_SL_NDJSON);
+			else
+				a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downPackungenXls(Constants.FILE_PACKAGES_XLSX);
 			a.downEphaATCCodesCsv(Constants.FILE_EPHA_ATC_CODES_CSV);
 			a.downZurRose(CmlOptions.ZUR_ROSE_DB, CmlOptions.TEST_MODE);
@@ -395,7 +402,10 @@ public class Aips2Sqlite {
 			a.downRefdataPharmaXml(Constants.FILE_REFDATA_PHARMA_XML);
 			a.downRefdataAllHtml(Constants.FILE_REFDATA_ALL_HTML_DIR);
 			a.downRefdataPartnerXml(Constants.FILE_REFDATA_PARTNER_XML);
-			a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
+			if (CmlOptions.USE_FHIR)
+				a.downFhirNdjson(Constants.FILE_FHIR_SL_NDJSON);
+			else
+				a.downPreparationsXml(Constants.FILE_PREPARATIONS_XML);
 			a.downSwissDRGXlsx("DE", Constants.FILE_SWISS_DRG_DE_XLSX);
 			a.downSwissDRGXlsx("FR", Constants.FILE_SWISS_DRG_FR_XLSX);
 			a.downSwissDRGXlsx("IT", Constants.FILE_SWISS_DRG_IT_XLSX);

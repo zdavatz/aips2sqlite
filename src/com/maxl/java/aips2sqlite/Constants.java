@@ -42,6 +42,8 @@ public class Constants {
 	*/
 	// BAG xml file to be parsed (contains DE and FR)
 	public static final String FILE_PREPARATIONS_XML = "./downloads/bag_preparations_xml.xml";
+	// BAG FHIR NDJSON file (alternative to XML)
+	public static final String FILE_FHIR_SL_NDJSON = "./downloads/fhir-sl.ndjson";
 	// Swiss DRG xlsx file to be parsed (DE != FR)
 	public static final String FILE_SWISS_DRG_DE_XLSX = "./downloads/swiss_drg_de_xlsx.xlsx";
 	public static final String FILE_SWISS_DRG_FR_XLSX = "./downloads/swiss_drg_fr_xlsx.xlsx";

@@ -176,7 +176,7 @@ public class SwissMedSequences extends ArticleNameParse {
             PackageParse pack_parse = new PackageParse();
 
             // Read core info from files
-            TreeMap<String, SimpleArticle> gtin_to_bag_article_map = bdp.parseBAGXmlFile();
+            TreeMap<String, SimpleArticle> gtin_to_bag_article_map = bdp.parseBAGFile();
             TreeMap<String, SimpleArticle> gtin_to_swissmedic_article_map = bdp.parseSwissmedicPackagesFile_Gtin();
             TreeMap<String, ArrayList<SimpleArticle>> sequence_to_swissmedic_article_map = bdp.parseSwissmedicPackagesFile_Sequence();
             TreeMap<String, String> gtin_to_refdata_name_map = bdp.parseRefdataPharmaFile();

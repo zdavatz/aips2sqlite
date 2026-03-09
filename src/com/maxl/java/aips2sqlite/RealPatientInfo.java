@@ -364,151 +364,227 @@ public class RealPatientInfo {
 			if (CmlOptions.SHOW_LOGS)
 				System.out.println(article_list.size() + " medis in " + (stopTime - startTime) / 1000.0f + " sec");
 
-			// Load BAG xml file
-			File bag_xml_file = new File(Constants.FILE_PREPARATIONS_XML);
-			FileInputStream fis_bag = new FileInputStream(bag_xml_file);
-
 			startTime = System.currentTimeMillis();
-			if (CmlOptions.SHOW_LOGS)
-				System.out.print("- Processing preparations xml... ");
 
-			context = JAXBContext.newInstance(Preparations.class);
-			um = context.createUnmarshaller();
-			Preparations prepInfos = (Preparations) um.unmarshal(fis_bag);
-			List<Preparations.Preparation> prep_list = prepInfos.getPreparations();
+			if (CmlOptions.USE_FHIR) {
+				// Load BAG FHIR NDJSON file
+				if (CmlOptions.SHOW_LOGS)
+					System.out.print("- Processing BAG FHIR NDJSON... ");
 
-			int num_preparations = 0;
-			for (Preparations.Preparation prep : prep_list) {
-				String swissmedicno5_str = prep.getSwissmedicNo5();
-				if (swissmedicno5_str != null) {
-					String orggencode_str = ""; // "O", "G" or empty -> ""
-					String flagSB20_str = ""; // "Y" -> 20% or "N" -> 10%
-					if (prep.getOrgGenCode() != null)
-						orggencode_str = prep.getOrgGenCode();
-					if (prep.getFlagSB20() != null) {
-						flagSB20_str = prep.getFlagSB20();
-						if (flagSB20_str.equals("Y")) {
+				BagFhirParser fhirParser = new BagFhirParser();
+				fhirParser.parse(Constants.FILE_FHIR_SL_NDJSON);
+				List<BagFhirParser.FhirPreparation> fhir_prep_list = fhirParser.getPrepList();
+
+				int num_preparations = 0;
+				for (BagFhirParser.FhirPreparation prep : fhir_prep_list) {
+					String swissmedicno5_str = prep.swissmedicNo5;
+					if (!swissmedicno5_str.isEmpty()) {
+						String orggencode_str = prep.orgGenCode;
+						String flagSB20_str = "";
+						if (prep.costShare >= 20) {
 							if (CmlOptions.DB_LANGUAGE.equals("de"))
-								flagSB20_str = "SB 20%";
+								flagSB20_str = "SB " + prep.costShare + "%";
 							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-								flagSB20_str = "QP 20%";
+								flagSB20_str = "QP " + prep.costShare + "%";
 							else if (CmlOptions.DB_LANGUAGE.equals("it"))
-								flagSB20_str = "QP 20%";
-						} else if (flagSB20_str.equals("N")) {
+								flagSB20_str = "QP " + prep.costShare + "%";
+						} else if (prep.costShare > 0) {
 							if (CmlOptions.DB_LANGUAGE.equals("de"))
-								flagSB20_str = "SB 10%";
+								flagSB20_str = "SB " + prep.costShare + "%";
 							else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-								flagSB20_str = "QP 10%";
+								flagSB20_str = "QP " + prep.costShare + "%";
 							else if (CmlOptions.DB_LANGUAGE.equals("it"))
-								flagSB20_str = "QP 10%";
-						} else
-							flagSB20_str = "";
-					}
-					m_add_info_map.put(swissmedicno5_str, orggencode_str + ";" + flagSB20_str);
-				}
-
-				List<Preparation.Packs> packs_list = prep.getPacks();
-				for (Preparation.Packs packs : packs_list) {
-					// Extract codes for therapeutic index / classification
-					String bag_application = "";
-					String therapeutic_code = "";
-					List<Preparations.Preparation.ItCodes> itcode_list = prep.getItCodes();
-					for (Preparations.Preparation.ItCodes itc : itcode_list) {
-						List<Preparations.Preparation.ItCodes.ItCode> code_list = itc.getItCode();
-						int index = 0;
-						for (Preparations.Preparation.ItCodes.ItCode code : code_list) {
-							if (index == 0) {
-								if (CmlOptions.DB_LANGUAGE.equals("de"))
-									therapeutic_code = code.getDescriptionDe();
-								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-									therapeutic_code = code.getDescriptionFr();
-								else if (CmlOptions.DB_LANGUAGE.equals("it"))
-									therapeutic_code = code.getDescriptionIt();
-							} else {
-								if (CmlOptions.DB_LANGUAGE.equals("de"))
-									bag_application = code.getDescriptionDe();
-								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-									bag_application = code.getDescriptionFr();
-								else if (CmlOptions.DB_LANGUAGE.equals("it"))
-									bag_application = code.getDescriptionIt();
-							}
-							index++;
+								flagSB20_str = "QP " + prep.costShare + "%";
 						}
+						m_add_info_map.put(swissmedicno5_str, orggencode_str + ";" + flagSB20_str);
 					}
-					// Generate new package info
-					List<Preparation.Packs.Pack> pack_list = packs.getPack();
-					for (Preparation.Packs.Pack pack : pack_list) {
-						// Get SwissmedicNo8 and used it as a key to extract all the relevant package info
-						String swissMedicNo8 = pack.getSwissmedicNo8();
+
+					for (BagFhirParser.FhirPack fhirPack : prep.packs) {
+						String swissMedicNo8 = fhirPack.swissmedicNo8;
 						ArrayList<String> pi_row = null;
-						if (swissMedicNo8 != null)
+						if (!swissMedicNo8.isEmpty())
 							pi_row = m_package_info.get(swissMedicNo8);
-						// Preparation also in BAG xml file (we have a price)
 						if (pi_row != null) {
-							// Update Swissmedic catory if necessary ("N->A", Y->"A+")
-							if (pack.getFlagNarcosis().equals("Y"))
-								pi_row.set(5, pi_row.get(5) + "+");
-							// Extract point limitations
-							List<Preparations.Preparation.Packs.Pack.PointLimitations> point_limits = pack.getPointLimitations();
-							for (Preparations.Preparation.Packs.Pack.PointLimitations limits : point_limits) {
-								List<Preparations.Preparation.Packs.Pack.PointLimitations.PointLimitation> plimits_list = limits.getPointLimitation();
-								if (plimits_list.size() > 0)
-									if (plimits_list.get(0) != null)
-										pi_row.set(12, ", LIM" + plimits_list.get(0).getPoints() + "");
+							if (!fhirPack.exFactoryPrice.isEmpty()) {
+								try {
+									float f = Float.valueOf(fhirPack.exFactoryPrice);
+									String ep = String.format("%.2f", f);
+									pi_row.set(8, "CHF " + ep);
+								} catch (NumberFormatException e) {
+									if (CmlOptions.SHOW_ERRORS)
+										System.err.println("Number format exception (exfactory price): " + swissMedicNo8);
+								}
 							}
-							// Extract exfactory and public prices
-							List<Preparations.Preparation.Packs.Pack.Prices> price_list = pack.getPrices();
-							for (Preparations.Preparation.Packs.Pack.Prices price : price_list) {
-								List<Preparations.Preparation.Packs.Pack.Prices.PublicPrice> public_price = price
-										.getPublicPrice();
-								List<Preparations.Preparation.Packs.Pack.Prices.ExFactoryPrice> exfactory_price = price
-										.getExFactoryPrice();
-								if (exfactory_price.size() > 0) {
-									try {
-										float f = Float.valueOf(exfactory_price.get(0).getPrice());
-										String ep = String.format("%.2f", f);
-										pi_row.set(8, "CHF " + ep);
-									} catch (NumberFormatException e) {
-										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Number format exception (exfactory price): " + swissMedicNo8
-													+ " (" + public_price.size() + ")");
-									}
+							if (!fhirPack.publicPrice.isEmpty()) {
+								try {
+									float f = Float.valueOf(fhirPack.publicPrice);
+									String pp = String.format("%.2f", f);
+									pi_row.set(7, "CHF " + pp);
+									if (CmlOptions.DB_LANGUAGE.equals("de"))
+										pi_row.set(11, ", SL");
+									else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+										pi_row.set(11, ", LS");
+									else if (CmlOptions.DB_LANGUAGE.equals("it"))
+										pi_row.set(11, ", LS");
+								} catch (NullPointerException | NumberFormatException e) {
+									if (CmlOptions.SHOW_ERRORS)
+										System.err.println("Price exception: " + swissMedicNo8);
 								}
-								if (public_price.size() > 0) {
-									try {
-										float f = Float.valueOf(public_price.get(0).getPrice());
-										String pp = String.format("%.2f", f);
-										pi_row.set(7, "CHF " + pp);
-										if (CmlOptions.DB_LANGUAGE.equals("de"))
-											pi_row.set(11, ", SL");
-										else if (CmlOptions.DB_LANGUAGE.equals("fr"))
-											pi_row.set(11, ", LS");
-										else if (CmlOptions.DB_LANGUAGE.equals("it"))
-											pi_row.set(11, ", LS");
-									} catch (NullPointerException e) {
-										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Null pointer exception (public price): " + swissMedicNo8
-													+ " (" + public_price.size() + ")");
-									} catch (NumberFormatException e) {
-										if (CmlOptions.SHOW_ERRORS)
-											System.err.println("Number format exception (public price): " + swissMedicNo8
-													+ " (" + public_price.size() + ")");
-									}
-								}
-								// Add application area and therapeutic code
-								if (!bag_application.isEmpty())
-									pi_row.set(6, pi_row.get(6)	+ bag_application + " (BAG)");
-								pi_row.set(9, therapeutic_code);
 							}
 						}
 					}
+					num_preparations++;
 				}
-				num_preparations++;
-			}
 
-			stopTime = System.currentTimeMillis();
-			if (CmlOptions.SHOW_LOGS)
-				System.out.println(num_preparations + " preparations in " + (stopTime - startTime) / 1000.0f + " sec");
+				stopTime = System.currentTimeMillis();
+				if (CmlOptions.SHOW_LOGS)
+					System.out.println(num_preparations + " preparations in " + (stopTime - startTime) / 1000.0f + " sec");
+			} else {
+				// Load BAG xml file
+				File bag_xml_file = new File(Constants.FILE_PREPARATIONS_XML);
+				FileInputStream fis_bag = new FileInputStream(bag_xml_file);
+
+				if (CmlOptions.SHOW_LOGS)
+					System.out.print("- Processing preparations xml... ");
+
+				context = JAXBContext.newInstance(Preparations.class);
+				um = context.createUnmarshaller();
+				Preparations prepInfos = (Preparations) um.unmarshal(fis_bag);
+				List<Preparations.Preparation> prep_list = prepInfos.getPreparations();
+
+				int num_preparations = 0;
+				for (Preparations.Preparation prep : prep_list) {
+					String swissmedicno5_str = prep.getSwissmedicNo5();
+					if (swissmedicno5_str != null) {
+						String orggencode_str = ""; // "O", "G" or empty -> ""
+						String flagSB20_str = ""; // "Y" -> 20% or "N" -> 10%
+						if (prep.getOrgGenCode() != null)
+							orggencode_str = prep.getOrgGenCode();
+						if (prep.getFlagSB20() != null) {
+							flagSB20_str = prep.getFlagSB20();
+							if (flagSB20_str.equals("Y")) {
+								if (CmlOptions.DB_LANGUAGE.equals("de"))
+									flagSB20_str = "SB 20%";
+								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+									flagSB20_str = "QP 20%";
+								else if (CmlOptions.DB_LANGUAGE.equals("it"))
+									flagSB20_str = "QP 20%";
+							} else if (flagSB20_str.equals("N")) {
+								if (CmlOptions.DB_LANGUAGE.equals("de"))
+									flagSB20_str = "SB 10%";
+								else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+									flagSB20_str = "QP 10%";
+								else if (CmlOptions.DB_LANGUAGE.equals("it"))
+									flagSB20_str = "QP 10%";
+							} else
+								flagSB20_str = "";
+						}
+						m_add_info_map.put(swissmedicno5_str, orggencode_str + ";" + flagSB20_str);
+					}
+
+					List<Preparation.Packs> packs_list = prep.getPacks();
+					for (Preparation.Packs packs : packs_list) {
+						// Extract codes for therapeutic index / classification
+						String bag_application = "";
+						String therapeutic_code = "";
+						List<Preparations.Preparation.ItCodes> itcode_list = prep.getItCodes();
+						for (Preparations.Preparation.ItCodes itc : itcode_list) {
+							List<Preparations.Preparation.ItCodes.ItCode> code_list = itc.getItCode();
+							int index = 0;
+							for (Preparations.Preparation.ItCodes.ItCode code : code_list) {
+								if (index == 0) {
+									if (CmlOptions.DB_LANGUAGE.equals("de"))
+										therapeutic_code = code.getDescriptionDe();
+									else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+										therapeutic_code = code.getDescriptionFr();
+									else if (CmlOptions.DB_LANGUAGE.equals("it"))
+										therapeutic_code = code.getDescriptionIt();
+								} else {
+									if (CmlOptions.DB_LANGUAGE.equals("de"))
+										bag_application = code.getDescriptionDe();
+									else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+										bag_application = code.getDescriptionFr();
+									else if (CmlOptions.DB_LANGUAGE.equals("it"))
+										bag_application = code.getDescriptionIt();
+								}
+								index++;
+							}
+						}
+						// Generate new package info
+						List<Preparation.Packs.Pack> pack_list = packs.getPack();
+						for (Preparation.Packs.Pack pack : pack_list) {
+							// Get SwissmedicNo8 and used it as a key to extract all the relevant package info
+							String swissMedicNo8 = pack.getSwissmedicNo8();
+							ArrayList<String> pi_row = null;
+							if (swissMedicNo8 != null)
+								pi_row = m_package_info.get(swissMedicNo8);
+							// Preparation also in BAG xml file (we have a price)
+							if (pi_row != null) {
+								// Update Swissmedic catory if necessary ("N->A", Y->"A+")
+								if (pack.getFlagNarcosis().equals("Y"))
+									pi_row.set(5, pi_row.get(5) + "+");
+								// Extract point limitations
+								List<Preparations.Preparation.Packs.Pack.PointLimitations> point_limits = pack.getPointLimitations();
+								for (Preparations.Preparation.Packs.Pack.PointLimitations limits : point_limits) {
+									List<Preparations.Preparation.Packs.Pack.PointLimitations.PointLimitation> plimits_list = limits.getPointLimitation();
+									if (plimits_list.size() > 0)
+										if (plimits_list.get(0) != null)
+											pi_row.set(12, ", LIM" + plimits_list.get(0).getPoints() + "");
+								}
+								// Extract exfactory and public prices
+								List<Preparations.Preparation.Packs.Pack.Prices> price_list = pack.getPrices();
+								for (Preparations.Preparation.Packs.Pack.Prices price : price_list) {
+									List<Preparations.Preparation.Packs.Pack.Prices.PublicPrice> public_price = price
+											.getPublicPrice();
+									List<Preparations.Preparation.Packs.Pack.Prices.ExFactoryPrice> exfactory_price = price
+											.getExFactoryPrice();
+									if (exfactory_price.size() > 0) {
+										try {
+											float f = Float.valueOf(exfactory_price.get(0).getPrice());
+											String ep = String.format("%.2f", f);
+											pi_row.set(8, "CHF " + ep);
+										} catch (NumberFormatException e) {
+											if (CmlOptions.SHOW_ERRORS)
+												System.err.println("Number format exception (exfactory price): " + swissMedicNo8
+														+ " (" + public_price.size() + ")");
+										}
+									}
+									if (public_price.size() > 0) {
+										try {
+											float f = Float.valueOf(public_price.get(0).getPrice());
+											String pp = String.format("%.2f", f);
+											pi_row.set(7, "CHF " + pp);
+											if (CmlOptions.DB_LANGUAGE.equals("de"))
+												pi_row.set(11, ", SL");
+											else if (CmlOptions.DB_LANGUAGE.equals("fr"))
+												pi_row.set(11, ", LS");
+											else if (CmlOptions.DB_LANGUAGE.equals("it"))
+												pi_row.set(11, ", LS");
+										} catch (NullPointerException e) {
+											if (CmlOptions.SHOW_ERRORS)
+												System.err.println("Null pointer exception (public price): " + swissMedicNo8
+														+ " (" + public_price.size() + ")");
+										} catch (NumberFormatException e) {
+											if (CmlOptions.SHOW_ERRORS)
+												System.err.println("Number format exception (public price): " + swissMedicNo8
+														+ " (" + public_price.size() + ")");
+										}
+									}
+									// Add application area and therapeutic code
+									if (!bag_application.isEmpty())
+										pi_row.set(6, pi_row.get(6)	+ bag_application + " (BAG)");
+									pi_row.set(9, therapeutic_code);
+								}
+							}
+						}
+					}
+					num_preparations++;
+				}
+
+				stopTime = System.currentTimeMillis();
+				if (CmlOptions.SHOW_LOGS)
+					System.out.println(num_preparations + " preparations in " + (stopTime - startTime) / 1000.0f + " sec");
+			}
 
 			// Loop through all SwissmedicNo8 numbers
 			/*

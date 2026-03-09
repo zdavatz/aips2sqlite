@@ -29,6 +29,7 @@ On some systems it may be necessary to increase the heap space with the Java opt
 
 ```
 --alpha=<char>    generate sqlite database or xml file for meds whose title starts with 'char'
+--fhir            use BAG FHIR NDJSON instead of BAG Preparations XML
 --help            print help
 --indications     generate report about keywords found in section indications (folder output)
 --inter			  generate drug interaction files as an sqlite database and a csv data file
@@ -41,8 +42,8 @@ On some systems it may be necessary to increase the heap space with the Java opt
 --reports         generate parse and owner error reports (folder output)
 --verbose         be extra verbose
 --version         print the version information and exit
---xml             generate xml file 
---zip             generate zipped versions sqlite database or xml file 
+--xml             generate xml file
+--zip             generate zipped versions sqlite database or xml file
 ```
 
 ## Examples

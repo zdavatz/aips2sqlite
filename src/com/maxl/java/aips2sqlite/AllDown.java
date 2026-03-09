@@ -507,6 +507,55 @@ public class AllDown {
 		}
 	}
 
+	public void downFhirNdjson(String file_fhir_ndjson) {
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+
+		try {
+			// Ignore validation for https sites
+			setNoValidation();
+
+			// Start timer
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading BAG FHIR NDJSON file... ");
+			else {
+				pb.init("- Downloading BAG FHIR NDJSON file... ");
+				pb.start();
+			}
+
+			// Step 1: Query API to get the current FHIR file URL
+			URL apiUrl = new URL("https://epl.bag.admin.ch/api/sl/public/resources/current");
+			BufferedReader apiReader = new BufferedReader(new InputStreamReader(apiUrl.openStream(), "UTF-8"));
+			StringBuilder apiResponse = new StringBuilder();
+			String line;
+			while ((line = apiReader.readLine()) != null) {
+				apiResponse.append(line);
+			}
+			apiReader.close();
+
+			// Parse the JSON response to extract fhir.fileUrl
+			com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+			com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(apiResponse.toString());
+			String fileUrl = root.get("fhir").get("fileUrl").asText();
+
+			// Step 2: Download the NDJSON file
+			URL ndjsonUrl = new URL("https://epl.bag.admin.ch/static/" + fileUrl);
+			File destination = new File(file_fhir_ndjson);
+			FileUtils.copyURLToFile(ndjsonUrl, destination, 60000, 60000);
+
+			if (!disp)
+				pb.stopp();
+			long stopTime = System.currentTimeMillis();
+			System.out.println("\r- Downloading BAG FHIR NDJSON file... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+		} catch (Exception e) {
+			if (!disp)
+				pb.stopp();
+			System.err.println(" Exception: in 'downFhirNdjson'");
+			e.printStackTrace();
+		}
+	}
+
 	public void downSwissDRGXlsx(String language, String file_swiss_drg_xlsx) {
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();

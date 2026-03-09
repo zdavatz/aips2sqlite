@@ -51,4 +51,5 @@ public class CmlOptions {
 	public static String OPT_MED_TITLE = "";
 	public static String OPT_MED_REGNR = "";
 	public static String OPT_MED_OWNER = "";
+	public static boolean USE_FHIR = false;
 }
