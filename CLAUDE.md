@@ -47,6 +47,10 @@ Key flags: `--lang=<de|fr|it|en>`, `--nodown` (skip downloads), `--verbose`, `--
 - `src/com/maxl/java/aips2sqlite/refdata/` — Generated JAXB classes for Refdata XML binding
 - `src/com/maxl/java/shared/` — Shared utilities
 
+## Download Domains
+
+See `README.md` "Download Domains" section for the full list of domains the application and build system connect to.
+
 ## Key Technical Details
 
 - Java 21+, Gradle 8.12 (via wrapper), fat JAR with all dependencies

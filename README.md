@@ -46,6 +46,31 @@ On some systems it may be necessary to increase the heap space with the Java opt
 --zip             generate zipped versions sqlite database or xml file
 ```
 
+## Download Domains
+
+### Application (runtime data downloads)
+
+| Domain | Description |
+|--------|-------------|
+| download.swissmedicinfo.ch | AIPS XML (Fachinfo/Patinfo documents) |
+| www.swissmedic.ch | Authorized packages XLSX (Zugelassene Packungen) |
+| swissindex.refdata.ch | Swissindex Pharma SOAP web service (pharmacode data) |
+| files.refdata.ch | Refdata Articles ZIP and MedicinalDocuments AllHtml ZIP |
+| refdatabase.refdata.ch | Refdata Partner SOAP web service (GLN data) |
+| www.spezialitaetenliste.ch | BAG Spezialitätenliste XMLPublications ZIP |
+| epl.bag.admin.ch | BAG FHIR NDJSON (alternative to Preparations XML) |
+| www.swissdrg.org | SwissDRG Excel files |
+| raw.githubusercontent.com | EPha interactions CSV, products JSON, ATC codes CSV (zdavatz/oddb2xml_files) |
+
+### Build (Java/Gradle infrastructure)
+
+| Domain | Description |
+|--------|-------------|
+| services.gradle.org | Gradle distribution download |
+| repo.maven.apache.org | Maven Central repository (dependency JARs) |
+| clojars.org | Clojars Maven repository (dependency JARs) |
+| jitpack.io | JitPack Maven repository (GitHub-based dependency JARs) |
+
 ## Examples
 
 Generate German SQLite database including report file:
