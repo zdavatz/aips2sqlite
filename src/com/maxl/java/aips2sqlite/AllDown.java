@@ -395,61 +395,41 @@ public class AllDown {
 				pb.start();
 			}
 
-			// SOAP request body
-			String soapBody = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-				+ "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
-				+ "<soap:Body>"
-				+ "<DownloadPartnerInput xmlns=\"http://refdatabase.refdata.ch/\">"
-				+ "<TYPE xmlns=\"http://refdatabase.refdata.ch/Partner_in\">ALL</TYPE>"
-				+ "<PTYPE xmlns=\"http://refdatabase.refdata.ch/Partner_in\">ALL</PTYPE>"
-				+ "<TERM xmlns=\"http://refdatabase.refdata.ch/Partner_in\"></TERM>"
-				+ "</DownloadPartnerInput>"
-				+ "</soap:Body>"
-				+ "</soap:Envelope>";
-
-			// Send SOAP request via HttpURLConnection (needed for X-API-Key header)
-			String wsURL = "https://api.refdata.ch/partner/1.0/Partner.asmx";
-			URL url = new URL(wsURL);
-			java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
-			conn.setRequestProperty("SOAPAction", "http://refdatabase.refdata.ch/Download");
+			// Create SOAP request
+			SOAPMessage soapRequest = MessageFactory.newInstance().createMessage();
+			// Set SOAPAction and X-API-Key headers
+			MimeHeaders headers = soapRequest.getMimeHeaders();
+			headers.addHeader("SOAPAction", "http://refdatabase.refdata.ch/Download");
 			String apiKey = System.getenv("REFDATA_API_KEY");
 			if (apiKey == null || apiKey.isEmpty()) {
 				throw new RuntimeException("REFDATA_API_KEY environment variable not set. Register at developer.refdata.ch to obtain a key.");
 			}
-			conn.setRequestProperty("X-API-Key", apiKey);
-			conn.setDoOutput(true);
-			conn.setConnectTimeout(60000);
-			conn.setReadTimeout(300000);
+			headers.addHeader("X-API-Key", apiKey);
+			// Set SOAP main request part
+			SOAPPart soapPart = soapRequest.getSOAPPart();
+			SOAPEnvelope envelope = soapPart.getEnvelope();
+			SOAPBody soapBody = envelope.getBody();
+			// Construct SOAP request message
+			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadPartnerInput", "", "http://refdatabase.refdata.ch/");
+			SOAPElement soapBodyElementType = soapBodyElement1.addChildElement("TYPE", "", "http://refdatabase.refdata.ch/Partner_in");
+			soapBodyElementType.addTextNode("ALL");
+			SOAPElement soapBodyElementPType = soapBodyElement1.addChildElement("PTYPE", "", "http://refdatabase.refdata.ch/Partner_in");
+			soapBodyElementPType.addTextNode("ALL");
+			SOAPElement soapBodyElementTerm = soapBodyElement1.addChildElement("TERM", "", "http://refdatabase.refdata.ch/Partner_in");
+			soapBodyElementTerm.addTextNode("");
+			soapRequest.saveChanges();
+			// Create connection to SOAP server
+			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
+			SOAPConnection connection = soapConnectionFactory.createConnection();
 
-			try (java.io.OutputStream os = conn.getOutputStream()) {
-				os.write(soapBody.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-			}
+			String wsURL = "https://api.refdata.ch/partner/1.0/Partner.asmx";
+			SOAPMessage soapResponse = connection.call(soapRequest, wsURL);
+			// Extract response
+			Document doc = soapResponse.getSOAPBody().extractContentAsDocument();
 
-			// Read response
-			java.io.InputStream responseStream = conn.getInputStream();
-			javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-			factory.setNamespaceAware(true);
-			Document doc = factory.newDocumentBuilder().parse(responseStream);
-			responseStream.close();
-			conn.disconnect();
+			this.cleanNameSpace(doc);
 
-			// Extract SOAP body content
-			org.w3c.dom.NodeList bodyList = doc.getElementsByTagNameNS("http://schemas.xmlsoap.org/soap/envelope/", "Body");
-			Document contentDoc;
-			if (bodyList.getLength() > 0) {
-				org.w3c.dom.Node bodyNode = bodyList.item(0).getFirstChild();
-				contentDoc = factory.newDocumentBuilder().newDocument();
-				org.w3c.dom.Node imported = contentDoc.importNode(bodyNode, true);
-				contentDoc.appendChild(imported);
-			} else {
-				contentDoc = doc;
-			}
-
-			this.cleanNameSpace(contentDoc);
-
-			String strBody = getStringFromDoc(contentDoc);
+			String strBody = getStringFromDoc(doc);
 
 			String xmlBody = prettyFormat(strBody);
 			xmlBody = StringUtils.remove(xmlBody, " xmlns=\"\"");
@@ -460,6 +440,8 @@ public class AllDown {
 				pb.stopp();
 			long stopTime = System.currentTimeMillis();
 			System.out.println("\r- Downloading Refdata partner file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+
+			connection.close();
 
 		} catch (Exception e) {
 			if (!disp)
