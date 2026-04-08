@@ -395,35 +395,61 @@ public class AllDown {
 				pb.start();
 			}
 
-			// Create soaprequest
-			SOAPMessage soapRequest = MessageFactory.newInstance().createMessage();
-			// Set SOAPAction header line
-			MimeHeaders headers = soapRequest.getMimeHeaders();
-			headers.addHeader("SOAPAction", "http://refdatabase.refdata.ch/Download");
-			// Set SOAP main request part
-			SOAPPart soapPart = soapRequest.getSOAPPart();
-			SOAPEnvelope envelope = soapPart.getEnvelope();
-			SOAPBody soapBody = envelope.getBody();
-			// Construct SOAP request message
-			SOAPElement soapBodyElement1 = soapBody.addChildElement("DownloadPartnerInput", "", "http://refdatabase.refdata.ch/");
-			SOAPElement soapBodyElement2 = soapBodyElement1.addChildElement("PTYPE", "", "http://refdatabase.refdata.ch/Partner_in");
-			soapBodyElement2.addTextNode("ALL");
-			soapRequest.saveChanges();
-			// If needed print out soapRequest in a pretty format
-			// System.out.println(prettyFormatSoapXml(soapRequest));
-			// Create connection to SOAP server
-			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
-			SOAPConnection connection = soapConnectionFactory.createConnection();
-			// wsURL contains service end point
+			// SOAP request body
+			String soapBody = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+				+ "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
+				+ "<soap:Body>"
+				+ "<DownloadPartnerInput xmlns=\"http://refdatabase.refdata.ch/\">"
+				+ "<TYPE xmlns=\"http://refdatabase.refdata.ch/Partner_in\">ALL</TYPE>"
+				+ "<PTYPE xmlns=\"http://refdatabase.refdata.ch/Partner_in\">ALL</PTYPE>"
+				+ "<TERM xmlns=\"http://refdatabase.refdata.ch/Partner_in\"></TERM>"
+				+ "</DownloadPartnerInput>"
+				+ "</soap:Body>"
+				+ "</soap:Envelope>";
 
-			String wsURL = "https://refdatabase.refdata.ch/Service/Partner.asmx?WSDL";
-			SOAPMessage soapResponse = connection.call(soapRequest, wsURL);
-			// Extract response
-			Document doc = soapResponse.getSOAPBody().extractContentAsDocument();
+			// Send SOAP request via HttpURLConnection (needed for X-API-Key header)
+			String wsURL = "https://api.refdata.ch/partner/1.0/Partner.asmx";
+			URL url = new URL(wsURL);
+			java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+			conn.setRequestProperty("SOAPAction", "http://refdatabase.refdata.ch/Download");
+			String apiKey = System.getenv("REFDATA_API_KEY");
+			if (apiKey == null || apiKey.isEmpty()) {
+				throw new RuntimeException("REFDATA_API_KEY environment variable not set. Register at developer.refdata.ch to obtain a key.");
+			}
+			conn.setRequestProperty("X-API-Key", apiKey);
+			conn.setDoOutput(true);
+			conn.setConnectTimeout(60000);
+			conn.setReadTimeout(300000);
 
-			this.cleanNameSpace(doc);
+			try (java.io.OutputStream os = conn.getOutputStream()) {
+				os.write(soapBody.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+			}
 
-			String strBody = getStringFromDoc(doc);
+			// Read response
+			java.io.InputStream responseStream = conn.getInputStream();
+			javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+			factory.setNamespaceAware(true);
+			Document doc = factory.newDocumentBuilder().parse(responseStream);
+			responseStream.close();
+			conn.disconnect();
+
+			// Extract SOAP body content
+			org.w3c.dom.NodeList bodyList = doc.getElementsByTagNameNS("http://schemas.xmlsoap.org/soap/envelope/", "Body");
+			Document contentDoc;
+			if (bodyList.getLength() > 0) {
+				org.w3c.dom.Node bodyNode = bodyList.item(0).getFirstChild();
+				contentDoc = factory.newDocumentBuilder().newDocument();
+				org.w3c.dom.Node imported = contentDoc.importNode(bodyNode, true);
+				contentDoc.appendChild(imported);
+			} else {
+				contentDoc = doc;
+			}
+
+			this.cleanNameSpace(contentDoc);
+
+			String strBody = getStringFromDoc(contentDoc);
 
 			String xmlBody = prettyFormat(strBody);
 			xmlBody = StringUtils.remove(xmlBody, " xmlns=\"\"");
@@ -434,8 +460,6 @@ public class AllDown {
 				pb.stopp();
 			long stopTime = System.currentTimeMillis();
 			System.out.println("\r- Downloading Refdata partner file... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
-
-			connection.close();
 
 		} catch (Exception e) {
 			if (!disp)

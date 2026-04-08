@@ -56,7 +56,7 @@ On some systems it may be necessary to increase the heap space with the Java opt
 | www.swissmedic.ch | Authorized packages XLSX (Zugelassene Packungen) |
 | swissindex.refdata.ch | Swissindex Pharma SOAP web service (pharmacode data) |
 | files.refdata.ch | Refdata Articles ZIP and MedicinalDocuments AllHtml ZIP |
-| refdatabase.refdata.ch | Refdata Partner SOAP web service (GLN data) |
+| api.refdata.ch | Refdata Partner SOAP web service (GLN data, requires REFDATA_API_KEY) |
 | www.spezialitaetenliste.ch | BAG Spezialitätenliste XMLPublications ZIP |
 | epl.bag.admin.ch | BAG FHIR NDJSON (alternative to Preparations XML) |
 | www.swissdrg.org | SwissDRG Excel files |
@@ -70,6 +70,12 @@ On some systems it may be necessary to increase the heap space with the Java opt
 | repo.maven.apache.org | Maven Central repository (dependency JARs) |
 | clojars.org | Clojars Maven repository (dependency JARs) |
 | jitpack.io | JitPack Maven repository (GitHub-based dependency JARs) |
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| REFDATA_API_KEY | API key for Refdata Partner SOAP service. Register at developer.refdata.ch to obtain a key. |
 
 ## Examples
 
