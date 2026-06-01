@@ -51,5 +51,6 @@ public class CmlOptions {
 	public static String OPT_MED_TITLE = "";
 	public static String OPT_MED_REGNR = "";
 	public static String OPT_MED_OWNER = "";
-	public static boolean USE_FHIR = false;
+	// Default ON since 01.06.2026: BAG FHIR NDJSON is the default source. Disable with --no-fhir.
+	public static boolean USE_FHIR = true;
 }

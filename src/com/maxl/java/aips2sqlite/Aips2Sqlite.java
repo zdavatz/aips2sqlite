@@ -176,6 +176,9 @@ public class Aips2Sqlite {
 			if (cmd.hasOption("fhir")) {
 				CmlOptions.USE_FHIR = true;
 			}
+			if (cmd.hasOption("no-fhir")) {
+				CmlOptions.USE_FHIR = false;
+			}
 		} catch (ParseException e) {
 			System.err.println("Parsing failed: " + e.getMessage());
 		}
@@ -212,7 +215,8 @@ public class Aips2Sqlite {
 		addOption(options, "plain", "does not update the package section", false, false);
 		addOption(options, "test", "starts aips2sqlite in test mode", false, false);
 		addOption(options, "stats", "generates statistics for given user", true, false);
-		addOption(options, "fhir", "use BAG FHIR NDJSON instead of BAG Preparations XML", false, false);
+		addOption(options, "fhir", "use BAG FHIR NDJSON instead of BAG Preparations XML (default ON since 01.06.2026)", false, false);
+		addOption(options, "no-fhir", "use the legacy BAG Preparations XML instead of FHIR NDJSON", false, false);
 
 		// Parse command line options
 		commandLineParse(options, args);
