@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# generate_aips_fi — run aips2sqlite to produce the Fachinformation XML and the
+# swissmedic-sequences CSV (consumed by oddb2xml's transfer step).
+#
+# Adapted from the old Aspectra `generate_aips_fi`: paths point at this host's
+# checkout, and the Aspectra proxy (-DproxySet/proxyout.aspectra.net) and the
+# `source /opt/ywesee/.bash_profile` line are dropped — this host has direct
+# internet and no such profile. Requires java on PATH (override with $JAVA).
+#
+#   AIPS_DIR   aips2sqlite checkout (default /home/zdavatz/software/aips2sqlite)
+#   JAVA       java executable      (default java)
+#
+set -euo pipefail
+
+AIPS_DIR="${AIPS_DIR:-/home/zdavatz/software/aips2sqlite}"
+JAVA="${JAVA:-java}"
+
+cd "$AIPS_DIR"
+git pull
+
+cd "$AIPS_DIR/jars"
+rm -f output/oddb2xml_swissmedic_sequences.csv
+
+"$JAVA" -jar -Xmx8048m aips2sqlite.jar --lang=de --xml
+"$JAVA" -jar -Xmx7048m aips2sqlite.jar --lang=fr --xml --nodown
+"$JAVA" -jar -Xmx7048m aips2sqlite.jar --nodown --smsequence
+
+cd "$AIPS_DIR/jars/output"
+mv -f swiss_medic_sequences.csv oddb2xml_swissmedic_sequences.csv
+
+rm -rf "$AIPS_DIR/jars/downloads/tmp/unzipped_tmp"/*.xml
