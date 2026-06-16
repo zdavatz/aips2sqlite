@@ -3,10 +3,8 @@
 # generate_aips_fi — run aips2sqlite to produce the Fachinformation XML and the
 # swissmedic-sequences CSV (consumed by oddb2xml's transfer step).
 #
-# Adapted from the old Aspectra `generate_aips_fi`: paths point at this host's
-# checkout, and the Aspectra proxy (-DproxySet/proxyout.aspectra.net) and the
-# `source /opt/ywesee/.bash_profile` line are dropped — this host has direct
-# internet and no such profile. Requires java on PATH (override with $JAVA).
+# Runs aips2sqlite directly on this host: no proxy, no profile sourcing.
+# Requires java on PATH (override with $JAVA).
 #
 #   AIPS_DIR   aips2sqlite checkout (default /home/zdavatz/software/aips2sqlite)
 #   JAVA       java executable      (default java)
