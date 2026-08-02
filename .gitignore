@@ -25,5 +25,7 @@ jars/output/
 .idea/
 out/
 src/com/maxl/java/aips2sqlite/Crypto.java
+# The AES key the partner exports encrypt with (Constants.DIR_CRYPTO).
+input/crypto/
 .gradle
 build

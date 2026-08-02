@@ -21,6 +21,32 @@ the output will be placed here: `build/libs`
 
 `make clean`
 
+## Releases
+
+Bump `CmlOptions.APP_VERSION`, rebuild the jar and commit it (the deployed hosts
+run `jars/aips2sqlite.jar` straight out of the checkout, so the tracked copy is
+what actually ships), then push a matching tag:
+
+```
+make aips2sqlite
+cp build/libs/aips2sqlite.jar jars/aips2sqlite.jar
+git commit -am "Release 1.0.1"
+git tag v1.0.1 && git push origin master v1.0.1
+```
+
+The tag triggers `.github/workflows/release.yml`, which smoke-tests the
+committed jar on Temurin 21 (`--help`, so it loads the main class and every
+bundled dependency) and publishes a GitHub release with it attached.
+
+Rebuilding the jar is a local step, not a CI one, because
+`src/com/maxl/java/aips2sqlite/Crypto.java` is gitignored — it names the path of
+the private AES key file (`Constants.DIR_CRYPTO + "/secret.txt"`) used by the
+partner exports. Without it a fresh checkout does not compile: `./gradlew jar`
+fails with `Symbol nicht gefunden: Crypto` at the six call sites in `FileOps`,
+`GlnCodes` and `ShoppingCart{Desitin,Ibsa,Rose}`. Keep a copy of that file
+alongside your checkout. The class itself holds no key — only the IV and that
+path — so it can be committed if you would rather have CI compile the jar.
+
 ## Caveats
 
 On some systems it may be necessary to increase the heap space with the Java option -Xmx, see below for an example.

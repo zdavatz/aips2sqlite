@@ -513,9 +513,77 @@ public class AllDown {
 		}
 	}
 
+	private static final String FHIR_STATIC_BASE = "https://epl.bag.admin.ch/static/";
+	private static final String FHIR_RESOURCE_INDEX = "https://epl.bag.admin.ch/api/sl/public/resources/current";
+
+	/**
+	 * Path of the current SL FHIR export according to BAG's resource index,
+	 * or null when the index does not name one.
+	 *
+	 * The index is the intended way to discover the export, but it has been
+	 * answering "fhir": {"fileUrl": null} (seen 2026-08-01). Jackson's asText()
+	 * turns that null into the *string* "null", which is how this code used to
+	 * end up requesting /static/null and getting a 404.
+	 */
+	private String fhirNdjsonPathFromIndex() {
+		try {
+			URL apiUrl = new URL(FHIR_RESOURCE_INDEX);
+			StringBuilder apiResponse = new StringBuilder();
+			BufferedReader apiReader = new BufferedReader(new InputStreamReader(apiUrl.openStream(), "UTF-8"));
+			String line;
+			while ((line = apiReader.readLine()) != null) {
+				apiResponse.append(line);
+			}
+			apiReader.close();
+
+			com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+			com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(apiResponse.toString());
+			com.fasterxml.jackson.databind.JsonNode fhir = root.get("fhir");
+			com.fasterxml.jackson.databind.JsonNode fileUrl = (fhir != null) ? fhir.get("fileUrl") : null;
+			if (fileUrl == null || fileUrl.isNull() || fileUrl.asText().trim().isEmpty())
+				return null;
+			return fileUrl.asText().trim();
+		} catch (Exception e) {
+			System.err.println(" Note: BAG resource index unreadable (" + e + ")");
+			return null;
+		}
+	}
+
+	/**
+	 * Stable per-language location of the export, used when the index names
+	 * none. Language matters: the export carries the medicine names and
+	 * limitation texts in one language only, so a French run must not be fed
+	 * the German file.
+	 */
+	private String fhirNdjsonFallbackPath() {
+		String lang = CmlOptions.DB_LANGUAGE.isEmpty() ? "de" : CmlOptions.DB_LANGUAGE;
+		return "fhir/foph-sl-export-latest-" + lang + ".ndjson";
+	}
+
+	/** An export is a sequence of JSON bundles, one per line; an error page is not. */
+	private boolean isFhirNdjson(File file) {
+		if (!file.isFile() || file.length() == 0)
+			return false;
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String first = reader.readLine();
+			return first != null && first.trim().startsWith("{");
+		} catch (Exception e) {
+			return false;
+		} finally {
+			try { if (reader != null) reader.close(); } catch (IOException e) { /* ignore */ }
+		}
+	}
+
 	public void downFhirNdjson(String file_fhir_ndjson) {
 		boolean disp = false;
 		ProgressBar pb = new ProgressBar();
+		File destination = new File(file_fhir_ndjson);
+		// Downloaded beside the target: a 404 page or a truncated body must not
+		// replace the copy from the last good run, and an aborted download must
+		// not leave the parser with half a file.
+		File partial = new File(file_fhir_ndjson + ".part");
 
 		try {
 			// Ignore validation for https sites
@@ -530,35 +598,40 @@ public class AllDown {
 				pb.start();
 			}
 
-			// Step 1: Query API to get the current FHIR file URL
-			URL apiUrl = new URL("https://epl.bag.admin.ch/api/sl/public/resources/current");
-			BufferedReader apiReader = new BufferedReader(new InputStreamReader(apiUrl.openStream(), "UTF-8"));
-			StringBuilder apiResponse = new StringBuilder();
-			String line;
-			while ((line = apiReader.readLine()) != null) {
-				apiResponse.append(line);
-			}
-			apiReader.close();
-
-			// Parse the JSON response to extract fhir.fileUrl
-			com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-			com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(apiResponse.toString());
-			String fileUrl = root.get("fhir").get("fileUrl").asText();
+			// Step 1: Ask the resource index, fall back to the stable path
+			String path = fhirNdjsonPathFromIndex();
+			boolean fromIndex = (path != null);
+			if (!fromIndex)
+				path = fhirNdjsonFallbackPath();
 
 			// Step 2: Download the NDJSON file
-			URL ndjsonUrl = new URL("https://epl.bag.admin.ch/static/" + fileUrl);
-			File destination = new File(file_fhir_ndjson);
-			FileUtils.copyURLToFile(ndjsonUrl, destination, 60000, 60000);
+			URL ndjsonUrl = new URL(FHIR_STATIC_BASE + path);
+			FileUtils.copyURLToFile(ndjsonUrl, partial, 60000, 60000);
+			if (!isFhirNdjson(partial))
+				throw new IOException("no NDJSON export at " + ndjsonUrl);
+			Files.move(partial.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 			if (!disp)
 				pb.stopp();
 			long stopTime = System.currentTimeMillis();
-			System.out.println("\r- Downloading BAG FHIR NDJSON file... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			System.out.println("\r- Downloading BAG FHIR NDJSON file... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec"
+					+ (fromIndex ? "" : " (resource index names no FHIR export, used " + path + ")"));
 		} catch (Exception e) {
 			if (!disp)
 				pb.stopp();
+			FileUtils.deleteQuietly(partial);
 			System.err.println(" Exception: in 'downFhirNdjson'");
 			e.printStackTrace();
+			// Say which data the run is about to use. Without this the parser
+			// happily reads a file from an earlier run and reports a healthy
+			// preparation count, so frozen prices look like a successful build.
+			if (isFhirNdjson(destination)) {
+				long days = (System.currentTimeMillis() - destination.lastModified()) / (24L * 60 * 60 * 1000);
+				System.err.println(">> Keeping the previous " + destination.getName() + " (" + days
+						+ " day(s) old): SL flags and prices come from that download, not from today.");
+			} else {
+				System.err.println(">> No BAG FHIR export available: SL flags and prices will be missing.");
+			}
 		}
 	}
 
