@@ -81,6 +81,10 @@ public class Aips2Sqlite {
 			}
 			if (cmd.hasOption("version")) {
 				System.out.println("Version of aips2slite: " + CmlOptions.APP_VERSION);
+				// "print the version information and exit" (README): without this it
+				// printed and then fell through into the real pipeline, so asking the
+				// jar its version started downloading ~180 MB.
+				System.exit(0);
 			}
 			if (cmd.hasOption("lang")) {
 				if (cmd.getOptionValue("lang").equals("de"))

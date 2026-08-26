@@ -51,8 +51,8 @@ jobs:
         run: test -s jars/aips2sqlite.jar
 
       # Smoke test: loads the main class and every bundled dependency, then
-      # exits 0. Deliberately --help and not --version: --version prints and
-      # falls through into the real pipeline, which would start downloading.
+      # exits 0. --version fell through into the real pipeline and started
+      # downloading until 1.0.3, which is why this is --help; both exit now.
       - name: Check the jar starts
         run: java -jar jars/aips2sqlite.jar --help
 
