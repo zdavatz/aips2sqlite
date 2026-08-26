@@ -513,16 +513,18 @@ public class AllDown {
 		}
 	}
 
-	private static final String FHIR_STATIC_BASE = "https://epl.bag.admin.ch/static/";
-	private static final String FHIR_RESOURCE_INDEX = "https://epl.bag.admin.ch/api/sl/public/resources/current";
+	private static final String FHIR_HOST = "https://epl.bag.admin.ch";
+	private static final String FHIR_STATIC_BASE = FHIR_HOST + "/static/";
+	private static final String FHIR_RESOURCE_INDEX = FHIR_HOST + "/api/sl/public/resources/current";
 
 	/**
 	 * Path of the current SL FHIR export according to BAG's resource index,
-	 * or null when the index does not name one.
+	 * or null when the index does not name one we can use.
 	 *
 	 * The index is the intended way to discover the export, but it has been
-	 * answering "fhir": {"fileUrl": null} (seen 2026-08-01). Jackson's asText()
-	 * turns that null into the *string* "null", which is how this code used to
+	 * answering "fhir": {"fileUrl": null} (seen 2026-08-01) and, since the
+	 * 24.08.2026 move, an empty "fhir": {} (seen 2026-08-26). Jackson's asText()
+	 * turns a JSON null into the *string* "null", which is how this code used to
 	 * end up requesting /static/null and getting a 404.
 	 */
 	private String fhirNdjsonPathFromIndex() {
@@ -539,14 +541,51 @@ public class AllDown {
 			com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 			com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(apiResponse.toString());
 			com.fasterxml.jackson.databind.JsonNode fhir = root.get("fhir");
-			com.fasterxml.jackson.databind.JsonNode fileUrl = (fhir != null) ? fhir.get("fileUrl") : null;
-			if (fileUrl == null || fileUrl.isNull() || fileUrl.asText().trim().isEmpty())
+			if (fhir == null)
 				return null;
-			return fileUrl.asText().trim();
+			// Since the move the index groups its entries ("excel" now carries
+			// all/currentChanges/publication), so look one level down as well -
+			// at the published list, never at the preliminary one beside it.
+			String path = fhirFileUrl(fhir);
+			if (path == null)
+				path = fhirFileUrl(fhir.get("publication"));
+			if (path == null)
+				return null;
+			// The index does not say which language it names, and an export
+			// carries names and limitation texts in one language only. Take it
+			// only when it is the language this run needs; the per-language
+			// path below is right in every other case.
+			if (!path.contains("-" + fhirLanguage() + ".ndjson")) {
+				System.err.println(" Note: BAG resource index names " + path + ", not the "
+						+ fhirLanguage() + " export");
+				return null;
+			}
+			return path;
 		} catch (Exception e) {
 			System.err.println(" Note: BAG resource index unreadable (" + e + ")");
 			return null;
 		}
+	}
+
+	/** The "fileUrl" of an index node, or null when it carries none. */
+	private String fhirFileUrl(com.fasterxml.jackson.databind.JsonNode node) {
+		com.fasterxml.jackson.databind.JsonNode fileUrl = (node != null) ? node.get("fileUrl") : null;
+		if (fileUrl == null || fileUrl.isNull() || fileUrl.asText().trim().isEmpty())
+			return null;
+		return fileUrl.asText().trim();
+	}
+
+	/**
+	 * Language of the export to fetch. BAG publishes de, fr and it only, so an
+	 * English run reads the German one: prices, SL flags, GTINs and Swissmedic
+	 * numbers do not depend on the language, and the alternative is no BAG data
+	 * at all.
+	 */
+	private String fhirLanguage() {
+		String lang = CmlOptions.DB_LANGUAGE;
+		if (lang.equals("fr") || lang.equals("it"))
+			return lang;
+		return "de";
 	}
 
 	/**
@@ -554,10 +593,25 @@ public class AllDown {
 	 * none. Language matters: the export carries the medicine names and
 	 * limitation texts in one language only, so a French run must not be fed
 	 * the German file.
+	 *
+	 * BAG moved the export here on 24.08.2026 and announced it the next evening.
+	 * The old /static/fhir/foph-sl-export-latest-<lang> alias now answers 404
+	 * while the dated snapshots beside it stay in place, so the move shows up as
+	 * a run that downloads nothing rather than as a crash. There is also a
+	 * preliminary publication under /static/sl/preliminary/fhir/, which is not
+	 * the list in force and which we do not use.
 	 */
 	private String fhirNdjsonFallbackPath() {
-		String lang = CmlOptions.DB_LANGUAGE.isEmpty() ? "de" : CmlOptions.DB_LANGUAGE;
-		return "fhir/foph-sl-export-latest-" + lang + ".ndjson";
+		return "sl/publication/fhir/foph-sl-publication-latest-" + fhirLanguage() + ".ndjson";
+	}
+
+	/** Index entries may name a full URL, an absolute path or a path below /static/. */
+	private URL fhirNdjsonUrl(String path) throws IOException {
+		if (path.startsWith("http://") || path.startsWith("https://"))
+			return new URL(path);
+		if (path.startsWith("/"))
+			return new URL(FHIR_HOST + path);
+		return new URL(FHIR_STATIC_BASE + path);
 	}
 
 	/** An export is a sequence of JSON bundles, one per line; an error page is not. */
@@ -605,7 +659,7 @@ public class AllDown {
 				path = fhirNdjsonFallbackPath();
 
 			// Step 2: Download the NDJSON file
-			URL ndjsonUrl = new URL(FHIR_STATIC_BASE + path);
+			URL ndjsonUrl = fhirNdjsonUrl(path);
 			FileUtils.copyURLToFile(ndjsonUrl, partial, 60000, 60000);
 			if (!isFhirNdjson(partial))
 				throw new IOException("no NDJSON export at " + ndjsonUrl);

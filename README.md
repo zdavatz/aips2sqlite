@@ -73,6 +73,39 @@ On some systems it may be necessary to increase the heap space with the Java opt
 --zip             generate zipped versions sqlite database or xml file
 ```
 
+## BAG FHIR NDJSON source
+
+Since 01.06.2026 the SL data (prices, SL flags, GTINs, Swissmedic numbers) comes
+from BAG's FHIR NDJSON export rather than the Preparations XML; `--no-fhir`
+switches back.
+
+`AllDown.downFhirNdjson` resolves the export in two steps: BAG's resource index
+(`https://epl.bag.admin.ch/api/sl/public/resources/current`) first, then the
+stable per-language path
+
+    https://epl.bag.admin.ch/static/sl/publication/fhir/foph-sl-publication-latest-<lang>.ndjson
+
+**BAG moved the export there on 24.08.2026.** The old
+`/static/fhir/foph-sl-export-latest-<lang>.ndjson` alias now answers 404 while
+the dated snapshots beside it stay in place, so the move does not crash a run —
+it downloads nothing and keeps the copy from the last good fetch, which is how
+frozen prices can look like a healthy build. The index is no help either: it
+answers a bare `"fhir": {}` (seen 26.08.2026), so the per-language path is
+currently the only working source.
+
+- The download lands in a `.part` file and replaces the real one only once its
+  first line starts with `{`, so a 404 page or a truncated body cannot become
+  the input. A failed download logs how old the copy it falls back on is.
+- Language matters: an export carries the medicine names and limitation texts in
+  one language only. An index-supplied URL is therefore used only when it names
+  the language of the run.
+- BAG publishes **de**, **fr** and **it**; there is no language-less default and
+  no English export, so `--lang=en` reads the German one (prices, SL flags,
+  GTINs and Swissmedic numbers do not depend on the language).
+- A *preliminary* publication sits in parallel under
+  `/static/sl/preliminary/fhir/foph-sl-preliminary-latest-<lang>.ndjson`. That is
+  not the list in force and is not used.
+
 ## Download Domains
 
 ### Application (runtime data downloads)
@@ -85,7 +118,7 @@ On some systems it may be necessary to increase the heap space with the Java opt
 | files.refdata.ch | Refdata Articles ZIP and MedicinalDocuments AllHtml ZIP |
 | api.refdata.ch | Refdata Partner SOAP web service (GLN data, requires REFDATA_API_KEY) |
 | www.spezialitaetenliste.ch | BAG Spezialitätenliste XMLPublications ZIP |
-| epl.bag.admin.ch | BAG FHIR NDJSON (alternative to Preparations XML) |
+| epl.bag.admin.ch | BAG FHIR NDJSON, `/static/sl/publication/fhir/foph-sl-publication-latest-<lang>.ndjson` (alternative to Preparations XML, see below) |
 | www.swissdrg.org | SwissDRG Excel files |
 | raw.githubusercontent.com | EPha interactions CSV, products JSON, ATC codes CSV (zdavatz/oddb2xml_files) |
 
