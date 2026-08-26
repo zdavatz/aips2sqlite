@@ -25,7 +25,7 @@ java -jar build/libs/aips2sqlite.jar --lang=de --verbose --reports
 java -jar -Xmx2048m build/libs/aips2sqlite.jar --lang=de --verbose  # increased heap
 ```
 
-Key flags: `--lang=<de|fr|it|en>`, `--nodown` (skip downloads), `--verbose`, `--quiet`, `--xml`, `--zip`, `--reports`, `--inter` (drug interactions), `--pinfo` (patient info instead of Fachinfo), `--fhir` (use BAG FHIR NDJSON instead of BAG Preparations XML; default ON since 01.06.2026), `--no-fhir` (opt out, use the legacy BAG Preparations XML).
+Key flags: `--lang=<de|fr|it|en>`, `--nodown` (skip downloads), `--verbose`, `--quiet`, `--xml`, `--zip`, `--reports`, `--inter` (drug interactions), `--pinfo` (patient info instead of Fachinfo), `--fhir` (use BAG FHIR NDJSON instead of BAG Preparations XML; default ON since 01.06.2026), `--no-fhir` (opt out, use the legacy BAG Preparations XML), `--smsequence` (swissmedic sequence CSV — what `scripts/generate_aips_fi` runs third). README's "Options" section lists all 31 flags, including the partner exports (`--shop`, `--desitin`, `--takeda`, `--gln`, `--zurrose`) that need `Crypto.java`.
 
 **Environment variable:** `REFDATA_API_KEY` must be set for Refdata Partner downloads (register at developer.refdata.ch).
 

@@ -55,23 +55,41 @@ On some systems it may be necessary to increase the heap space with the Java opt
 
 ```
 --alpha=<char>    generate sqlite database or xml file for meds whose title starts with 'char'
+--dailydrugcosts  calculate the daily drug costs
+--desitin         generate encrypted files for Desitin
 --fhir            use BAG FHIR NDJSON instead of BAG Preparations XML (default ON since 01.06.2026)
 --no-fhir         use the legacy BAG Preparations XML instead of FHIR NDJSON
+--gln             generate csv file with Swiss gln codes
 --help            print help
 --indications     generate report about keywords found in section indications (folder output)
 --inter			  generate drug interaction files as an sqlite database and a csv data file
---lang=<arg>      generate database with given language, two options are supported: 'de' and 'fr'
+--lang=<arg>      generate database with given language: 'de', 'fr', 'it' or 'en'
 --nodown          do not download the aips, swissmedic, bag and refdata files
+--onlydesitin     generate Desitin files only, skip the sqlite database
+--onlyshop        generate shopping cart files only, skip the sqlite database
 --owner=<owner>   generate sqlite database or xml file for meds whose holder starts with 'owner'
+--packageparse    extract dosage information from package name
 --pinfo           generate Patinfo (default is Fachinfo)
+--plain           do not update the package section
+--pseudo          add pseudo expert infos to db
 --quiet           be extra quiet
 --regnr=<number>  generate sqlite database or xml file for meds whose registration number starts with 'number'
 --reports         generate parse and owner error reports (folder output)
+--shop            generate encrypted files for shopping cart
+--smsequence      generate swissmedic sequence csv (used by scripts/generate_aips_fi)
+--stats=<user>    generate statistics for the given user
+--takeda=<arg>    generate sap/gln matching file
+--test            start aips2sqlite in test mode
 --verbose         be extra verbose
 --version         print the version information and exit
 --xml             generate xml file
 --zip             generate zipped versions sqlite database or xml file
+--zurrose=<arg>   generate zur Rose article database or stock/like files (fulldb/atcdb/quick)
 ```
+
+The partner exports (`--shop`, `--desitin`, `--takeda`, `--gln`) encrypt their
+output and therefore need the private key described under "Releases" above;
+the Fachinfo path (`--xml`, `--smsequence`) does not.
 
 ## BAG FHIR NDJSON source
 
