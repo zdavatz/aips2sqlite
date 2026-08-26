@@ -22,7 +22,7 @@ package com.maxl.java.aips2sqlite;
 public class CmlOptions {
 	
 	// Set by command line options (default values)
-	public static String APP_VERSION = "1.0.1";
+	public static String APP_VERSION = "1.0.2";
 	public static String DB_LANGUAGE = "";	
 	public static boolean SHOW_ERRORS = false;
 	public static boolean SHOW_LOGS = true;

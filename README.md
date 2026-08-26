@@ -30,8 +30,8 @@ what actually ships), then push a matching tag:
 ```
 make aips2sqlite
 cp build/libs/aips2sqlite.jar jars/aips2sqlite.jar
-git commit -am "Release 1.0.1"
-git tag v1.0.1 && git push origin master v1.0.1
+git commit -am "Release 1.0.2"
+git tag v1.0.2 && git push origin master v1.0.2
 ```
 
 The tag triggers `.github/workflows/release.yml`, which smoke-tests the
