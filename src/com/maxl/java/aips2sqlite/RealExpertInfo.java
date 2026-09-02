@@ -425,6 +425,19 @@ public class RealExpertInfo {
 				} else {
 					continue;
 				}
+				if (ean_code == null || ean_code.isEmpty()) {
+					// Refdata publishes a handful of PHARMA articles with no barcode at
+					// all -- the Swiss Red Cross blood products under the collective
+					// registration 99999 (Erythrozytenkonzentrat & co), which appeared
+					// in August 2026. There is no identifier to key them on, so skip
+					// them. Before this guard the missing DataCarrierIdentifier threw
+					// a NullPointerException out of extractPackageInfo and aborted the
+					// whole --lang=de run; because scripts/generate_aips_fi deletes
+					// output/oddb2xml_swissmedic_sequences.csv up front and runs under
+					// set -e, that left the published CSV missing (HTTP 404) from
+					// 14.08.2026 onwards. Same upstream cause as oddb2xml issue #122.
+					continue;
+				}
 				String nameDe = "";
 				String nameFr = "";
 				String nameIt = "";

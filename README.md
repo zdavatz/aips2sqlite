@@ -51,6 +51,26 @@ path — so it can be committed if you would rather have CI compile the jar.
 
 On some systems it may be necessary to increase the heap space with the Java option -Xmx, see below for an example.
 
+**Refdata articles without a barcode.** Refdata publishes a few PHARMA articles
+that carry no `<DataCarrierIdentifier>` — the Swiss Red Cross blood products
+under the collective registration 99999, which appeared in August 2026. The
+four loops that read that element (`RealExpertInfo`, `BaseDataParser`,
+`RealPatientInfo`, `DailyDrugCosts`) skip such articles; without that guard the
+run aborts with
+
+```
+NullPointerException: Cannot invoke "String.length()" because "ean_code" is null
+```
+
+which killed `--lang=de --xml` and `--smsequence` nightly from 14.08.2026 to
+02.09.2026. The same upstream change broke oddb2xml, see
+[oddb2xml#122](https://github.com/zdavatz/oddb2xml/issues/122).
+
+`scripts/generate_aips_fi` publishes `output/oddb2xml_swissmedic_sequences.csv`
+only after a run that succeeded and produced at least `MIN_SEQUENCE_LINES`
+(default 8000) rows, so a failed run leaves the previous CSV in place instead of
+removing it.
+
 ## Options
 
 ```

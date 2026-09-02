@@ -320,6 +320,12 @@ public class RealPatientInfo {
 				} else {
 					continue;
 				}
+				if (ean_code == null || ean_code.isEmpty()) {
+					// Refdata PHARMA articles that carry no barcode -- the SRK blood
+					// products under registration 99999. See RealExpertInfo for the
+					// full story; same upstream change as oddb2xml issue #122.
+					continue;
+				}
 				String nameDe = "";
 				String nameFr = "";
 				List<Articles.Article.PackagedProduct.Name> name_list = article.getPackagedProduct().getName();

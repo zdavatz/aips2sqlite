@@ -18,13 +18,29 @@ cd "$AIPS_DIR"
 git pull
 
 cd "$AIPS_DIR/jars"
-rm -f output/oddb2xml_swissmedic_sequences.csv
+# Deliberately NOT deleting output/oddb2xml_swissmedic_sequences.csv here.
+# It used to be removed up front, so under `set -e` any crash in the three java
+# steps below left nothing published at all -- mediupdatexml.oddb.org then
+# answered 404 for a file HIN links directly. Publish by mv only after a run
+# that succeeded and passed the sanity check, keeping the previous copy
+# otherwise; same last-good rule as oddb2xml's get_transfer.sh.
+rm -f output/swiss_medic_sequences.csv
 
 "$JAVA" -jar -Xmx8048m aips2sqlite.jar --lang=de --xml
 "$JAVA" -jar -Xmx7048m aips2sqlite.jar --lang=fr --xml --nodown
 "$JAVA" -jar -Xmx7048m aips2sqlite.jar --nodown --smsequence
 
 cd "$AIPS_DIR/jars/output"
+# One row per Swissmedic sequence: 10'419 on 02.09.2026 (18'367 mapped GTINs).
+# The floor only has to catch a truncated or empty run, so keep real headroom.
+MIN_SEQUENCE_LINES="${MIN_SEQUENCE_LINES:-8000}"
+lines=$(wc -l < swiss_medic_sequences.csv)
+if [ "$lines" -lt "$MIN_SEQUENCE_LINES" ]; then
+	echo "generate_aips_fi: swiss_medic_sequences.csv has only $lines lines" \
+	     "(expected >= $MIN_SEQUENCE_LINES) -- keeping the previous" \
+	     "oddb2xml_swissmedic_sequences.csv" >&2
+	exit 1
+fi
 mv -f swiss_medic_sequences.csv oddb2xml_swissmedic_sequences.csv
 
 rm -rf "$AIPS_DIR/jars/downloads/tmp/unzipped_tmp"/*.xml
